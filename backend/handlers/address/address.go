@@ -9,6 +9,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 type AddressDetails struct {
@@ -19,10 +20,6 @@ type AddressDetails struct {
 	PostalCode       string `json:"postal_code"`
 	PostalCodeSuffix string `json:"postal_code_suffix"`
 	Country          string `json:"country"`
-}
-
-func GetAddresses(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func SaveAddress(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +104,57 @@ func SaveAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Address saved successfully with property_id:", propertyID)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`{"message": "Address saved successfully", "property_id": "%s"}`, propertyID)))
+}
+
+func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
+	// Allow CORS (if needed for frontend communication)
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+
+	// Get environment variables for database connection
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+
+	// Correct DSN format
+	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
+
+	// Connect to the database
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("Error connecting to the database:", err)
+		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Extract property_id from URL path
+	vars := mux.Vars(r)
+	propertyID := vars["property_id"]
+	if propertyID == "" {
+		log.Println("Missing property_id in request")
+		http.Error(w, "Missing property_id in request", http.StatusBadRequest)
+		return
+	}
+
+	// Fetch the address details from the database
+	var address AddressDetails
+	query := `SELECT property_id, street, city, state, postal_code, postal_code_suffix, country
+              FROM addresses WHERE property_id = ?`
+	err = db.QueryRow(query, propertyID).Scan(&address.PropertyID, &address.Street, &address.City, &address.State, &address.PostalCode, &address.PostalCodeSuffix, &address.Country)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("Address not found for property_id: %s", propertyID)
+			http.Error(w, "Address not found", http.StatusNotFound)
+		} else {
+			log.Printf("Error fetching address for property_id %s: %v", propertyID, err)
+			http.Error(w, "Failed to fetch address", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Respond with the address details
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(address)
 }
