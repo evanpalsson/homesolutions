@@ -45,6 +45,17 @@ CREATE TABLE IF NOT EXISTS inspection_reports (
     FOREIGN KEY (inspection_id) REFERENCES inspections(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS addresses (
+    property_id VARCHAR(255) PRIMARY KEY,
+    street VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    postal_code VARCHAR(10) NOT NULL,
+    postal_code_suffix VARCHAR(10),
+    country VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Optional: Add initial data if needed
 INSERT INTO users (name, email, password_hash) VALUES
 ('Admin User', 'admin@example.com', 'hashed_password_here');

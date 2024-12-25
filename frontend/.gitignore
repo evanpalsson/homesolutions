@@ -10,6 +10,7 @@
 
 # production
 /build
+.env
 
 # misc
 .DS_Store
@@ -17,7 +18,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.env.GOOGLEMAPS_API_KEY
+.env.REACT_APP_GOOGLE_API_KEY
 
 npm-debug.log*
 yarn-debug.log*
