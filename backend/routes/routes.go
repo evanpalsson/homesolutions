@@ -2,11 +2,12 @@ package routes
 
 import (
 	"database/sql"
+	address "home_solutions/backend/handlers/address"
 	auth "home_solutions/backend/handlers/auth"
-
-	// properties "home_solutions/backend/models/properties"
 	users "home_solutions/backend/models/users"
+	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -22,9 +23,19 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 
 	// User routes
 	router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
-	// router.HandleFunc("/api/properties", properties.GetProperties(db)).Methods("GET")
 
-	// router.HandleFunc("/users", addressValidation.HandleValidateAddress(db)).Methods("GET")
+	// Inspection routes
+	router.HandleFunc("/api/save-address", address.SaveAddress).Methods("POST", "OPTIONS")
+
+	// Enable CORS
+	corsHandler := handlers.CORS(
+		handlers.AllowedOrigins([]string{"http://localhost:3000"}),                   // Allow frontend origin
+		handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "PUT", "DELETE"}), // Include OPTIONS for preflight
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)(router)
+
+	// Start the server
+	http.ListenAndServe(":8080", corsHandler)
 
 	return router
 }
