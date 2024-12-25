@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useJsApiLoader, StandaloneSearchBox } from '@react-google-maps/api';
 import axios from 'axios';
 import '../styles/NewInspection.css';
@@ -32,6 +33,7 @@ const testAPI = async () => { // remove once api fixed
 testAPI();
 
 function NewInspection() {
+    const navigate = useNavigate();
     const inputref = useRef(null);
     const [addressDetails, setAddressDetails] = useState({
         street: '',
@@ -104,13 +106,16 @@ function NewInspection() {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080; // Fallback to 8080 if not defined
         const endpoint = `http://localhost:${apiPort}/api/save-address`; // Add 'http://'
         console.log("Sending payload:", addressDetails);
+
         try {
             const response = await axios.post(endpoint, addressDetails);
             if (response.status === 200) {
                 console.log('Address saved successfully!');
+                const propertyId = response.data.property_id; // Assuming property_id is returned in the response
+                navigate(`/inspection-form/${propertyId}`);
             }
         } catch (error) {
-            console.error('Error saving addressTESTING:', error.response?.data || error.message);
+            console.error('Error saving address:', error.response?.data || error.message);
         }
     };
 

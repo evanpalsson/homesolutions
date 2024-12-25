@@ -25,6 +25,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
 
 	// Inspection routes
+	router.HandleFunc("/api/get-address/{property_id}", address.GetAddressByPropertyID).Methods("GET")
 	router.HandleFunc("/api/save-address", address.SaveAddress).Methods("POST", "OPTIONS")
 
 	// Enable CORS
