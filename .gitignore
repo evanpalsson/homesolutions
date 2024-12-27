@@ -27,4 +27,19 @@
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
 
-#backend
+# Ignore Dockerfiles
+Dockerfile
+
+# Ignore docker-compose.yml
+docker-compose.yml
+
+# Ignore specific Dockerfiles in subdirectories
+frontend/Dockerfile
+backend/Dockerfile
+
+# Ignore Docker directories
+frontend/.docker
+backend/.docker
+
+# Ignore other related files (if any)
+*.dockerignore

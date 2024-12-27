@@ -1,8 +1,6 @@
 module home_solutions/backend
 
-go 1.23.2
-
-// toolchain go1.23.2
+go 1.20
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -10,7 +8,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 )
 
-require github.com/felixge/httpsnoop v1.0.3 // indirect
+require github.com/felixge/httpsnoop v1.0.4 // indirect
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
