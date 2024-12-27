@@ -32,10 +32,13 @@ services:
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_NAME=home_solutions
+    volumes:
+      - ./backend:/app
+      - /app/go/pkg
     depends_on:
       mysql:
         condition: service_healthy
-      
+    command: air # Assuming you use the air tool for live reload
 
   frontend:
     container_name: frontend
@@ -43,8 +46,13 @@ services:
       context: ./frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
-      - backend
+      mysql:
+        condition: service_healthy
+    command: npm start # Development server
 
 volumes:
   db_data:
