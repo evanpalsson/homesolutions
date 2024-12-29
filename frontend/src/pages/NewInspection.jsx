@@ -7,30 +7,30 @@ import '../styles/NewInspection.css';
 const libraries = ['places'];
 
 // Test the API
-const testAPI = async () => { // remove once api fixed
-    const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-    const endpoint = `http://localhost:${apiPort}/api/save-address`;
-    const addressDetails1 = {
-        street: 'test',
-        city: 'testcity',
-        state: 'TX',
-        postal_code: '78987',
-        postal_code_suffix: '3435',
-        country: 'US'
-    };
+// const testAPI = async () => { // remove once api fixed
+//     const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+//     const endpoint = `http://localhost:${apiPort}/api/save-address`;
+//     const addressDetails1 = {
+//         street: '',
+//         city: '',
+//         state: '',
+//         postal_code: '',
+//         postal_code_suffix: '',
+//         country: ''
+//     };
 
-    try {
-        const response = await axios.post(endpoint, addressDetails1);
-        if (response.status === 200) {
-            console.log('API connected. Address saved successfully!');
-        }
-    } catch (error) {
-        console.error('API not connected. Error saving address:', error.response?.data || error.message);
-    }
-};
+//     try {
+//         const response = await axios.post(endpoint, addressDetails1);
+//         if (response.status === 200) {
+//             console.log('API connected. Address saved successfully!');
+//         }
+//     } catch (error) {
+//         console.error('API not connected. Error saving address:', error.response?.data || error.message);
+//     }
+// };
 
 // Call the test function
-testAPI();
+// testAPI();
 
 function NewInspection() {
     const navigate = useNavigate();
@@ -112,7 +112,7 @@ function NewInspection() {
             if (response.status === 200) {
                 console.log('Address saved successfully!');
                 const propertyId = response.data.property_id; // Assuming property_id is returned in the response
-                navigate(`/inspection-form/${propertyId}`);
+                navigate(`/inspection-form/${propertyId}/CoverPage`);
             }
         } catch (error) {
             console.error('Error saving address:', error.response?.data || error.message);
@@ -167,8 +167,8 @@ function NewInspection() {
                     placeholder="Country"
                     readOnly
                 />
-                <button onClick={handleSubmitAddress}>Save Address</button>
             </div>
+            <button onClick={handleSubmitAddress}>Save Address</button>
         </div>
     );
 }
