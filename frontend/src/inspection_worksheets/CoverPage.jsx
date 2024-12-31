@@ -18,6 +18,7 @@ function CoverPage() {
     const years = Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i).reverse();
 
     useEffect(() => {
+        console.log("Property ID:", propertyId);
         const fetchAddress = async () => {
             const apiPort = process.env.REACT_APP_DB_PORT || 8080;
             const endpoint = `http://localhost:${apiPort}/api/get-address/${propertyId}`;
@@ -27,12 +28,12 @@ function CoverPage() {
                     setAddressDetails(response.data);
                 }
             } catch (error) {
-                console.error('Error fetching address:', error.response?.data || error.message);
+                console.error("Error fetching address:", error.response?.data || error.message);
             }
         };
-
+    
         fetchAddress();
-    }, [propertyId]);
+    }, [propertyId]);    
 
     if (!addressDetails) {
         return <div>Loading...</div>;

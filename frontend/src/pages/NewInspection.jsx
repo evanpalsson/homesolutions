@@ -121,6 +121,39 @@ function NewInspection() {
     // };
 
     // new handling
+    // const handleSubmitAddress = async () => {
+    //     const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+    //     const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
+    //     const createInspectionEndpoint = `http://localhost:${apiPort}/api/create-inspection`;
+    
+    //     try {
+    //         // Save the address
+    //         const addressResponse = await axios.post(saveAddressEndpoint, addressDetails);
+    //         if (addressResponse.status === 200) {
+    //             console.log('Address saved successfully!');
+    //             const propertyId = addressResponse.data.property_id;
+    
+    //             // Create an inspection form
+    //             const payload = {
+    //                 property_id: propertyId,
+    //                 inspection_date: new Date().toISOString().split('T')[0], // Example date
+    //                 form_data: { initialField: 'defaultValue' }, // Example JSON data
+    //             };
+    //             const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
+    //             if (inspectionResponse.status === 200) {
+    //                 console.log('Inspection form created successfully!');
+    //                 const formId = inspectionResponse.data.form_id;
+    
+    //                 // Navigate to the inspection form
+    //                 navigate(`/inspection-form/${formId}/CoverPage`);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Error processing request:', error.response?.data || error.message);
+    //     }
+    // };
+    
+    // newer handling
     const handleSubmitAddress = async () => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
         const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
@@ -136,23 +169,27 @@ function NewInspection() {
                 // Create an inspection form
                 const payload = {
                     property_id: propertyId,
-                    inspection_date: new Date().toISOString().split('T')[0], // Example date
-                    form_data: { initialField: 'defaultValue' }, // Example JSON data
+                    inspection_date: new Date().toISOString().split('T')[0], // Use current date as a valid default
+                    form_data: {}, // Empty object for now; can be populated with initial data
                 };
+    
+                console.log('Payload for inspection form:', payload);
+    
                 const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
                 if (inspectionResponse.status === 200) {
                     console.log('Inspection form created successfully!');
                     const formId = inspectionResponse.data.form_id;
     
-                    // Navigate to the inspection form
-                    navigate(`/inspection-form/${formId}`);
+                    // Navigate to the inspection form and default to CoverPage
+                    navigate(`/inspection-form/${formId}/CoverPage`);
                 }
             }
         } catch (error) {
             console.error('Error processing request:', error.response?.data || error.message);
         }
     };
-    
+
+
 
     return (
         <div style={{ marginTop: '10%', textAlign: 'center' }} id="address-validation-container">

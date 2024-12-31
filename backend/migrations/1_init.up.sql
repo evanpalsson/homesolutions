@@ -37,7 +37,7 @@ INSERT INTO properties (
 CREATE TABLE IF NOT EXISTS inspection_forms (
     form_id CHAR(36) PRIMARY KEY, -- Use CHAR(36) to store UUIDs
     property_id VARCHAR(255) NOT NULL, -- Foreign key
-    inspection_date DATE,
+    inspection_date DATE NULL,
     form_data JSON, -- Use JSON type in MySQL 8.0 (JSONB is for PostgreSQL)
     status VARCHAR(50) DEFAULT 'in-progress',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -3,7 +3,7 @@ package routes
 import (
 	"database/sql"
 	auth "home_solutions/backend/handlers/auth"
-	inspection "home_solutions/backend/handlers/inspections"
+	inspection "home_solutions/backend/handlers/inspections.go"
 	address "home_solutions/backend/handlers/properties"
 	users "home_solutions/backend/models/users"
 	"net/http"
