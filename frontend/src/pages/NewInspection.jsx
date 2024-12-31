@@ -46,7 +46,7 @@ function NewInspection() {
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
         libraries: libraries,
     });
 
@@ -102,22 +102,57 @@ function NewInspection() {
         return 'LOADING...';
     }
 
-    const handleSubmitAddress = async () => {
-        const apiPort = process.env.REACT_APP_DB_PORT || 8080; // Fallback to 8080 if not defined
-        const endpoint = `http://localhost:${apiPort}/api/save-address`; // Add 'http://'
-        console.log("Sending payload:", addressDetails);
+    // Old handling
+    // const handleSubmitAddress = async () => {
+    //     const apiPort = process.env.REACT_APP_DB_PORT || 8080; // Fallback to 8080 if not defined
+    //     const endpoint = `http://localhost:${apiPort}/api/save-address`; // Add 'http://'
+    //     console.log("Sending payload:", addressDetails);
 
+    //     try {
+    //         const response = await axios.post(endpoint, addressDetails);
+    //         if (response.status === 200) {
+    //             console.log('Address saved successfully!');
+    //             const propertyId = response.data.property_id; // Assuming property_id is returned in the response
+    //             navigate(`/inspection-form/${propertyId}/CoverPage`);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error saving address:', error.response?.data || error.message);
+    //     }
+    // };
+
+    // new handling
+    const handleSubmitAddress = async () => {
+        const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+        const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
+        const createInspectionEndpoint = `http://localhost:${apiPort}/api/create-inspection`;
+    
         try {
-            const response = await axios.post(endpoint, addressDetails);
-            if (response.status === 200) {
+            // Save the address
+            const addressResponse = await axios.post(saveAddressEndpoint, addressDetails);
+            if (addressResponse.status === 200) {
                 console.log('Address saved successfully!');
-                const propertyId = response.data.property_id; // Assuming property_id is returned in the response
-                navigate(`/inspection-form/${propertyId}/CoverPage`);
+                const propertyId = addressResponse.data.property_id;
+    
+                // Create an inspection form
+                const payload = {
+                    property_id: propertyId,
+                    inspection_date: new Date().toISOString().split('T')[0], // Example date
+                    form_data: { initialField: 'defaultValue' }, // Example JSON data
+                };
+                const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
+                if (inspectionResponse.status === 200) {
+                    console.log('Inspection form created successfully!');
+                    const formId = inspectionResponse.data.form_id;
+    
+                    // Navigate to the inspection form
+                    navigate(`/inspection-form/${formId}`);
+                }
             }
         } catch (error) {
-            console.error('Error saving address:', error.response?.data || error.message);
+            console.error('Error processing request:', error.response?.data || error.message);
         }
     };
+    
 
     return (
         <div style={{ marginTop: '10%', textAlign: 'center' }} id="address-validation-container">

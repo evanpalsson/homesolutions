@@ -61,10 +61,16 @@ function CoverPage() {
                         </select>
                     </div>
                     <div className="info-item">
+                        <strong>Aprrox. Sq. Ft.</strong>
+                        
+                    </div>
+                <div className="info-section">
+                    <div className="info-item">
                         <strong>Property ID</strong>
                         <p>{addressDetails.property_id}</p>
                     </div>
                 </div>
+            </div>
                 <h1>INSPECTION DETAILS</h1>
                 <div className="info-section">
                 <div className="info-item">

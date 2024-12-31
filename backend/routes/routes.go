@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	auth "home_solutions/backend/handlers/auth"
+	inspection "home_solutions/backend/handlers/inspections"
 	address "home_solutions/backend/handlers/properties"
 	users "home_solutions/backend/models/users"
 	"net/http"
@@ -24,9 +25,12 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// User routes
 	router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
 
-	// Inspection routes
+	// Address handling routes
 	router.HandleFunc("/api/get-address/{property_id}", address.GetAddressByPropertyID).Methods("GET")
 	router.HandleFunc("/api/save-address", address.SaveAddress).Methods("POST", "OPTIONS")
+
+	// Inspection form handling routes
+	router.HandleFunc("/api/create-inspection", inspection.CreateInspection).Methods("POST", "OPTIONS")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(
