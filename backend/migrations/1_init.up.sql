@@ -11,15 +11,23 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create Properties table
 CREATE TABLE IF NOT EXISTS properties (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    address VARCHAR(255) NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(50) NOT NULL,
-    zip_code VARCHAR(20) NOT NULL,
-    owner_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+    property_id VARCHAR(255) PRIMARY KEY,
+    street VARCHAR(255) NOT NULL,
+    city VARCHAR(255) NOT NULL,
+    state VARCHAR(2) NOT NULL,
+    postal_code VARCHAR(10) NOT NULL,
+    postal_code_suffix VARCHAR(10),
+    country VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- id INT AUTO_INCREMENT PRIMARY KEY,
+    -- address VARCHAR(255) NOT NULL,
+    -- city VARCHAR(100) NOT NULL,
+    -- state VARCHAR(50) NOT NULL,
+    -- zip_code VARCHAR(20) NOT NULL,
+    -- owner_id INT NOT NULL,
+    -- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Create Inspections table
@@ -30,9 +38,9 @@ CREATE TABLE IF NOT EXISTS inspections (
     inspection_date DATE NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-    FOREIGN KEY (inspector_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -- FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
+    -- FOREIGN KEY (inspector_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Create Inspection Reports table

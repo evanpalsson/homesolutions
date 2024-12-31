@@ -49,38 +49,6 @@ function CoverPage() {
                         <p>{addressDetails.street}<br />{addressDetails.city}, {addressDetails.state} {addressDetails.postal_code}</p>
                     </div>
                     <div className="info-item">
-                        <strong>Date of Inspection</strong>
-                        <input
-                            type="date"
-                            value={inspectionDate}
-                            onChange={(e) => setInspectionDate(e.target.value)}
-                        />
-                    </div>
-                    <div className="info-item">
-                        <strong>Property ID</strong>
-                        <p>{addressDetails.property_id}</p>
-                    </div>
-                </div>
-                <h1>INSPECTION DETAILS</h1>
-                <div className="info-section">
-                    <div className="info-item">
-                        <strong>In Attendance:</strong>
-                        <p>Customer and their agent</p>
-                    </div>
-                    <div className="info-item">
-                        <strong>Type of building:</strong>
-                        <select
-                            value={buildingType}
-                            onChange={(e) => setBuildingType(e.target.value)}
-                        >
-                            <option value="" disabled>Select type</option>
-                            <option value="Residential">Residential</option>
-                            <option value="Commercial">Commercial</option>
-                            <option value="Industrial">Industrial</option>
-                            <option value="Mixed-Use">Mixed-Use</option>
-                        </select>
-                    </div>
-                    <div className="info-item">
                         <strong>Year Built:</strong>
                         <select
                             value={yearBuilt}
@@ -92,6 +60,35 @@ function CoverPage() {
                             ))}
                         </select>
                     </div>
+                    <div className="info-item">
+                        <strong>Property ID</strong>
+                        <p>{addressDetails.property_id}</p>
+                    </div>
+                </div>
+                <h1>INSPECTION DETAILS</h1>
+                <div className="info-section">
+                <div className="info-item">
+                        <strong>Date of Inspection</strong>
+                        <input
+                            type="date"
+                            value={inspectionDate}
+                            onChange={(e) => setInspectionDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="info-item">
+                        <strong>Home Type:</strong>
+                        <select
+                            value={buildingType}
+                            onChange={(e) => setBuildingType(e.target.value)}
+                        >
+                            <option value="" disabled>Select type</option>
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="Mixed-Use">Mixed-Use</option>
+                        </select>
+                    </div>
+                    
                 </div>
                 <div className="info-section">
                     <div className="info-item">

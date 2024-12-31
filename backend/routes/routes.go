@@ -2,8 +2,8 @@ package routes
 
 import (
 	"database/sql"
-	address "home_solutions/backend/handlers/address"
 	auth "home_solutions/backend/handlers/auth"
+	address "home_solutions/backend/handlers/properties"
 	users "home_solutions/backend/models/users"
 	"net/http"
 
