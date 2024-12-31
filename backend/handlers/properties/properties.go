@@ -151,9 +151,24 @@ func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate whether the provided property_id is actually a form_id
+	var correctPropertyID string
+	query := `SELECT property_id FROM inspection_forms WHERE form_id = ?`
+	err = db.QueryRow(query, propertyID).Scan(&correctPropertyID)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("Error validating property_id: %v", err)
+		http.Error(w, "Failed to validate property_id", http.StatusInternalServerError)
+		return
+	}
+
+	// If a matching property_id is found, use it; otherwise, use the provided property_id
+	if correctPropertyID != "" {
+		propertyID = correctPropertyID
+	}
+
 	// Fetch the address details from the database
 	var address AddressDetails
-	query := `SELECT property_id, street, city, state, postal_code, postal_code_suffix, country
+	query = `SELECT property_id, street, city, state, postal_code, postal_code_suffix, country
               FROM properties WHERE property_id = ?`
 	err = db.QueryRow(query, propertyID).Scan(&address.PropertyID, &address.Street, &address.City, &address.State, &address.PostalCode, &address.PostalCodeSuffix, &address.Country)
 	if err != nil {
