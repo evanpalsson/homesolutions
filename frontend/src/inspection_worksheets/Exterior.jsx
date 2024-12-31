@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../styles/Exterior.css";
 
 const Exterior = () => {
   const [formData, setFormData] = useState({});
