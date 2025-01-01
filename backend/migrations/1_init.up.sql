@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS properties (
 INSERT INTO properties (
     property_id, street, city, state, postal_code, postal_code_suffix, country
 ) VALUES (
-    'TX782610001', '21930 Akin Bayou', 'San Antonio', 'TX', '78261', NULL, 'US'
+    'TX782610001', '21930 Akin Bayou', 'San Antonio', 'TX', '78261', '4424', 'US'
 );
 
 

@@ -181,7 +181,9 @@ function NewInspection() {
                     const formId = inspectionResponse.data.form_id;
     
                     // Navigate to the inspection form and default to CoverPage
-                    navigate(`/inspection-form/${formId}/CoverPage`);
+                    navigate(`/inspection-form/${formId}/${propertyId}/CoverPage`);
+                    console.log("Navigating to CoverPage:", { formId, propertyId });
+
                 }
             }
         } catch (error) {

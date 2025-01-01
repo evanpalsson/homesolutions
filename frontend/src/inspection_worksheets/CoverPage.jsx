@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/InspectionForm.css';
@@ -62,7 +62,7 @@ function CoverPage() {
                         </select>
                     </div>
                     <div className="info-item">
-                        <strong>Aprrox. Sq. Ft.</strong>
+                        <strong>Approx. Sq. Ft.</strong>
                         
                     </div>
                 <div className="info-section">
@@ -145,4 +145,4 @@ function CoverPage() {
     );
 }
 
-export default CoverPage;
+export default memo(CoverPage);
