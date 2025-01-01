@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type CreateInspectionRequest struct {
@@ -92,4 +93,53 @@ func CreateInspection(w http.ResponseWriter, r *http.Request) {
 	res := CreateInspectionResponse{FormID: formID}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
+}
+
+// GetInspectionForm fetches the inspection data by formId
+func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
+	// Extract formId from the route parameters
+	vars := mux.Vars(r)
+	formId := vars["formId"]
+	if formId == "" {
+		http.Error(w, "Form ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Connect to the database
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("Error connecting to the database:", err)
+		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Query the inspection data
+	var inspectionData struct {
+		FormID         string          `json:"form_id"`
+		PropertyID     string          `json:"property_id"`
+		InspectionDate string          `json:"inspection_date"`
+		FormData       json.RawMessage `json:"form_data"`
+	}
+	query := `SELECT form_id, property_id, inspection_date, form_data
+	          FROM inspection_forms
+	          WHERE form_id = ?`
+	err = db.QueryRow(query, formId).Scan(&inspectionData.FormID, &inspectionData.PropertyID, &inspectionData.InspectionDate, &inspectionData.FormData)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Inspection form not found", http.StatusNotFound)
+		} else {
+			log.Println("Error querying inspection form:", err)
+			http.Error(w, "Failed to fetch inspection form", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Respond with the inspection data
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(inspectionData)
 }
