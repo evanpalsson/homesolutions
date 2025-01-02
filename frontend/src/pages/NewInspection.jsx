@@ -102,58 +102,6 @@ function NewInspection() {
         return 'LOADING...';
     }
 
-    // Old handling
-    // const handleSubmitAddress = async () => {
-    //     const apiPort = process.env.REACT_APP_DB_PORT || 8080; // Fallback to 8080 if not defined
-    //     const endpoint = `http://localhost:${apiPort}/api/save-address`; // Add 'http://'
-    //     console.log("Sending payload:", addressDetails);
-
-    //     try {
-    //         const response = await axios.post(endpoint, addressDetails);
-    //         if (response.status === 200) {
-    //             console.log('Address saved successfully!');
-    //             const propertyId = response.data.property_id; // Assuming property_id is returned in the response
-    //             navigate(`/inspection-form/${propertyId}/CoverPage`);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error saving address:', error.response?.data || error.message);
-    //     }
-    // };
-
-    // new handling
-    // const handleSubmitAddress = async () => {
-    //     const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-    //     const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
-    //     const createInspectionEndpoint = `http://localhost:${apiPort}/api/create-inspection`;
-    
-    //     try {
-    //         // Save the address
-    //         const addressResponse = await axios.post(saveAddressEndpoint, addressDetails);
-    //         if (addressResponse.status === 200) {
-    //             console.log('Address saved successfully!');
-    //             const propertyId = addressResponse.data.property_id;
-    
-    //             // Create an inspection form
-    //             const payload = {
-    //                 property_id: propertyId,
-    //                 inspection_date: new Date().toISOString().split('T')[0], // Example date
-    //                 form_data: { initialField: 'defaultValue' }, // Example JSON data
-    //             };
-    //             const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
-    //             if (inspectionResponse.status === 200) {
-    //                 console.log('Inspection form created successfully!');
-    //                 const formId = inspectionResponse.data.form_id;
-    
-    //                 // Navigate to the inspection form
-    //                 navigate(`/inspection-form/${formId}/CoverPage`);
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error('Error processing request:', error.response?.data || error.message);
-    //     }
-    // };
-    
-    // newer handling
     const handleSubmitAddress = async () => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
         const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
@@ -170,7 +118,6 @@ function NewInspection() {
                 const payload = {
                     property_id: propertyId,
                     inspection_date: new Date().toISOString().split('T')[0], // Use current date as a valid default
-                    form_data: {}, // Empty object for now; can be populated with initial data
                 };
     
                 console.log('Payload for inspection form:', payload);
@@ -178,11 +125,11 @@ function NewInspection() {
                 const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
                 if (inspectionResponse.status === 200) {
                     console.log('Inspection form created successfully!');
-                    const formId = inspectionResponse.data.form_id;
+                    const inspectionId = inspectionResponse.data.inspection_id;
     
                     // Navigate to the inspection form and default to CoverPage
-                    navigate(`/inspection-form/${formId}/${propertyId}/CoverPage`);
-                    console.log("Navigating to CoverPage:", { formId, propertyId });
+                    navigate(`/inspection-form/${inspectionId}/${propertyId}/CoverPage`);
+                    console.log("Navigating to CoverPage:", { inspectionId, propertyId });
 
                 }
             }

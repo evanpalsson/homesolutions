@@ -30,7 +30,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/save-address", address.SaveAddress).Methods("POST", "OPTIONS")
 
 	// Inspection form handling routes
-	router.HandleFunc("/api/inspection/{formId}", inspection.GetInspectionForm).Methods("GET")
+	router.HandleFunc("/api/inspection/{inspectionId}", inspection.GetInspectionForm).Methods("GET")
 	router.HandleFunc("/api/create-inspection", inspection.CreateInspection).Methods("POST", "OPTIONS")
 
 	// Enable CORS
