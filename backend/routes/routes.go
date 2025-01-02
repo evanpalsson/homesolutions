@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	auth "home_solutions/backend/handlers/auth"
 	inspection "home_solutions/backend/handlers/inspections.go"
-	address "home_solutions/backend/handlers/properties"
+	properties "home_solutions/backend/handlers/properties"
 	users "home_solutions/backend/models/users"
 	"net/http"
 
@@ -26,8 +26,12 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
 
 	// Address handling routes
-	router.HandleFunc("/api/get-address/{property_id}", address.GetAddressByPropertyID).Methods("GET")
-	router.HandleFunc("/api/save-address", address.SaveAddress).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/get-address/{property_id}", properties.GetAddressByPropertyID).Methods("GET")
+	router.HandleFunc("/api/save-address", properties.SaveAddress).Methods("POST", "OPTIONS")
+
+	// Property details handling
+	router.HandleFunc("/api/property-details/{property_id}/{inspection_id}", properties.GetPropertyDetails).Methods("GET")
+	router.HandleFunc("/api/property-details", properties.SaveOrUpdateProperty).Methods("POST", "PUT", "OPTIONS")
 
 	// Inspection form handling routes
 	router.HandleFunc("/api/inspection/{inspectionId}", inspection.GetInspectionForm).Methods("GET")
