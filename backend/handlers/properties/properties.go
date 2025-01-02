@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// SAVE ADDRESS
 type AddressDetails struct {
 	PropertyID       string `json:"property_id"`
 	Street           string `json:"street"`
@@ -40,8 +41,9 @@ func SaveAddress(w http.ResponseWriter, r *http.Request) {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
+	dbHard := os.Getenv("DB_HARDCODE")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)
@@ -129,11 +131,9 @@ func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
+	dbHard := os.Getenv("DB_HARDCODE")
 
-	// Correct DSN format
-	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
-
-	// Connect to the database
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)
@@ -185,4 +185,151 @@ func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
 	// Respond with the address details
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(address)
+}
+
+// SAVE AND UPDATE PROPERTY DETAILS
+type PropertyDetails struct {
+	PropertyID    string   `json:"property_id"`
+	YearBuilt     *int     `json:"year_built"` // Use a pointer to handle NULL values
+	SquareFootage *int     `json:"square_footage"`
+	Bedrooms      *int     `json:"bedrooms"`
+	Bathrooms     *float32 `json:"bathrooms"`
+	LotSize       *float64 `json:"lot_size"`
+	PropertyType  *string  `json:"property_type"`
+}
+
+func SaveOrUpdateProperty(w http.ResponseWriter, r *http.Request) {
+	// Allow CORS
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, PUT, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	// Handle preflight (OPTIONS request)
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Get environment variables for database connection
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHard := os.Getenv("DB_HARDCODE")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("Error connecting to the database:", err)
+		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Decode the incoming JSON
+	var property PropertyDetails
+	if err := json.NewDecoder(r.Body).Decode(&property); err != nil {
+		log.Println("Error decoding request body:", err)
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Validate required fields
+	if property.PropertyID == "" {
+		http.Error(w, "Property ID is required", http.StatusBadRequest)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		// Insert the property
+		insertQuery := `INSERT INTO properties (property_id, year_built, square_footage, bedrooms, bathrooms, lot_size, property_type)
+		                VALUES (?, ?, ?, ?, ?, ?, ?)`
+		_, err := db.Exec(insertQuery, property.PropertyID, property.YearBuilt, property.SquareFootage, property.Bedrooms, property.Bathrooms, property.LotSize, property.PropertyType)
+		if err != nil {
+			log.Println("Error inserting property:", err)
+			http.Error(w, "Failed to insert property", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"message": "Property created successfully"}`))
+	} else if r.Method == http.MethodPut {
+		// Update the property
+		updateQuery := `UPDATE properties SET year_built = ?, square_footage = ?, bedrooms = ?, bathrooms = ?, lot_size = ?, property_type = ?
+		                WHERE property_id = ?`
+		_, err := db.Exec(updateQuery, property.YearBuilt, property.SquareFootage, property.Bedrooms, property.Bathrooms, property.LotSize, property.PropertyType, property.PropertyID)
+		if err != nil {
+			log.Println("Error updating property:", err)
+			http.Error(w, "Failed to update property", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"message": "Property updated successfully"}`))
+	}
+}
+
+func GetPropertyDetails(w http.ResponseWriter, r *http.Request) {
+	// Allow CORS
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+
+	// Get database connection
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHard := os.Getenv("DB_HARDCODE")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("Error connecting to the database:", err)
+		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Extract parameters from the URL
+	vars := mux.Vars(r)
+	propertyID := vars["property_id"]
+	inspectionID := vars["inspection_id"]
+
+	if propertyID == "" || inspectionID == "" {
+		http.Error(w, "Property ID and Inspection ID are required", http.StatusBadRequest)
+		return
+	}
+
+	// Validate that inspection_id corresponds to property_id
+	var validationCount int
+	validationQuery := `SELECT COUNT(*) 
+                        FROM inspection_forms 
+                        WHERE property_id = ? AND inspection_id = ?`
+	err = db.QueryRow(validationQuery, propertyID, inspectionID).Scan(&validationCount)
+	if err != nil {
+		log.Println("Error validating inspection ID:", err)
+		http.Error(w, "Failed to validate inspection ID", http.StatusInternalServerError)
+		return
+	}
+
+	if validationCount == 0 {
+		http.Error(w, "Invalid inspection ID for the given property ID", http.StatusForbidden)
+		return
+	}
+
+	// Fetch property details
+	var property PropertyDetails
+	query := `SELECT property_id, year_built, square_footage, bedrooms, bathrooms, lot_size, property_type
+              FROM properties WHERE property_id = ?`
+	err = db.QueryRow(query, propertyID).Scan(&property.PropertyID, &property.YearBuilt, &property.SquareFootage, &property.Bedrooms, &property.Bathrooms, &property.LotSize, &property.PropertyType)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Property not found", http.StatusNotFound)
+		} else {
+			log.Println("Error fetching property details:", err)
+			http.Error(w, "Failed to fetch property details", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Respond with the property details
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(property)
 }

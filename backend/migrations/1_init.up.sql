@@ -15,15 +15,22 @@ INSERT INTO users (name, email, password_hash) VALUES
 -- Create Properties table
 CREATE TABLE IF NOT EXISTS properties (
     property_id VARCHAR(255) PRIMARY KEY,
+    owner_id INT,
     street VARCHAR(255) NOT NULL,
     city VARCHAR(255) NOT NULL,
     state VARCHAR(2) NOT NULL,
     postal_code VARCHAR(10) NOT NULL,
     postal_code_suffix VARCHAR(10),
     country VARCHAR(100) NOT NULL,
+    year_built INT,
+    square_footage INT,
+    bedrooms INT,
+    bathrooms DECIMAL(3,1),
+    lot_size DECIMAL(10,2),
+    property_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    -- FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 INSERT INTO properties (
@@ -37,7 +44,7 @@ INSERT INTO properties (
 CREATE TABLE IF NOT EXISTS inspection_forms (
     inspection_id CHAR(36) PRIMARY KEY, -- Use CHAR(36) to store UUIDs
     property_id VARCHAR(255) NOT NULL, -- Foreign key
-    inspection_date DATE DEFAULT CURRENT_DATE,
+    inspection_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) DEFAULT 'in-progress',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
