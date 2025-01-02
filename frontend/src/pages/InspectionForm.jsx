@@ -5,15 +5,15 @@ import axios from "axios";
 import "../styles/InspectionForm.css";
 
 const InspectionForm = () => {
-    const { formId, propertyId, worksheetId } = useParams(); // propertyId may be used for advanced API logic
+    const { inspectionId, propertyId, worksheetId } = useParams(); // propertyId may be used for advanced API logic
     const navigate = useNavigate();
     const [WorksheetComponent, setWorksheetComponent] = useState(null);
     const [inspectionData, setInspectionData] = useState({});
-    const apiEndpoint = `http://localhost:8080/api/inspection/${formId}?propertyId=${propertyId}`; // API endpoint for fetching data
+    const apiEndpoint = `http://localhost:8080/api/inspection/${inspectionId}?propertyId=${propertyId}`; // API endpoint for fetching data
 
     useEffect(() => {
-        if (!formId) {
-            console.error("Form ID is missing!");
+        if (!inspectionId) {
+            console.error("Inspection ID is missing!");
             navigate("/error"); // Redirect to an error page or fallback route
             return;
         }
@@ -31,7 +31,7 @@ const InspectionForm = () => {
         };
 
         fetchInspectionData();
-    }, [formId, apiEndpoint, navigate]);
+    }, [inspectionId, apiEndpoint, navigate]);
 
     useEffect(() => {
         // Determine the active worksheet

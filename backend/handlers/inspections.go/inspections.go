@@ -14,33 +14,32 @@ import (
 )
 
 type CreateInspectionRequest struct {
-	PropertyID     string          `json:"property_id"`
-	InspectionDate string          `json:"inspection_date,omitempty"`
-	FormData       json.RawMessage `json:"form_data,omitempty"`
+	PropertyID     string `json:"property_id"`
+	InspectionDate string `json:"inspection_date,omitempty"`
 }
 
 type CreateInspectionResponse struct {
-	FormID string `json:"form_id"`
+	InspectionID string `json:"inspection_id"`
 }
 
 // CreateInspectionHelper creates a new inspection form and returns the form ID
-func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string, formData json.RawMessage) (string, error) {
-	formID := uuid.New().String()
+func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string) (string, error) {
+	inspectionID := uuid.New().String()
 
 	// Validate and set default for InspectionDate
 	if inspectionDate == "" {
 		inspectionDate = time.Now().Format("2006-01-02") // Default to current date
 	}
 
-	query := `INSERT INTO inspection_forms (form_id, property_id, inspection_date, form_data, status)
-	          VALUES (?, ?, ?, ?, ?)`
-	_, err := db.Exec(query, formID, propertyID, inspectionDate, formData, "in-progress")
+	query := `INSERT INTO inspection_forms (inspection_id, property_id, inspection_date, status)
+	          VALUES (?, ?, ?, ?)`
+	_, err := db.Exec(query, inspectionID, propertyID, inspectionDate, "in-progress")
 	if err != nil {
 		log.Println("Error inserting inspection form:", err)
 		return "", err
 	}
 
-	return formID, nil
+	return inspectionID, nil
 }
 
 // CreateInspection handles HTTP requests to create a new inspection form
@@ -74,7 +73,8 @@ func CreateInspection(w http.ResponseWriter, r *http.Request) {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
-	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
+	dbHard := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)
@@ -84,24 +84,24 @@ func CreateInspection(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// Use CreateInspectionHelper to insert into the database
-	formID, err := CreateInspectionHelper(db, req.PropertyID, req.InspectionDate, req.FormData)
+	inspectionID, err := CreateInspectionHelper(db, req.PropertyID, req.InspectionDate)
 	if err != nil {
 		http.Error(w, "Failed to create inspection form", http.StatusInternalServerError)
 		return
 	}
 
-	res := CreateInspectionResponse{FormID: formID}
+	res := CreateInspectionResponse{InspectionID: inspectionID}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 }
 
-// GetInspectionForm fetches the inspection data by formId
+// GetInspectionForm fetches the inspection data by inspectionId
 func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 	// Extract formId from the route parameters
 	vars := mux.Vars(r)
-	formId := vars["formId"]
-	if formId == "" {
-		http.Error(w, "Form ID is required", http.StatusBadRequest)
+	inspectionId := vars["inspectionId"]
+	if inspectionId == "" {
+		http.Error(w, "Inspection ID is required", http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +109,8 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
-	dsn := fmt.Sprintf("%s:%s@tcp(database:3306)/%s", user, password, dbName)
+	dbHard := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Println("Error connecting to the database:", err)
@@ -120,15 +121,14 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 
 	// Query the inspection data
 	var inspectionData struct {
-		FormID         string          `json:"form_id"`
-		PropertyID     string          `json:"property_id"`
-		InspectionDate string          `json:"inspection_date"`
-		FormData       json.RawMessage `json:"form_data"`
+		InspectionID   string `json:"inspection_id"`
+		PropertyID     string `json:"property_id"`
+		InspectionDate string `json:"inspection_date"`
 	}
-	query := `SELECT form_id, property_id, inspection_date, form_data
+	query := `SELECT inspection_id, property_id, inspection_date
 	          FROM inspection_forms
-	          WHERE form_id = ?`
-	err = db.QueryRow(query, formId).Scan(&inspectionData.FormID, &inspectionData.PropertyID, &inspectionData.InspectionDate, &inspectionData.FormData)
+	          WHERE inspection_id = ?`
+	err = db.QueryRow(query, inspectionId).Scan(&inspectionData.InspectionID, &inspectionData.PropertyID, &inspectionData.InspectionDate)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Inspection form not found", http.StatusNotFound)

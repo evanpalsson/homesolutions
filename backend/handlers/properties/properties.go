@@ -81,7 +81,7 @@ func SaveAddress(w http.ResponseWriter, r *http.Request) {
 	if existingPropertyID != "" {
 		log.Println("Address already exists with property_id:", existingPropertyID)
 
-		formID, err := inspections.CreateInspectionHelper(db, existingPropertyID, "", nil)
+		inspectionID, err := inspections.CreateInspectionHelper(db, existingPropertyID, "")
 		if err != nil {
 			log.Println("Error creating inspection form:", err)
 			http.Error(w, "Failed to create inspection form", http.StatusInternalServerError)
@@ -89,7 +89,7 @@ func SaveAddress(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{"message": "Inspection form created successfully", "property_id": "%s", "form_id": "%s"}`, existingPropertyID, formID)))
+		w.Write([]byte(fmt.Sprintf(`{"message": "Inspection form created successfully", "property_id": "%s", "inspection_id": "%s"}`, existingPropertyID, inspectionID)))
 		return
 	}
 
@@ -151,9 +151,9 @@ func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate whether the provided property_id is actually a form_id
+	// Validate whether the provided property_id is actually a inspection_id
 	var correctPropertyID string
-	query := `SELECT property_id FROM inspection_forms WHERE form_id = ?`
+	query := `SELECT property_id FROM inspection_forms WHERE inspection_id = ?`
 	err = db.QueryRow(query, propertyID).Scan(&correctPropertyID)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("Error validating property_id: %v", err)
