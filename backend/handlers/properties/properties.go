@@ -153,7 +153,7 @@ func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {
 
 	// Validate whether the provided property_id is actually a inspection_id
 	var correctPropertyID string
-	query := `SELECT property_id FROM inspection_forms WHERE inspection_id = ?`
+	query := `SELECT property_id FROM inspections WHERE inspection_id = ?`
 	err = db.QueryRow(query, propertyID).Scan(&correctPropertyID)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("Error validating property_id: %v", err)
@@ -300,7 +300,7 @@ func GetPropertyDetails(w http.ResponseWriter, r *http.Request) {
 	// Validate that inspection_id corresponds to property_id
 	var validationCount int
 	validationQuery := `SELECT COUNT(*) 
-                        FROM inspection_forms 
+                        FROM inspections 
                         WHERE property_id = ? AND inspection_id = ?`
 	err = db.QueryRow(validationQuery, propertyID, inspectionID).Scan(&validationCount)
 	if err != nil {

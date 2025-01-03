@@ -41,7 +41,7 @@ INSERT INTO properties (
 
 
 -- Create Inspection Reports table
-CREATE TABLE IF NOT EXISTS inspection_forms (
+CREATE TABLE IF NOT EXISTS inspections (
     inspection_id CHAR(36) PRIMARY KEY, -- Use CHAR(36) to store UUIDs
     property_id VARCHAR(255) NOT NULL, -- Foreign key
     inspection_date DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS inspection_forms (
     FOREIGN KEY (property_id) REFERENCES properties(property_id) ON DELETE CASCADE
 );
 
-INSERT INTO inspection_forms (
+INSERT INTO inspections (
     inspection_id, property_id, inspection_date, status
 ) VALUES (
     UUID(), 'TX782610001', '2024-01-01', 'in-progress'
