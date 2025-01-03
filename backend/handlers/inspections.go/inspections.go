@@ -31,7 +31,7 @@ func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string
 		inspectionDate = time.Now().Format("2006-01-02") // Default to current date
 	}
 
-	query := `INSERT INTO inspection_forms (inspection_id, property_id, inspection_date, status)
+	query := `INSERT INTO inspections (inspection_id, property_id, inspection_date, status)
 	          VALUES (?, ?, ?, ?)`
 	_, err := db.Exec(query, inspectionID, propertyID, inspectionDate, "in-progress")
 	if err != nil {
@@ -126,7 +126,7 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 		InspectionDate string `json:"inspection_date"`
 	}
 	query := `SELECT inspection_id, property_id, inspection_date
-	          FROM inspection_forms
+	          FROM inspections
 	          WHERE inspection_id = ?`
 	err = db.QueryRow(query, inspectionId).Scan(&inspectionData.InspectionID, &inspectionData.PropertyID, &inspectionData.InspectionDate)
 	if err != nil {
