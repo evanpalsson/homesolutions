@@ -15,7 +15,6 @@ const AppRoutes = () => {
       <Route path="/new-inspection" element={<NewInspection />} />
 
       {/* Dynamic route for inspection worksheets */}
-      <Route path="/inspection-form/:inspectionId" element={<InspectionForm />} />
       <Route path="/inspection-form/:inspectionId/:propertyId/:worksheetId" element={<InspectionForm />} />
     </Routes>
   );

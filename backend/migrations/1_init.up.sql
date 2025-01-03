@@ -46,6 +46,12 @@ CREATE TABLE IF NOT EXISTS inspections (
     property_id VARCHAR(255) NOT NULL, -- Foreign key
     inspection_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) DEFAULT 'in-progress',
+    temperature INT, -- Outside temperature during inspection
+    weather VARCHAR(50), -- Weather condition
+    ground_condition VARCHAR(50), -- Ground/soil surface condition
+    rain_last_three_days BOOLEAN,
+    radon_test BOOLEAN,
+    mold_test BOOLEAN,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (property_id) REFERENCES properties(property_id) ON DELETE CASCADE

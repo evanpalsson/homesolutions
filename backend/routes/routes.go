@@ -33,9 +33,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/property-details/{property_id}/{inspection_id}", properties.GetPropertyDetails).Methods("GET")
 	router.HandleFunc("/api/property-details", properties.SaveOrUpdateProperty).Methods("POST", "PUT", "OPTIONS")
 
-	// Inspection form handling routes
-	router.HandleFunc("/api/inspection/{inspectionId}", inspection.GetInspectionForm).Methods("GET")
+	// Inspection details handling routes
+	router.HandleFunc("/api/inspection-details/{property_id}/{inspection_id}", inspection.GetInspectionForm).Methods("GET")
 	router.HandleFunc("/api/create-inspection", inspection.CreateInspection).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/update-inspection", inspection.UpdateInspection).Methods("PUT", "OPTIONS")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(
