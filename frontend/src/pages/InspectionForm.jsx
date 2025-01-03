@@ -9,7 +9,7 @@ const InspectionForm = () => {
     const navigate = useNavigate();
     const [WorksheetComponent, setWorksheetComponent] = useState(null);
     const [inspectionData, setInspectionData] = useState({});
-    const apiEndpoint = `http://localhost:8080/api/inspection-details/${propertyId}/${inspectionId}`;
+    const apiEndpoint = `http://localhost:8080/api/inspection-details/${inspectionId}/${propertyId}`;
 
     useEffect(() => {
         if (!inspectionId) {
@@ -46,16 +46,20 @@ const InspectionForm = () => {
     }, [worksheetId, inspectionData]);
 
     const handleFieldChange = async (field, value) => {
-        // Update local state
-        setInspectionData((prevData) => ({ ...prevData, [field]: value }));
-
-        // Persist changes to the backend
+        const updatedData = {
+            ...inspectionData,
+            [field]: value,
+            inspection_id: inspectionId, // Include inspection_id
+        };
+    
+        setInspectionData(updatedData);
+    
         try {
-            await axios.put(apiEndpoint, { [field]: value });
+            await axios.put(apiEndpoint, updatedData);
         } catch (error) {
             console.error("Error updating inspection data:", error.message);
         }
-    };
+    };    
 
     if (!WorksheetComponent) {
         return <div>Loading worksheet...</div>;
