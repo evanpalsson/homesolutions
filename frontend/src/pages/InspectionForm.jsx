@@ -9,7 +9,7 @@ const InspectionForm = () => {
     const navigate = useNavigate();
     const [WorksheetComponent, setWorksheetComponent] = useState(null);
     const [inspectionData, setInspectionData] = useState({});
-    const apiEndpoint = `http://localhost:8080/api/inspection/${inspectionId}?propertyId=${propertyId}`; // API endpoint for fetching data
+    const apiEndpoint = `http://localhost:8080/api/inspection-details/${propertyId}/${inspectionId}`;
 
     useEffect(() => {
         if (!inspectionId) {
