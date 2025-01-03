@@ -39,12 +39,11 @@ INSERT INTO properties (
     'TX782610001', '21930 Akin Bayou', 'San Antonio', 'TX', '78261', '4424', 'US'
 );
 
-
 -- Create Inspection Reports table
 CREATE TABLE IF NOT EXISTS inspections (
     inspection_id CHAR(36) PRIMARY KEY, -- Use CHAR(36) to store UUIDs
     property_id VARCHAR(255) NOT NULL, -- Foreign key
-    inspection_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    inspection_date DATE,
     status VARCHAR(50) DEFAULT 'in-progress',
     temperature INT, -- Outside temperature during inspection
     weather VARCHAR(50), -- Weather condition

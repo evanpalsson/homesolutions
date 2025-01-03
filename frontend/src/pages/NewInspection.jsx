@@ -106,14 +106,14 @@ function NewInspection() {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
         const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
         const createInspectionEndpoint = `http://localhost:${apiPort}/api/create-inspection`;
-    
+        
         try {
             // Save the address
             const addressResponse = await axios.post(saveAddressEndpoint, addressDetails);
             if (addressResponse.status === 200) {
                 console.log('Address saved successfully!');
                 const propertyId = addressResponse.data.property_id;
-    
+
                 // Create an inspection form
                 const payload = {
                     property_id: propertyId,

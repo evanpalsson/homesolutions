@@ -22,7 +22,7 @@ function InspectionDetails() {
             }
     
             const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-            const endpoint = `http://localhost:${apiPort}/api/inspection-details/${propertyId}/${inspectionId}`;
+            const endpoint = `http://localhost:${apiPort}/api/inspection-details/${inspectionId}/${propertyId}`;
     
             setIsLoading(true); // Start loading
             try {
@@ -67,10 +67,11 @@ function InspectionDetails() {
         const updatedDetails = {
             ...inspectionDetails,
             [name]: type === 'checkbox' ? checked : value,
+            inspection_id: inspectionId, // Include inspection_id
         };
         setInspectionDetails(updatedDetails);
         debouncedUpdate(updatedDetails);
-    };
+    };    
 
     if (isLoading) {
         return <div>Loading inspection details...</div>;
