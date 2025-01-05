@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -263,13 +264,11 @@ type ExteriorData struct {
 
 func SaveExteriorData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Connect to the database
 		user := os.Getenv("DB_USER")
 		password := os.Getenv("DB_PASSWORD")
 		dbName := os.Getenv("DB_NAME")
 		dbHost := os.Getenv("DB_HARDCODE")
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-
 		db, err := sql.Open("mysql", dsn)
 		if err != nil {
 			log.Printf("Error connecting to the database: %v", err)
@@ -278,7 +277,6 @@ func SaveExteriorData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		// Parse the request body
 		var data []ExteriorData
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			log.Printf("Error decoding request body: %v", err)
@@ -288,30 +286,40 @@ func SaveExteriorData() http.HandlerFunc {
 
 		log.Printf("Payload received: %+v", data)
 
-		// Insert each record into the database
-		query := `INSERT INTO inspection_exterior (inspection_id, item_name, materials, item_condition, comments)
-				  VALUES (?, ?, ?, ?, ?)`
+		query := `
+            INSERT INTO inspection_exterior (inspection_id, item_name, materials, item_condition, comments)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+            materials = VALUES(materials),
+            item_condition = VALUES(item_condition),
+            comments = VALUES(comments)
+        `
+
+		validConditions := map[string]bool{"IN": true, "NI": true, "NP": true, "RR": true}
+
 		for _, record := range data {
-			if record.ItemName == "" || record.InspectionID == "" || len(record.Materials) == 0 {
-				log.Println("Validation failed: Missing required fields")
-				http.Error(w, "Missing required fields", http.StatusBadRequest)
-				return
+			if record.ItemName == "" || record.InspectionID == "" {
+				log.Printf("Validation failed: Missing required fields for record: %+v", record)
+				continue
 			}
 
 			materialsJSON, err := json.Marshal(record.Materials)
 			if err != nil {
 				log.Printf("Error marshalling materials: %v", err)
-				http.Error(w, "Invalid materials format", http.StatusBadRequest)
-				return
+				materialsJSON = []byte("{}")
 			}
 
-			// Handle item_condition: Use NULL if empty
+			condition := strings.ToUpper(record.Condition)
 			var itemCondition interface{}
-			if record.Condition == "" {
+			if condition == "" || !validConditions[condition] {
+				log.Printf("Missing or invalid condition for item_name=%s, setting to NULL", record.ItemName)
 				itemCondition = nil
 			} else {
-				itemCondition = record.Condition
+				itemCondition = condition
 			}
+
+			log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, item_condition=%v, comments=%s",
+				record.InspectionID, record.ItemName, string(materialsJSON), itemCondition, record.Comments)
 
 			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, itemCondition, record.Comments)
 			if err != nil {
@@ -321,7 +329,6 @@ func SaveExteriorData() http.HandlerFunc {
 			}
 		}
 
-		// Respond with success
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte("Exterior data saved successfully"))
 	}
