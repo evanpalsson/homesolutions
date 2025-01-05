@@ -1,4 +1,4 @@
-.sidebar {
+.inspection-sidebar {
     width: 250px;
     height: 100vh;
     background-color: #282c34;
@@ -9,27 +9,27 @@
     left: 0;
   }
   
-  .sidebar h2 {
+  .inspection-sidebar h2 {
     text-align: center;
     margin-bottom: 20px;
   }
   
-  .sidebar nav ul {
+  .inspection-sidebar nav ul {
     list-style: none;
     padding: 0;
   }
   
-  .sidebar nav ul li {
+  .inspection-sidebar nav ul li {
     margin: 15px 0;
   }
   
-  .sidebar nav ul li a {
+  .inspection-sidebar nav ul li a {
     color: white;
     text-decoration: none;
     font-size: 18px;
   }
   
-  .sidebar nav ul li a.active {
+  .inspection-sidebar nav ul li a.active {
     font-weight: bold;
     color: #61dafb;
   }
