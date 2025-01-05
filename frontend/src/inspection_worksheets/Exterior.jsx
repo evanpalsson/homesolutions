@@ -136,6 +136,9 @@ const Exterior = () => {
         item_condition: details.condition || "",
         comments: details.comment || "",
       }));
+
+      console.log("Payload being sent to backend:", JSON.stringify(payload, null, 2));
+
       await axios.post("http://localhost:8080/api/inspection-exterior", payload);
     } catch (error) {
       console.error("Error updating backend:", error);
@@ -161,13 +164,20 @@ const Exterior = () => {
   };
 
   const handleConditionChange = (itemName, condition) => {
+    if (!condition) {
+      console.error(`No condition selected for item: ${itemName}`);
+      return; // Prevent empty conditions from being set
+    }
+  
     const updatedData = {
       ...formData,
-      [itemName]: { ...formData[itemName], condition },
+      [itemName]: { ...formData[itemName], condition: condition.toUpperCase() },
     };
+  
     setFormData(updatedData);
     debouncedUpdate(updatedData);
   };
+  
 
   const handleCommentChange = (itemName, comment) => {
     const updatedData = {
@@ -177,36 +187,6 @@ const Exterior = () => {
     setFormData(updatedData);
     debouncedUpdate(updatedData);
   };
-
-  // const handleSubmit = async () => {
-  //   const payload = Object.entries(formData).map(([itemName, details]) => ({
-  //     inspection_id: inspectionId,
-  //     item_name: itemName,
-  //     materials: details.materials || {}, // Default to an empty object
-  //     item_condition: details.condition || "", // Default to an empty string
-  //     comments: details.comment || "" // Default to an empty string
-  //   }));
-  
-  //   console.log("Payload:", payload);
-  
-  //   try {
-  //     const response = await fetch("http://localhost:8080/api/inspection-exterior", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-  
-  //     if (response.ok) {
-  //       console.log("Data saved successfully");
-  //     } else {
-  //       const errorText = await response.text();
-  //       console.error("Failed to save data:", errorText);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
-  
 
   return (
     <div>
@@ -237,7 +217,7 @@ const Exterior = () => {
                   value={formData[item.name]?.condition || ""}
                   onChange={(e) => handleConditionChange(item.name, e.target.value)}
                 >
-                  <option value="">Select Condition</option>
+                  <option value="" disabled>Select Condition</option>
                   <option value="IN">Inspected (IN)</option>
                   <option value="NI">Not Inspected (NI)</option>
                   <option value="NP">Not Present (NP)</option>
