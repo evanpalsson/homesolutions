@@ -61,3 +61,15 @@ INSERT INTO inspections (
 ) VALUES (
     UUID(), 'TX782610001', '2024-01-01', 'in-progress'
 );
+
+CREATE TABLE IF NOT EXISTS inspection_exterior (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inspection_id VARCHAR(255) NOT NULL,
+    item_name VARCHAR(255) NOT NULL,
+    materials JSON NOT NULL,
+    item_condition ENUM('IN', 'NI', 'NP', 'RR') DEFAULT NULL, -- Renamed condition to item_condition
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
+);
