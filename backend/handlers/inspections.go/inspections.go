@@ -22,6 +22,7 @@ type CreateInspectionResponse struct {
 	InspectionID string `json:"inspection_id"`
 }
 
+// COVERPAGE WORKSHEET -------------------------------------------------------------------------------------------
 // CreateInspectionHelper creates a new inspection form and returns the form ID
 func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string) (string, error) {
 	inspectionID := uuid.New().String()
@@ -39,7 +40,7 @@ func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string
 
 	query := `INSERT INTO inspections (inspection_id, property_id, inspection_date, status)
               VALUES (?, ?, ?, ?)`
-	log.Printf("Inserting inspection with inspection_id=%s, property_id=%s, inspection_date=%s", inspectionID, propertyID, inspectionDate)
+	// log.Printf("Inserting inspection with inspection_id=%s, property_id=%s, inspection_date=%s", inspectionID, propertyID, inspectionDate)
 
 	_, err := db.Exec(query, inspectionID, propertyID, inspectionDate, "in-progress")
 	if err != nil {
@@ -249,4 +250,151 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "Inspection updated successfully"}`))
+}
+
+// EXTERIOR WORKSHEET -------------------------------------------------------------------------------------------
+type ExteriorData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Condition    string          `json:"condition"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveExteriorData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Connect to the database
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		// Parse the request body
+		var data []ExteriorData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		log.Printf("Payload received: %+v", data)
+
+		// Insert each record into the database
+		query := `INSERT INTO inspection_exterior (inspection_id, item_name, materials, item_condition, comments)
+				  VALUES (?, ?, ?, ?, ?)`
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" || len(record.Materials) == 0 {
+				log.Println("Validation failed: Missing required fields")
+				http.Error(w, "Missing required fields", http.StatusBadRequest)
+				return
+			}
+
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				http.Error(w, "Invalid materials format", http.StatusBadRequest)
+				return
+			}
+
+			// Handle item_condition: Use NULL if empty
+			var itemCondition interface{}
+			if record.Condition == "" {
+				itemCondition = nil
+			} else {
+				itemCondition = record.Condition
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, itemCondition, record.Comments)
+			if err != nil {
+				log.Printf("Error executing query: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// Respond with success
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Exterior data saved successfully"))
+	}
+}
+
+func GetExteriorData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, item_condition, comments FROM inspection_exterior WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error fetching exterior data: %v", err)
+			http.Error(w, "Failed to fetch data", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []ExteriorData
+		for rows.Next() {
+			var record ExteriorData
+			var materialsJSON string
+			var itemCondition sql.NullString
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &itemCondition, &comments); err != nil {
+				log.Printf("Error scanning row: %v", err)
+				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
+				return
+			}
+
+			if err := json.Unmarshal([]byte(materialsJSON), &record.Materials); err != nil {
+				log.Printf("Error unmarshalling materials: %v", err)
+				http.Error(w, "Failed to parse materials", http.StatusInternalServerError)
+				return
+			}
+
+			// Handle NULL values
+			if itemCondition.Valid {
+				record.Condition = itemCondition.String
+			} else {
+				record.Condition = ""
+			}
+
+			if comments.Valid {
+				record.Comments = comments.String
+			} else {
+				record.Comments = ""
+			}
+
+			data = append(data, record)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
 }

@@ -38,6 +38,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/create-inspection", inspection.CreateInspection).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/update-inspection", inspection.UpdateInspection).Methods("PUT", "OPTIONS")
 
+	// Inspection worksheets
+	router.HandleFunc("/api/inspection-exterior/{inspection_id}", inspection.GetExteriorData()).Methods("GET")
+	router.HandleFunc("/api/inspection-exterior", inspection.SaveExteriorData()).Methods("POST")
+
 	// Enable CORS
 	corsHandler := handlers.CORS(
 		handlers.AllowedOrigins([]string{"http://localhost:3000"}),                   // Allow frontend origin

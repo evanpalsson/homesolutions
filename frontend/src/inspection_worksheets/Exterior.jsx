@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import "../styles/Exterior.css";
 
 const Exterior = () => {
+  const { inspectionId } = useParams(); // Get dynamic inspection_id
   const [formData, setFormData] = useState({});
 
   const items = [
@@ -89,41 +92,121 @@ const Exterior = () => {
       name: "Caulking Around Exterior Joints",
       materials: ["Not needed", "Needed (see comments)"],
     },
-    // Add more items here following the same structure
   ];
 
+  // Fetch existing data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/inspection-exterior/${inspectionId}`);
+        const data = response.data.reduce((acc, item) => {
+          acc[item.item_name] = {
+            materials: item.materials,
+            condition: item.item_condition || "",
+            comment: item.comments || "",
+          };
+          return acc;
+        }, {});
+        setFormData(data);
+      } catch (error) {
+        console.error("Error fetching exterior data:", error);
+      }
+    };
+
+    if (inspectionId) {
+      fetchData();
+    }
+  }, [inspectionId]);
+
+  // Debounce update to backend
+  const debounce = (func, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const updateBackend = async (updatedData) => {
+    try {
+      const payload = Object.entries(updatedData).map(([itemName, details]) => ({
+        inspection_id: inspectionId,
+        item_name: itemName,
+        materials: details.materials || {},
+        item_condition: details.condition || "",
+        comments: details.comment || "",
+      }));
+      await axios.post("http://localhost:8080/api/inspection-exterior", payload);
+    } catch (error) {
+      console.error("Error updating backend:", error);
+    }
+  };
+
+  const debouncedUpdate = debounce(updateBackend, 500);
+
+  // Handle form changes
   const handleCheckboxChange = (itemName, material) => {
-    setFormData((prev) => ({
-      ...prev,
+    const updatedData = {
+      ...formData,
       [itemName]: {
-        ...prev[itemName],
+        ...formData[itemName],
         materials: {
-          ...prev[itemName]?.materials,
-          [material]: !prev[itemName]?.materials?.[material],
+          ...formData[itemName]?.materials,
+          [material]: !formData[itemName]?.materials?.[material],
         },
       },
-    }));
+    };
+    setFormData(updatedData);
+    debouncedUpdate(updatedData);
   };
 
   const handleConditionChange = (itemName, condition) => {
-    setFormData((prev) => ({
-      ...prev,
-      [itemName]: {
-        ...prev[itemName],
-        condition,
-      },
-    }));
+    const updatedData = {
+      ...formData,
+      [itemName]: { ...formData[itemName], condition },
+    };
+    setFormData(updatedData);
+    debouncedUpdate(updatedData);
   };
 
   const handleCommentChange = (itemName, comment) => {
-    setFormData((prev) => ({
-      ...prev,
-      [itemName]: {
-        ...prev[itemName],
-        comment,
-      },
-    }));
+    const updatedData = {
+      ...formData,
+      [itemName]: { ...formData[itemName], comment },
+    };
+    setFormData(updatedData);
+    debouncedUpdate(updatedData);
   };
+
+  // const handleSubmit = async () => {
+  //   const payload = Object.entries(formData).map(([itemName, details]) => ({
+  //     inspection_id: inspectionId,
+  //     item_name: itemName,
+  //     materials: details.materials || {}, // Default to an empty object
+  //     item_condition: details.condition || "", // Default to an empty string
+  //     comments: details.comment || "" // Default to an empty string
+  //   }));
+  
+  //   console.log("Payload:", payload);
+  
+  //   try {
+  //     const response = await fetch("http://localhost:8080/api/inspection-exterior", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
+  
+  //     if (response.ok) {
+  //       console.log("Data saved successfully");
+  //     } else {
+  //       const errorText = await response.text();
+  //       console.error("Failed to save data:", errorText);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // };
+  
 
   return (
     <div>
@@ -177,9 +260,9 @@ const Exterior = () => {
           </div>
         ))}
 
-        <button type="button" onClick={() => console.log(formData)}>
+        {/* <button type="button" onClick={handleSubmit}>
           Submit
-        </button>
+        </button> */}
       </form>
     </div>
   );
