@@ -6,14 +6,18 @@ const InspectionSidebar = () => {
   const { inspectionId, propertyId } = useParams();
 
   const worksheets = [
-    { name: 'Cover Page', path: 'CoverPage' },
-    { name: 'Summary', path: 'Summary' },
-    { name: 'Electromechanicals', path: 'Electromechanicals' },
-    { name: 'Blank Room', path: 'BlankRoom' },
-    { name: 'Basement', path: 'Basement' },
-    { name: 'Attic', path: 'Attic' },
-    { name: 'Swimming Pool', path: 'SwimmingPool' },
-    { name: 'Exterior', path: 'Exterior' },
+    { name: 'HOME DETAILS', path: 'CoverPage' },
+    { name: '1. EXTERIOR', path: 'Exterior' },
+    { name: '2. ROOF', path: 'Roof' },
+    { name: '3. BASEMENT & FOUNDATION', path: 'BasementFoundation' },
+    { name: '4. HEATING', path: 'Heating' },
+    { name: '5. COOLING', path: 'Cooling' },
+    { name: '6. PLUMBING', path: 'Plumbing' },
+    { name: '7. ELECTRICAL', path: 'Electrical' },
+    { name: '8. ATTIC', path: 'Attic' },
+    { name: '9. DOORS & WINDOWS', path: 'DoorsWindows' },
+    { name: '10. FIREPLACE', path: 'Fireplace' },
+    { name: '11. OPTIONAL SYSTEMS & COMPONENTS', path: 'SystemsComponents' },
   ];
 
   return (

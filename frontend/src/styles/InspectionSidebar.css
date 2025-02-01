@@ -1,36 +1,45 @@
 .inspection-sidebar {
-    width: 250px;
-    height: 100vh;
-    background-color: #282c34;
-    color: white;
-    padding: 20px;
-    position: fixed;
-    top: 0;
-    left: 0;
-  }
-  
-  .inspection-sidebar h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .inspection-sidebar nav ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .inspection-sidebar nav ul li {
-    margin: 15px 0;
-  }
-  
-  .inspection-sidebar nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 18px;
-  }
-  
-  .inspection-sidebar nav ul li a.active {
-    font-weight: bold;
-    color: #61dafb;
-  }
-  
+  width: 215px;
+  height: 100vh;
+  background-color: #f4f4f4; /* Light grey background */
+  color: #333; /* Dark text color */
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  font-family: Arial, sans-serif; /* Clean, sans-serif font */
+}
+
+.inspection-sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.inspection-sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.inspection-sidebar ul li {
+  margin: 15px 0;
+}
+
+.inspection-sidebar ul li a {
+  color: #333;
+  text-decoration: none;
+  font-size: 1em;
+  display: block;
+  padding: 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.inspection-sidebar ul li a:hover {
+  background-color: #ddd; /* Light hover effect */
+}
+
+.inspection-sidebar ul li a.active {
+  font-weight: bold;
+  background-color: #ccc; /* Active link background */
+}
