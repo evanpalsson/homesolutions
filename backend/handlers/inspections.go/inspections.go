@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -258,7 +257,7 @@ type ExteriorData struct {
 	InspectionID string          `json:"inspection_id"`
 	ItemName     string          `json:"item_name"`
 	Materials    map[string]bool `json:"materials"`
-	Condition    string          `json:"condition"`
+	Conditions   map[string]bool `json:"conditions"` // New
 	Comments     string          `json:"comments"`
 }
 
@@ -287,15 +286,13 @@ func SaveExteriorData() http.HandlerFunc {
 		log.Printf("Payload received: %+v", data)
 
 		query := `
-            INSERT INTO inspection_exterior (inspection_id, item_name, materials, item_condition, comments)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-            materials = VALUES(materials),
-            item_condition = VALUES(item_condition),
-            comments = VALUES(comments)
-        `
-
-		validConditions := map[string]bool{"IN": true, "NI": true, "NP": true, "RR": true}
+			INSERT INTO inspection_exterior (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
@@ -309,19 +306,17 @@ func SaveExteriorData() http.HandlerFunc {
 				materialsJSON = []byte("{}")
 			}
 
-			condition := strings.ToUpper(record.Condition)
-			var itemCondition interface{}
-			if condition == "" || !validConditions[condition] {
-				log.Printf("Missing or invalid condition for item_name=%s, setting to NULL", record.ItemName)
-				itemCondition = nil
-			} else {
-				itemCondition = condition
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling condition: %v", err)
+				conditionsJSON = []byte("{}")
 			}
 
-			log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, item_condition=%v, comments=%s",
-				record.InspectionID, record.ItemName, string(materialsJSON), itemCondition, record.Comments)
+			log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, conditions=%s, comments=%s",
+				record.InspectionID, record.ItemName, string(materialsJSON), string(conditionsJSON), record.Comments)
 
-			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, itemCondition, record.Comments)
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+
 			if err != nil {
 				log.Printf("Error executing query: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -357,7 +352,8 @@ func GetExteriorData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, item_condition, comments FROM inspection_exterior WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_exterior WHERE inspection_id = ?`
+
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error fetching exterior data: %v", err)
@@ -386,10 +382,17 @@ func GetExteriorData() http.HandlerFunc {
 			}
 
 			// Handle NULL values
-			if itemCondition.Valid {
-				record.Condition = itemCondition.String
-			} else {
-				record.Condition = ""
+			var conditionsJSON string
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Error scanning row: %v", err)
+				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
+				return
+			}
+
+			if err := json.Unmarshal([]byte(conditionsJSON), &record.Conditions); err != nil {
+				log.Printf("Error unmarshalling condition: %v", err)
+				http.Error(w, "Failed to parse condition", http.StatusInternalServerError)
+				return
 			}
 
 			if comments.Valid {

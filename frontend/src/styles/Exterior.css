@@ -35,8 +35,8 @@ body {
   
   label {
     display: inline-block;
-    margin-bottom: 10px;
-    font-size: 14px;
+    /* margin-bottom: 10px; */
+    font-size: 16px;
     cursor: pointer;
   }
   
@@ -48,15 +48,15 @@ body {
   
   textarea,
   select {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
+    padding: 10px;
+    margin-top: 5px;
     margin-bottom: 20px;
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: border 0.3s ease, box-shadow 0.3s ease;
+    resize: none;
   }
   
   textarea:focus,
@@ -135,4 +135,92 @@ body {
       padding: 10px 16px;
     }
   }
-  
+
+  /* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  /* margin-right: 10px; */
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4a90e2;
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+/* Container for each toggle switch */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px; /* Ensures vertical spacing between items */
+  margin-left: 10px;
+}
+
+/* Ensures label is aligned next to the toggle */
+.toggle-label {
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+}
+
+.flex-right {
+  display: flex;
+}
+
+.item-list {
+  width: 30%;
+}
+
+.comment-box-container {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-boxes {
+  width: 100%;
+  min-width: unset;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevents scrollbar from appearing */
+  resize: none; /* Prevent manual resizing */
+}
