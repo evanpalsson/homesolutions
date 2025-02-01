@@ -66,11 +66,10 @@ CREATE TABLE IF NOT EXISTS inspection_exterior (
     inspection_id VARCHAR(255) NOT NULL,
     item_name VARCHAR(255) NOT NULL,
     materials JSON NOT NULL,
-    item_condition ENUM('IN', 'NI', 'NP', 'RR') DEFAULT NULL,
+    conditions JSON NOT NULL,
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (inspection_id, item_name), -- Composite primary key
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
 );
-
