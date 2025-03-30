@@ -3,42 +3,42 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../styles/InspectionWorksheets.css";
 
-const Attic = () => {
+const DoorsWindows = () => {
   const { inspectionId } = useParams(); 
   const [formData, setFormData] = useState({});
 
   const items = [
     {
-      name: "Access",
-      materials: ["Scuttle", "Stairs", "Walk-up", "Other (see comments)"],
-      condition: ["Safe", "Unsafe", "Obstructed", "Damaged"],
+      name: "Exterior Doors",
+      materials: ["Wood", "Steel", "Fiberglass", "Glass", "Other (see comments)"],
+      condition: ["Good", "Fair", "Poor", "Damaged", "Misaligned"],
     },
     {
-      name: "Structure",
-      materials: ["Rafters", "Trusses", "Joists", "Beams", "Other (see comments)"],
-      condition: ["Intact", "Cracked", "Sagging", "Modified"],
+      name: "Interior Doors",
+      materials: ["Hollow Core", "Solid Wood", "Glass Panel", "Other (see comments)"],
+      condition: ["Good", "Fair", "Poor", "Damaged", "Sticking"],
     },
     {
-      name: "Ventilation",
-      materials: ["Soffit", "Ridge", "Gable", "Fan", "Other (see comments)"],
-      condition: ["Adequate", "Inadequate", "Blocked", "None"],
+      name: "Windows",
+      materials: ["Single Pane", "Double Pane", "Vinyl", "Wood", "Other (see comments)"],
+      condition: ["Operational", "Broken", "Fogged", "Missing Screens"],
     },
     {
-      name: "Insulation",
-      materials: ["Fiberglass Batts", "Blown-in", "Foam Board", "None", "Other (see comments)"],
-      condition: ["Evenly Distributed", "Compressed", "Missing", "Wet"],
+      name: "Skylights",
+      materials: ["Fixed", "Ventilated", "Glass", "Plastic", "Other (see comments)"],
+      condition: ["Good", "Fair", "Poor", "Leaking", "Damaged"],
     },
     {
-      name: "Moisture Intrusion",
-      materials: ["Stains", "Mold", "Leaks", "None", "Other (see comments)"],
-      condition: ["Active", "Past", "Dry", "Unknown"],
+      name: "Storm Doors/Windows",
+      materials: ["Aluminum", "Wood", "Vinyl", "Other (see comments)"],
+      condition: ["Installed", "Missing", "Damaged", "Non-functional"],
     },
   ];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/inspection-attic/${inspectionId}`);
+        const response = await axios.get(`http://localhost:8080/api/inspection-doorsWindows/${inspectionId}`);
         const arrayData = Array.isArray(response.data) ? response.data : [];
         const data = arrayData.reduce((acc, item) => {
           acc[item.item_name] = {
@@ -50,7 +50,7 @@ const Attic = () => {
         }, {});
         setFormData(data);
       } catch (error) {
-        console.error("Error fetching attic data:", error);
+        console.error("Error fetching doors/windows data:", error);
       }
     };
 
@@ -77,7 +77,7 @@ const Attic = () => {
         comments: details.comment || "",
       }));
 
-      await axios.post("http://localhost:8080/api/inspection-attic", payload);
+      await axios.post("http://localhost:8080/api/inspection-doorsWindows", payload);
     } catch (error) {
       console.error("Error updating backend:", error);
     }
@@ -116,7 +116,7 @@ const Attic = () => {
 
   return (
     <div>
-      <h1>8. ATTIC</h1>
+      <h1>9. DOORS & WINDOWS</h1>
       <form>
         {items.map((item, index) => (
           <div key={index} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc" }}>
@@ -178,4 +178,4 @@ const Attic = () => {
   );
 };
 
-export default Attic;
+export default DoorsWindows;

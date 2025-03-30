@@ -408,3 +408,1235 @@ func GetExteriorData() http.HandlerFunc {
 		json.NewEncoder(w).Encode(data)
 	}
 }
+
+// ROOF WORKSHEET -------------------------------------------------------------------------------------------
+type RoofData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveRoofData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []RoofData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_roof (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Roof data saved successfully"))
+	}
+}
+
+func GetRoofData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_roof WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying roof data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []RoofData
+		for rows.Next() {
+			var record RoofData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// BASEMENT FOUNDATION WORKSHEET -------------------------------------------------------------------------------------------
+type BasementData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveBasementData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []BasementData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_basementFoundation (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Basement/Foundation data saved successfully"))
+	}
+}
+
+func GetBasementData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_basementFoundation WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying basement data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []BasementData
+		for rows.Next() {
+			var record BasementData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// HEATING WORKSHEET -------------------------------------------------------------------------------------------
+type HeatingData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveHeatingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []HeatingData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_heating (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Heating data saved successfully"))
+	}
+}
+
+func GetHeatingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_heating WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying heating data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []HeatingData
+		for rows.Next() {
+			var record HeatingData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []HeatingData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// COOLING WORKSHEET -------------------------------------------------------------------------------------------
+type CoolingData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveCoolingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []CoolingData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_cooling (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Cooling data saved successfully"))
+	}
+}
+
+func GetCoolingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_cooling WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying cooling data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []CoolingData
+		for rows.Next() {
+			var record CoolingData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []CoolingData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// PLUMBING WORKSHEET -------------------------------------------------------------------------------------------
+type PlumbingData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SavePlumbingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []PlumbingData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_plumbing (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Plumbing data saved successfully"))
+	}
+}
+
+func GetPlumbingData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_plumbing WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying plumbing data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []PlumbingData
+		for rows.Next() {
+			var record PlumbingData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []PlumbingData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// ELECTRICAL WORKSHEET -------------------------------------------------------------------------------------------
+type ElectricalData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveElectricalData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []ElectricalData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_electrical (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Electrical data saved successfully"))
+	}
+}
+
+func GetElectricalData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_electrical WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying electrical data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []ElectricalData
+		for rows.Next() {
+			var record ElectricalData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []ElectricalData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// ATTIC WORKSHEET -------------------------------------------------------------------------------------------
+type AtticData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveAtticData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []AtticData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_attic (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Attic data saved successfully"))
+	}
+}
+
+func GetAtticData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_attic WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying attic data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []AtticData
+		for rows.Next() {
+			var record AtticData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []AtticData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// DOORS WINDOWS WORKSHEET -------------------------------------------------------------------------------------------
+type DoorsWindowsData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveDoorsWindowsData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []DoorsWindowsData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_doorsWindows (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Doors & Windows data saved successfully"))
+	}
+}
+
+func GetDoorsWindowsData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_doorsWindows WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying doors/windows data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []DoorsWindowsData
+		for rows.Next() {
+			var record DoorsWindowsData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []DoorsWindowsData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// FIREPLACE WORKSHEET -------------------------------------------------------------------------------------------
+type FireplaceData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveFireplaceData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []FireplaceData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_fireplace (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Fireplace data saved successfully"))
+	}
+}
+
+func GetFireplaceData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_fireplace WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying fireplace data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []FireplaceData
+		for rows.Next() {
+			var record FireplaceData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []FireplaceData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// SYSTEMS COMPONENTS WORKSHEET -------------------------------------------------------------------------------------------
+type SystemsComponentsData struct {
+	InspectionID string          `json:"inspection_id"`
+	ItemName     string          `json:"item_name"`
+	Materials    map[string]bool `json:"materials"`
+	Conditions   map[string]bool `json:"conditions"`
+	Comments     string          `json:"comments"`
+}
+
+func SaveSystemsComponentsData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to the database: %v", err)
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		var data []SystemsComponentsData
+		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+			log.Printf("Error decoding request body: %v", err)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+			return
+		}
+
+		query := `
+			INSERT INTO inspection_systemsComponents (inspection_id, item_name, materials, conditions, comments)
+			VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			materials = VALUES(materials),
+			conditions = VALUES(conditions),
+			comments = VALUES(comments)
+		`
+
+		for _, record := range data {
+			if record.ItemName == "" || record.InspectionID == "" {
+				continue
+			}
+
+			materialsJSON, _ := json.Marshal(record.Materials)
+			conditionsJSON, _ := json.Marshal(record.Conditions)
+
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			if err != nil {
+				log.Printf("Error executing insert: %v", err)
+				http.Error(w, "Database error", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte("Systems & Components data saved successfully"))
+	}
+}
+
+func GetSystemsComponentsData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		inspectionId := vars["inspection_id"]
+		if inspectionId == "" {
+			http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+			return
+		}
+
+		user := os.Getenv("DB_USER")
+		password := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("DB_NAME")
+		dbHost := os.Getenv("DB_HARDCODE")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+		db, err := sql.Open("mysql", dsn)
+		if err != nil {
+			log.Printf("Error connecting to DB: %v", err)
+			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			return
+		}
+		defer db.Close()
+
+		query := `SELECT item_name, materials, conditions, comments FROM inspection_systemsComponents WHERE inspection_id = ?`
+		rows, err := db.Query(query, inspectionId)
+		if err != nil {
+			log.Printf("Error querying systems & components data: %v", err)
+			http.Error(w, "Query error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var data []SystemsComponentsData
+		for rows.Next() {
+			var record SystemsComponentsData
+			var materialsJSON, conditionsJSON string
+			var comments sql.NullString
+
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+				log.Printf("Row scan error: %v", err)
+				http.Error(w, "Row scan failed", http.StatusInternalServerError)
+				return
+			}
+
+			json.Unmarshal([]byte(materialsJSON), &record.Materials)
+			json.Unmarshal([]byte(conditionsJSON), &record.Conditions)
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
+
+			data = append(data, record)
+		}
+
+		if len(data) == 0 {
+			data = []SystemsComponentsData{}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(data)
+	}
+}

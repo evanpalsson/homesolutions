@@ -39,8 +39,39 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/update-inspection", inspection.UpdateInspection).Methods("PUT", "OPTIONS")
 
 	// Inspection worksheets
+	// EXTERIOR
 	router.HandleFunc("/api/inspection-exterior/{inspection_id}", inspection.GetExteriorData()).Methods("GET")
 	router.HandleFunc("/api/inspection-exterior", inspection.SaveExteriorData()).Methods("POST")
+	// ROOF
+	router.HandleFunc("/api/inspection-roof/{inspection_id}", inspection.GetRoofData()).Methods("GET")
+	router.HandleFunc("/api/inspection-roof", inspection.SaveRoofData()).Methods("POST")
+	// BASEMENT FOUNDATION
+	router.HandleFunc("/api/inspection-basementFoundation/{inspection_id}", inspection.GetBasementData()).Methods("GET")
+	router.HandleFunc("/api/inspection-basementFoundation", inspection.SaveBasementData()).Methods("POST")
+	//  HEATING
+	router.HandleFunc("/api/inspection-heating/{inspection_id}", inspection.GetHeatingData()).Methods("GET")
+	router.HandleFunc("/api/inspection-heating", inspection.SaveHeatingData()).Methods("POST")
+	//  COOLING
+	router.HandleFunc("/api/inspection-cooling/{inspection_id}", inspection.GetCoolingData()).Methods("GET")
+	router.HandleFunc("/api/inspection-cooling", inspection.SaveCoolingData()).Methods("POST")
+	//  PLUMBING
+	router.HandleFunc("/api/inspection-plumbing/{inspection_id}", inspection.GetPlumbingData()).Methods("GET")
+	router.HandleFunc("/api/inspection-plumbing", inspection.SavePlumbingData()).Methods("POST")
+	// ELECTRICAL
+	router.HandleFunc("/api/inspection-electrical/{inspection_id}", inspection.GetElectricalData()).Methods("GET")
+	router.HandleFunc("/api/inspection-electrical", inspection.SaveElectricalData()).Methods("POST")
+	// ATTIC
+	router.HandleFunc("/api/inspection-attic/{inspection_id}", inspection.GetAtticData()).Methods("GET")
+	router.HandleFunc("/api/inspection-attic", inspection.SaveAtticData()).Methods("POST")
+	// DOORS WINDOWS
+	router.HandleFunc("/api/inspection-doorsWindows/{inspection_id}", inspection.GetDoorsWindowsData()).Methods("GET")
+	router.HandleFunc("/api/inspection-doorsWindows", inspection.SaveDoorsWindowsData()).Methods("POST")
+	// FIREPLACE
+	router.HandleFunc("/api/inspection-fireplace/{inspection_id}", inspection.GetFireplaceData()).Methods("GET")
+	router.HandleFunc("/api/inspection-fireplace", inspection.SaveFireplaceData()).Methods("POST")
+	// SYSTEMS COMPONENTS
+	router.HandleFunc("/api/inspection-systemsComponents/{inspection_id}", inspection.GetSystemsComponentsData()).Methods("GET")
+	router.HandleFunc("/api/inspection-systemsComponents", inspection.SaveSystemsComponentsData()).Methods("POST")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(

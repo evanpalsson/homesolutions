@@ -1,44 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import "../styles/InspectionWorksheets.css";
+import React, { useEffect, useState, memo } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import '../styles/InspectionWorksheets.css';
 
-const Attic = () => {
-  const { inspectionId } = useParams(); 
+function SystemsComponents() {
+  const { inspectionId } = useParams();
   const [formData, setFormData] = useState({});
 
   const items = [
     {
-      name: "Access",
-      materials: ["Scuttle", "Stairs", "Walk-up", "Other (see comments)"],
-      condition: ["Safe", "Unsafe", "Obstructed", "Damaged"],
+      name: "Garage Door Opener",
+      materials: ["Chain Drive", "Belt Drive", "Screw Drive", "Direct Drive", "Other (see comments)"],
+      condition: ["Operational", "Non-functional", "Noisy", "Unsafe"],
     },
     {
-      name: "Structure",
-      materials: ["Rafters", "Trusses", "Joists", "Beams", "Other (see comments)"],
-      condition: ["Intact", "Cracked", "Sagging", "Modified"],
+      name: "Ceiling Fans",
+      materials: ["Wood Blades", "Metal Blades", "Remote Control", "Other (see comments)"],
+      condition: ["Functional", "Wobbly", "Noisy", "Inoperable"],
     },
     {
-      name: "Ventilation",
-      materials: ["Soffit", "Ridge", "Gable", "Fan", "Other (see comments)"],
-      condition: ["Adequate", "Inadequate", "Blocked", "None"],
+      name: "Central Vacuum",
+      materials: ["Installed", "Wall Inlets", "Accessories Present", "Other (see comments)"],
+      condition: ["Operational", "Clogged", "Leaking", "Non-functional"],
     },
     {
-      name: "Insulation",
-      materials: ["Fiberglass Batts", "Blown-in", "Foam Board", "None", "Other (see comments)"],
-      condition: ["Evenly Distributed", "Compressed", "Missing", "Wet"],
+      name: "Doorbell",
+      materials: ["Wired", "Wireless", "Video", "Other (see comments)"],
+      condition: ["Functional", "No Sound", "Delayed", "Non-functional"],
     },
     {
-      name: "Moisture Intrusion",
-      materials: ["Stains", "Mold", "Leaks", "None", "Other (see comments)"],
-      condition: ["Active", "Past", "Dry", "Unknown"],
+      name: "Intercom",
+      materials: ["Audio Only", "Video", "Room-to-Room", "Other (see comments)"],
+      condition: ["Functional", "Static", "Non-functional", "Outdated"],
     },
   ];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/inspection-attic/${inspectionId}`);
+        const response = await axios.get(`http://localhost:8080/api/inspection-systemsComponents/${inspectionId}`);
         const arrayData = Array.isArray(response.data) ? response.data : [];
         const data = arrayData.reduce((acc, item) => {
           acc[item.item_name] = {
@@ -50,7 +50,7 @@ const Attic = () => {
         }, {});
         setFormData(data);
       } catch (error) {
-        console.error("Error fetching attic data:", error);
+        console.error("Error fetching systems & components data:", error);
       }
     };
 
@@ -77,11 +77,11 @@ const Attic = () => {
         comments: details.comment || "",
       }));
 
-      await axios.post("http://localhost:8080/api/inspection-attic", payload);
+      await axios.post("http://localhost:8080/api/inspection-systemsComponents", payload);
     } catch (error) {
       console.error("Error updating backend:", error);
     }
-  };  
+  };
 
   const debouncedUpdate = debounce(updateBackend, 500);
 
@@ -112,11 +112,11 @@ const Attic = () => {
   const handleResize = (textarea) => {
     textarea.style.height = "auto";
     textarea.style.height = textarea.scrollHeight + "px";
-  };  
+  };
 
   return (
     <div>
-      <h1>8. ATTIC</h1>
+      <h1>11. SYSTEMS & COMPONENTS</h1>
       <form>
         {items.map((item, index) => (
           <div key={index} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc" }}>
@@ -135,10 +135,9 @@ const Attic = () => {
                       <span className="slider round"></span>
                     </label>
                     <span className="toggle-label">{material}</span>
-                  </div>                           
+                  </div>
                 ))}
               </div>
-
               <div className="item-list">
                 <strong>Condition: </strong>
                 {item.condition.map((condition, idx) => (
@@ -152,11 +151,10 @@ const Attic = () => {
                       <span className="slider round"></span>
                     </label>
                     <span className="toggle-label">{condition}</span>
-                  </div>                                       
+                  </div>
                 ))}
               </div>
             </div>
-
             <div className="comment-box-container">
               <label>
                 <strong>Comments:</strong>
@@ -176,6 +174,6 @@ const Attic = () => {
       </form>
     </div>
   );
-};
+}
 
-export default Attic;
+export default memo(SystemsComponents);

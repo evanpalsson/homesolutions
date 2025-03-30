@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import "../styles/Exterior.css";
+import "../styles/InspectionWorksheets.css";
 
 const Exterior = () => {
   const { inspectionId } = useParams(); 

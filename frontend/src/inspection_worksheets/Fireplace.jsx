@@ -3,42 +3,42 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../styles/InspectionWorksheets.css";
 
-const Attic = () => {
+const Fireplace = () => {
   const { inspectionId } = useParams(); 
   const [formData, setFormData] = useState({});
 
   const items = [
     {
-      name: "Access",
-      materials: ["Scuttle", "Stairs", "Walk-up", "Other (see comments)"],
-      condition: ["Safe", "Unsafe", "Obstructed", "Damaged"],
+      name: "Fireplace Type",
+      materials: ["Wood Burning", "Gas", "Electric", "Pellet", "Other (see comments)"],
+      condition: ["Good", "Fair", "Poor", "Inoperable", "Hazardous"],
     },
     {
-      name: "Structure",
-      materials: ["Rafters", "Trusses", "Joists", "Beams", "Other (see comments)"],
-      condition: ["Intact", "Cracked", "Sagging", "Modified"],
+      name: "Chimney/Vent",
+      materials: ["Masonry", "Metal", "Direct Vent", "Power Vent", "Other (see comments)"],
+      condition: ["Clear", "Blocked", "Damaged", "Needs Cleaning"],
     },
     {
-      name: "Ventilation",
-      materials: ["Soffit", "Ridge", "Gable", "Fan", "Other (see comments)"],
-      condition: ["Adequate", "Inadequate", "Blocked", "None"],
+      name: "Damper",
+      materials: ["Present", "Missing", "Inoperable", "Other (see comments)"],
+      condition: ["Operational", "Non-functional", "Unknown"],
     },
     {
-      name: "Insulation",
-      materials: ["Fiberglass Batts", "Blown-in", "Foam Board", "None", "Other (see comments)"],
-      condition: ["Evenly Distributed", "Compressed", "Missing", "Wet"],
+      name: "Firebox",
+      materials: ["Brick", "Steel", "Cast Iron", "Other (see comments)"],
+      condition: ["Good", "Cracked", "Corroded", "Leaking"],
     },
     {
-      name: "Moisture Intrusion",
-      materials: ["Stains", "Mold", "Leaks", "None", "Other (see comments)"],
-      condition: ["Active", "Past", "Dry", "Unknown"],
+      name: "Hearth",
+      materials: ["Tile", "Stone", "Concrete", "Other (see comments)"],
+      condition: ["Intact", "Cracked", "Loose", "Missing"],
     },
   ];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/inspection-attic/${inspectionId}`);
+        const response = await axios.get(`http://localhost:8080/api/inspection-fireplace/${inspectionId}`);
         const arrayData = Array.isArray(response.data) ? response.data : [];
         const data = arrayData.reduce((acc, item) => {
           acc[item.item_name] = {
@@ -50,7 +50,7 @@ const Attic = () => {
         }, {});
         setFormData(data);
       } catch (error) {
-        console.error("Error fetching attic data:", error);
+        console.error("Error fetching fireplace data:", error);
       }
     };
 
@@ -77,7 +77,7 @@ const Attic = () => {
         comments: details.comment || "",
       }));
 
-      await axios.post("http://localhost:8080/api/inspection-attic", payload);
+      await axios.post("http://localhost:8080/api/inspection-fireplace", payload);
     } catch (error) {
       console.error("Error updating backend:", error);
     }
@@ -116,7 +116,7 @@ const Attic = () => {
 
   return (
     <div>
-      <h1>8. ATTIC</h1>
+      <h1>10. FIREPLACE</h1>
       <form>
         {items.map((item, index) => (
           <div key={index} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc" }}>
@@ -178,4 +178,4 @@ const Attic = () => {
   );
 };
 
-export default Attic;
+export default Fireplace;
