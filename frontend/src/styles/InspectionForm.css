@@ -91,7 +91,7 @@ button[type="submit"]:hover {
 .container {
     font-family: Arial, sans-serif;
     width: 80%;
-    margin: auto;
+    /* margin: auto; */
     padding: 20px;
   }
   

@@ -8,6 +8,7 @@
   top: 0;
   left: 0;
   font-family: Arial, sans-serif; /* Clean, sans-serif font */
+  border-right: solid;
 }
 
 .inspection-sidebar h2 {
@@ -22,7 +23,7 @@
 }
 
 .inspection-sidebar ul li {
-  margin: 15px 0;
+  margin: 0px 0;
 }
 
 .inspection-sidebar ul li a {
