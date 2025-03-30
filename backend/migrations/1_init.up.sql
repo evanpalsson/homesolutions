@@ -73,3 +73,123 @@ CREATE TABLE IF NOT EXISTS inspection_exterior (
     PRIMARY KEY (inspection_id, item_name), -- Composite primary key
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
 );
+
+CREATE TABLE IF NOT EXISTS inspection_roof (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_basementFoundation (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_heating (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_cooling (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_plumbing (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_electrical (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_attic (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_doorsWindows (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_fireplace (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inspection_systemsComponents (
+    inspection_id VARCHAR(36),
+    item_name VARCHAR(255),
+    materials JSON,
+    conditions JSON,
+    comments TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (inspection_id, item_name),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
+);

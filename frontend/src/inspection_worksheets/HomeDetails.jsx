@@ -3,7 +3,7 @@ import PropertyDetails from "../components/PropertyDetails";
 import '../styles/InspectionForm.css';
 import InspectionDetails from '../components/InspectionDetails';
 
-function CoverPage() {
+function HomeDetails() {
     
 
     return (
@@ -18,4 +18,4 @@ function CoverPage() {
     );
 }
 
-export default memo(CoverPage);
+export default memo(HomeDetails);

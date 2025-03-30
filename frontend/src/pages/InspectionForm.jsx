@@ -35,7 +35,7 @@ const InspectionForm = () => {
 
     useEffect(() => {
         // Determine the active worksheet
-        const activeWorksheet = worksheetId || inspectionData.defaultWorksheet || "CoverPage";
+        const activeWorksheet = worksheetId || inspectionData.defaultWorksheet || "HomeDetails";
 
         import(`../inspection_worksheets/${activeWorksheet}.jsx`)
             .then((module) => setWorksheetComponent(() => module.default))

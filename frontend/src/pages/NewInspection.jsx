@@ -127,9 +127,9 @@ function NewInspection() {
                     console.log('Inspection form created successfully!');
                     const inspectionId = inspectionResponse.data.inspection_id;
     
-                    // Navigate to the inspection form and default to CoverPage
-                    navigate(`/inspection-form/${inspectionId}/${propertyId}/CoverPage`);
-                    console.log("Navigating to CoverPage:", { inspectionId, propertyId });
+                    // Navigate to the inspection form and default to HomeDetails
+                    navigate(`/inspection-form/${inspectionId}/${propertyId}/HomeDetails`);
+                    console.log("Navigating to HomeDetails:", { inspectionId, propertyId });
 
                 }
             }
