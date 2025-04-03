@@ -1,194 +1,124 @@
-/* Overall container styles */
-.report-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 30px;
-    font-family: "Arial", sans-serif;
-    color: #333;
-    background: #fff;
-    line-height: 1.6;
-  }
-  
-  /* COVER PAGE */
-  .cover-page {
-    text-align: center;
-    padding: 40px 20px;
-    border-bottom: 3px solid #000;
-    margin-bottom: 40px;
-  }
-  
-  .cover-header h1 {
-    font-size: 48px;
-    margin: 0;
-    font-family: "Georgia", serif;
-    letter-spacing: 2px;
-  }
-  
-  .cover-header h2 {
-    font-size: 32px;
-    margin: 10px 0;
-    font-family: "Georgia", serif;
-  }
-  
-  .cover-header h3 {
-    font-size: 24px;
-    margin: 5px 0;
-    font-weight: normal;
-  }
-  
-  .cover-details {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 20px;
-  }
-  
-  .cover-details .inspected-by,
-  .cover-details .inspection-date {
-    font-size: 16px;
-    text-align: left;
-  }
-  
-  /* TABLE OF CONTENTS */
-  .table-of-contents {
-    margin: 20px 0 40px;
-    padding: 20px;
-    border: 1px solid #ccc;
-  }
-  
-  .table-of-contents h2 {
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  
-  .table-of-contents ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .table-of-contents li {
-    font-size: 14px;
-    padding: 3px 0;
-    border-bottom: 1px dotted #ccc;
-  }
-  
-  /* INTRO PAGE */
-  .intro-page {
-    margin-bottom: 40px;
-  }
-  
-  .intro-page h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    text-decoration: underline;
-  }
-  
-  .general-info,
-  .inspection-details,
-  .comment-key {
-    margin-bottom: 20px;
-  }
-  
-  .general-info h3,
-  .inspection-details h3,
-  .comment-key h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #000;
-  }
-  
-  .general-info p,
-  .inspection-details p,
-  .comment-key p {
-    font-size: 16px;
-    margin: 5px 0;
-  }
-  
-  /* Section headings */
-  .section {
-    margin-bottom: 40px;
-  }
-  
-  .section h2 {
-    font-size: 26px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #000;
-    padding-bottom: 5px;
-  }
-  
-  /* Common styles for item details */
-  .roof-item, .exterior-item, .basement-item, .heating-item, 
-  .cooling-item, .plumbing-item, .electrical-item, .attic-item, 
-  .doors-windows-item, .fireplace-item, .systems-components-item {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed #ccc;
-  }
-  
-  .item h3, .item h4 {
-    margin: 0 0 5px;
-    font-family: "Georgia", serif;
-  }
-  
-  .materials, .conditions {
-    margin: 5px 0;
-  }
-  
-  .materials strong, .conditions strong {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 5px;
-  }
-  
-  .materials ul, .conditions ul {
-    list-style: disc;
-    padding-left: 20px;
-  }
-  
-  .section p {
-    font-size: 16px;
-  }
-  
-  /* Specific sections (you can adjust these as needed) */
-  .heating-section, .cooling-section {
-    margin-bottom: 20px;
-  }
-  
-  .heating-section h3,
-  .cooling-section h3 {
-    font-size: 22px;
-    margin-bottom: 10px;
-    color: #005a9c;
-  }
-  
-  .plumbing-item, .electrical-item {
-    background-color: #f9f9f9;
-    padding: 10px;
-    border-radius: 3px;
-  }
-  
-  /* Footer styles */
-  footer.report-footer {
-    text-align: center;
-    margin-top: 40px;
-    padding-top: 10px;
-    border-top: 1px solid #ccc;
-    font-size: 14px;
-    color: #777;
-  }
+/* HomeInspectionReport.css */
 
-  .intro-description {
-    color: #677ca2;
-    font-size: 18px;
-    padding: 7px 0;
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #000;
+  margin: 0;
+  padding: 0;
 }
 
-.question {
-  font-family: 'Roboto Condensed';
-  font-size: 17px;
-  text-transform: uppercase;
-  color: #485b7c;
+.report-wrapper {
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+.cover-page {
+  text-align: center;
+  padding: 2rem 1rem;
+  border-bottom: 3px solid #000;
+  margin-bottom: 2rem;
+}
+
+.cover-title h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #003366;
+}
+
+.cover-title h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.cover-title h3 {
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.cover-meta {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 2rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.cover-meta h4 {
+  margin-bottom: 0.25rem;
+  font-weight: bold;
+  color: #003366;
+}
+
+.report-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.section-header {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #003366;
+  padding-bottom: 0.5rem;
+}
+
+.inspection-item {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-left: 4px solid #003366;
+}
+
+.item-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.item-block {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+}
+
+.item-block ul {
+  margin-top: 0.25rem;
+  padding-left: 1.2rem;
+}
+
+.item-block p {
+  margin-top: 0.25rem;
+  line-height: 1.5;
+}
+
+.item-photos {
+  margin-top: 1rem;
+}
+
+.photo-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+
+.report-photo {
+  width: 160px;
+  height: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.report-footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #777;
+  padding: 2rem 0;
+  border-top: 1px solid #ccc;
+  margin-top: 3rem;
 }
