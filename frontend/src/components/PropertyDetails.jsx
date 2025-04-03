@@ -135,6 +135,12 @@ function PropertyDetails() {
                         ))}
                     </select>
                 </div>
+                <div className="info-section">
+                    <div className="info-item">
+                        <strong>Property ID</strong>
+                        <p>{addressDetails.property_id}</p>
+                    </div>
+                </div>
                 <div className="info-item">
                     <strong>Size (sqft):</strong>
                     <input
@@ -185,13 +191,7 @@ function PropertyDetails() {
                         <option value="Industrial">Industrial</option>
                         <option value="Mixed-Use">Mixed-Use</option>
                     </select>
-                </div>
-                <div className="info-section">
-                    <div className="info-item">
-                        <strong>Property ID</strong>
-                        <p>{addressDetails.property_id}</p>
-                    </div>
-                </div>
+                </div>  
             </div>
             </div>
         </div></>

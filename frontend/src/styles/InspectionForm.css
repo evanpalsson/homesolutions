@@ -18,77 +18,6 @@
   margin-left: 250px;
 }
 
-
-/* .inspection-form-container {
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9;
-}
-
-.inspection-form-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #555;
-}
-
-.form-group select,
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    color: #333;
-}
-
-.form-group textarea {
-    resize: vertical;
-}
-
-button[type="submit"] {
-    width: 100%;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-button[type="submit"]:hover {
-    background-color: #45a049;
-}
-
-@media (max-width: 768px) {
-    .inspection-form-container {
-        margin: 20px;
-        padding: 15px;
-    }
-
-    button[type="submit"] {
-        font-size: 14px;
-    }
-} */
-
 .container {
     font-family: Arial, sans-serif;
     width: 80%;
@@ -107,13 +36,15 @@ button[type="submit"]:hover {
   
   .info-section {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
   }
   
   .info-item {
-    flex: 1;
-    margin-right: 20px;
+    width: 250px;
+    flex-flow: column;
+    display: flex;
+    margin-bottom: 20px;
+    margin-right: 50px;
   }
   
   .info-item:last-child {
@@ -129,6 +60,10 @@ button[type="submit"]:hover {
   .info-item p {
     margin: 0;
     color: #7f8c8d;
+    align-content: center;
   }
 
+  .item-checkbox {
+    flex-direction: row;
+  }
   
