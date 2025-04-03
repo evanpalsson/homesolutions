@@ -15,7 +15,7 @@ const Fireplace = () => {
       condition: ["Good", "Fair", "Poor", "Inoperable", "Hazardous"],
     },
     {
-      name: "Chimney/Vent",
+      name: "Chimney - Vent",
       materials: ["Masonry", "Metal", "Direct Vent", "Power Vent", "Other (see comments)"],
       condition: ["Clear", "Blocked", "Damaged", "Needs Cleaning"],
     },

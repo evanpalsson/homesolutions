@@ -30,7 +30,7 @@ const DoorsWindows = () => {
       condition: ["Good", "Fair", "Poor", "Leaking", "Damaged"],
     },
     {
-      name: "Storm Doors/Windows",
+      name: "Storm Doors - Windows",
       materials: ["Aluminum", "Wood", "Vinyl", "Other (see comments)"],
       condition: ["Installed", "Missing", "Damaged", "Non-functional"],
     },
