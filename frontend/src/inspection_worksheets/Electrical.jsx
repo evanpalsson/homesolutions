@@ -30,7 +30,7 @@ const Electrical = () => {
       condition: ["Operational", "Non-functional", "Flickering", "Damaged"],
     },
     {
-      name: "Smoke/CO Detectors",
+        name: "Smoke and CO Detectors",
       materials: ["Smoke", "CO", "Combo Unit", "Battery-powered", "Hardwired"],
       condition: ["Present", "Missing", "Non-functional", "Expired"],
     },
