@@ -1863,3 +1863,54 @@ func DeleteInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 		"message": "Photo deleted successfully",
 	})
 }
+
+// GetAllInspectionPhotos returns all photos for a given inspection
+func GetAllInspectionPhotos(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	inspectionId := vars["inspection_id"]
+
+	if inspectionId == "" {
+		http.Error(w, "Inspection ID is required", http.StatusBadRequest)
+		return
+	}
+
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", dbUser, dbPassword, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		http.Error(w, "DB connection failed", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	query := `SELECT photo_id, inspection_id, item_name, photo_url FROM inspection_photos WHERE inspection_id = ?`
+	rows, err := db.Query(query, inspectionId)
+	if err != nil {
+		http.Error(w, "Query error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type Photo struct {
+		PhotoID      int    `json:"photo_id"`
+		InspectionID string `json:"inspection_id"`
+		ItemName     string `json:"item_name"`
+		PhotoURL     string `json:"photo_url"`
+	}
+
+	var photos []Photo
+	for rows.Next() {
+		var p Photo
+		if err := rows.Scan(&p.PhotoID, &p.InspectionID, &p.ItemName, &p.PhotoURL); err != nil {
+			http.Error(w, "Failed to scan row", http.StatusInternalServerError)
+			return
+		}
+		photos = append(photos, p)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(photos)
+}

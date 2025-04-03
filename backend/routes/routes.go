@@ -76,6 +76,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/inspection-photo", inspection.UploadInspectionPhoto).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/inspection-photo/{inspection_id}/{item_name}", inspection.GetInspectionPhotos).Methods("GET")
 	router.HandleFunc("/api/inspection-photo/{photo_id}", inspection.DeleteInspectionPhoto).Methods("DELETE")
+	router.HandleFunc("/api/inspection-photo-all/{inspection_id}", inspection.GetAllInspectionPhotos).Methods("GET")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(
