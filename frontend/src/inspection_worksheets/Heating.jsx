@@ -232,7 +232,6 @@ const Heating = () => {
                       <img
                         src={`http://localhost:8080${photo.photo_url}`}
                         alt={item.name}
-                        style={{ width: "100px", height: "auto" }}
                       />
                       <button type="button" onClick={() => handlePhotoRemove(item.name, photo.photo_id)}>
                         Remove

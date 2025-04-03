@@ -60,7 +60,7 @@ body {
 .section-header {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #003366;
+  color: #107dac;
   margin-bottom: 1rem;
   border-bottom: 2px solid #003366;
   padding-bottom: 0.5rem;
@@ -68,7 +68,7 @@ body {
 
 .inspection-item {
   margin-bottom: 0.5rem;
-  padding: 1rem;
+  padding: 0.5rem;
   background: #f9f9f9;
   border-left: 4px solid #003366;
 }
@@ -76,9 +76,10 @@ body {
 .item-header {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #333;
+  color: #29AB87;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
+  margin-top: 0.5rem;
 }
 
 .item-block {
@@ -93,7 +94,7 @@ body {
 
 .item-block p {
   margin-top: 0.25rem;
-  line-height: 1.5;
+  line-height: 1;
 }
 
 .item-photos {
@@ -108,8 +109,8 @@ body {
 }
 
 .report-photo {
-  width: 160px;
-  height: auto;
+  width: auto;
+  height: 225px;
   border: 1px solid #ccc;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -130,4 +131,9 @@ body {
 
 * {
   font-family: Roboto Condensed;
+}
+
+.item-block p em {
+  font-style: normal;
+  font-family: 'DM Sans', Helvetica, sans-serif;
 }
