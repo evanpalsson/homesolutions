@@ -10,6 +10,7 @@
 
 # testing
 /frontend/coverage
+/backend/uploads/
 
 # production
 /frontend/build

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"time"
 
 	"github.com/google/uuid"
@@ -1645,11 +1646,11 @@ func GetSystemsComponentsData() http.HandlerFunc {
 // STORING PHOTOS -------------------------------------------------------------------------------------------
 // UploadInspectionPhoto handles photo uploads for an inspection item.
 func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
-	// Allow CORS (if needed)
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 
-	// Parse the multipart form with a 10 MB max memory
+	// Parse the multipart form
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		log.Printf("Error parsing multipart form: %v", err)
 		http.Error(w, "Error parsing form data", http.StatusBadRequest)
 		return
 	}
@@ -1658,6 +1659,7 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	inspectionId := r.FormValue("inspection_id")
 	itemName := r.FormValue("item_name")
 	if inspectionId == "" || itemName == "" {
+		log.Println("Missing inspection_id or item_name")
 		http.Error(w, "Missing inspection_id or item_name", http.StatusBadRequest)
 		return
 	}
@@ -1665,31 +1667,46 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the photo file
 	file, handler, err := r.FormFile("photo")
 	if err != nil {
+		log.Printf("Error retrieving file: %v", err)
 		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
 		return
 	}
 	defer file.Close()
+	log.Printf("Received file: %s, size: %d", handler.Filename, handler.Size)
 
-	// Create a unique filename and save the file to a local uploads folder (adjust as needed)
-	filename := uuid.New().String() + "_" + handler.Filename
-	filePath := "./uploads/" + filename
+	// Ensure the uploads directory exists
+	uploadDir := "./uploads/"
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		log.Printf("Error creating upload directory: %v", err)
+		http.Error(w, "Failed to create upload directory", http.StatusInternalServerError)
+		return
+	}
+
+	// Simplify filename: generate a UUID and preserve the file extension.
+	// Import "path" at the top of the file if not already imported.
+	extension := path.Ext(handler.Filename)
+	filename := uuid.New().String() + extension
+	filePath := uploadDir + filename
+
+	// Save the file to disk
 	dst, err := os.Create(filePath)
 	if err != nil {
+		log.Printf("Error creating file on disk: %v", err)
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 		return
 	}
 	defer dst.Close()
 
-	_, err = io.Copy(dst, file)
-	if err != nil {
+	if _, err := io.Copy(dst, file); err != nil {
+		log.Printf("Error copying file to disk: %v", err)
 		http.Error(w, "Error saving the file", http.StatusInternalServerError)
 		return
 	}
 
-	// For now, we'll assume the photo_url is the local file path.
-	photoUrl := filePath
+	// Construct the relative URL to store in the database
+	photoUrl := "/uploads/" + filename
 
-	// Get a DB connection
+	// Get a DB connection and insert the photo record
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -1697,21 +1714,19 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
+		log.Printf("Database connection error: %v", err)
 		http.Error(w, "Database connection failed", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
 
-	// Insert the photo record into the inspection_photos table
 	query := "INSERT INTO inspection_photos (inspection_id, item_name, photo_url) VALUES (?, ?, ?)"
-	_, err = db.Exec(query, inspectionId, itemName, photoUrl)
-	if err != nil {
+	if _, err = db.Exec(query, inspectionId, itemName, photoUrl); err != nil {
 		log.Printf("Error inserting photo record: %v", err)
 		http.Error(w, "Failed to save photo record", http.StatusInternalServerError)
 		return
 	}
 
-	// Respond with success and the photo URL
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"message":   "Photo uploaded successfully",
@@ -1729,6 +1744,8 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("Fetching photos for inspection_id=%s, item_name=%s", inspectionId, itemName)
+
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
@@ -1736,6 +1753,7 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
+		log.Printf("Error opening DB connection: %v", err)
 		http.Error(w, "Database connection failed", http.StatusInternalServerError)
 		return
 	}
@@ -1744,6 +1762,7 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 	query := "SELECT photo_id, photo_url, uploaded_at FROM inspection_photos WHERE inspection_id = ? AND item_name = ?"
 	rows, err := db.Query(query, inspectionId, itemName)
 	if err != nil {
+		log.Printf("Error executing query: %v", err)
 		http.Error(w, "Failed to query photos", http.StatusInternalServerError)
 		return
 	}
@@ -1756,15 +1775,91 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var photos []Photo
+	// Define the expected time layout based on your MySQL TIMESTAMP format.
+	const layout = "2006-01-02 15:04:05"
+
 	for rows.Next() {
 		var photo Photo
-		if err := rows.Scan(&photo.PhotoID, &photo.PhotoURL, &photo.UploadedAt); err != nil {
+		// Scan uploaded_at into a byte slice.
+		var uploadedAtRaw []byte
+		if err := rows.Scan(&photo.PhotoID, &photo.PhotoURL, &uploadedAtRaw); err != nil {
+			log.Printf("Error scanning row: %v", err)
 			http.Error(w, "Failed to scan photo record", http.StatusInternalServerError)
 			return
 		}
+
+		// Convert the raw bytes to string and parse it.
+		uploadedAtStr := string(uploadedAtRaw)
+		t, err := time.Parse(layout, uploadedAtStr)
+		if err != nil {
+			log.Printf("Error parsing uploaded_at value '%s': %v", uploadedAtStr, err)
+			http.Error(w, "Failed to parse uploaded_at", http.StatusInternalServerError)
+			return
+		}
+		photo.UploadedAt = t
+
 		photos = append(photos, photo)
 	}
 
+	log.Printf("Found %d photos for item %s", len(photos), itemName)
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(photos)
+	if err := json.NewEncoder(w).Encode(photos); err != nil {
+		log.Printf("Error encoding JSON: %v", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
+}
+
+func DeleteInspectionPhoto(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	photoID := vars["photo_id"]
+	if photoID == "" {
+		http.Error(w, "photo_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// Connect to DB
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Fetch the photo URL before deleting it
+	var photoUrl string
+	err = db.QueryRow("SELECT photo_url FROM inspection_photos WHERE photo_id = ?", photoID).Scan(&photoUrl)
+	if err != nil {
+		log.Printf("Failed to fetch photo record: %v", err)
+		http.Error(w, "Photo not found", http.StatusNotFound)
+		return
+	}
+
+	// Delete photo record from DB
+	_, err = db.Exec("DELETE FROM inspection_photos WHERE photo_id = ?", photoID)
+	if err != nil {
+		log.Printf("Error deleting photo from DB: %v", err)
+		http.Error(w, "Failed to delete photo record", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete the file from disk
+	// Remove leading slash so it's a relative path from the current dir
+	filePath := "." + photoUrl
+	if err := os.Remove(filePath); err != nil {
+		log.Printf("Failed to delete file %s: %v", filePath, err)
+		// Don't return 500 here — the DB record is already gone, and this isn't critical
+	}
+
+	// Respond success
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Photo deleted successfully",
+	})
 }
