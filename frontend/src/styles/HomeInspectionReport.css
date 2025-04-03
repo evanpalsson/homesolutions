@@ -67,7 +67,7 @@ body {
 }
 
 .inspection-item {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
   padding: 1rem;
   background: #f9f9f9;
   border-left: 4px solid #003366;
@@ -78,6 +78,7 @@ body {
   font-weight: bold;
   color: #333;
   margin-bottom: 0.5rem;
+  text-transform: uppercase;
 }
 
 .item-block {
@@ -125,4 +126,8 @@ body {
 
 .desc-desc {
   font-size: 14px !important;
+}
+
+* {
+  font-family: Roboto Condensed;
 }
