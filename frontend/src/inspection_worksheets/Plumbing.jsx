@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../styles/InspectionWorksheets.css";
@@ -6,8 +6,9 @@ import "../styles/InspectionWorksheets.css";
 const Plumbing = () => {
   const { inspectionId } = useParams(); 
   const [formData, setFormData] = useState({});
+  const [photos, setPhotos] = useState({});
 
-  const items = [
+  const items = useMemo(() => [
     {
       name: "Water Supply",
       materials: ["Copper", "PEX", "PVC", "Galvanized Steel", "Other (see comments)"],
@@ -33,7 +34,22 @@ const Plumbing = () => {
       materials: ["Sink", "Toilet", "Shower", "Bathtub", "Other (see comments)"],
       condition: ["Good", "Fair", "Poor", "Leaking", "Clogged"],
     },
-  ];
+  ], []);
+
+  const fetchPhotos = useCallback(async (itemName) => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/inspection-photo/${inspectionId}/${encodeURIComponent(itemName)}`);
+      setPhotos((prev) => ({ ...prev, [itemName]: response.data }));
+    } catch (error) {
+      console.error(`Error fetching photos for ${itemName}:`, error);
+    }
+  }, [inspectionId]);
+
+  useEffect(() => {
+    if (inspectionId) {
+      items.forEach(item => fetchPhotos(item.name));
+    }
+  }, [inspectionId, items, fetchPhotos]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +128,36 @@ const Plumbing = () => {
   const handleResize = (textarea) => {
     textarea.style.height = "auto";
     textarea.style.height = textarea.scrollHeight + "px";
-  };  
+  };
+
+  const handlePhotoUpload = async (itemName, e) => {
+    const files = e.target.files;
+    if (!files.length) return;
+    for (let i = 0; i < files.length; i++) {
+      const data = new FormData();
+      data.append("inspection_id", inspectionId);
+      data.append("item_name", itemName);
+      data.append("photo", files[i]);
+      try {
+        await axios.post("http://localhost:8080/api/inspection-photo", data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        fetchPhotos(itemName);
+      } catch (error) {
+        console.error(`Error uploading photo for ${itemName}:`, error);
+      }
+    }
+    e.target.value = "";
+  };
+
+  const handlePhotoRemove = async (itemName, photoId) => {
+    try {
+      await axios.delete(`http://localhost:8080/api/inspection-photo/${photoId}`);
+      fetchPhotos(itemName);
+    } catch (error) {
+      console.error(`Error removing photo for ${itemName}:`, error);
+    }
+  };
 
   return (
     <div>
@@ -152,7 +197,7 @@ const Plumbing = () => {
                       <span className="slider round"></span>
                     </label>
                     <span className="toggle-label">{condition}</span>
-                  </div>                                       
+                  </div>                                        
                 ))}
               </div>
             </div>
@@ -171,6 +216,35 @@ const Plumbing = () => {
                 />
               </label>
             </div>
+
+            <div className="photo-upload-container">
+              <strong>Photos:</strong>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => handlePhotoUpload(item.name, e)}
+              />
+              <div className="photo-preview">
+                {photos[item.name] && photos[item.name].length > 0 ? (
+                  photos[item.name].map((photo) => (
+                    <div key={photo.photo_id} className="photo-item">
+                      <img
+                        src={`http://localhost:8080${photo.photo_url}`}
+                        alt={item.name}
+                        style={{ width: "100px", height: "auto" }}
+                      />
+                      <button type="button" onClick={() => handlePhotoRemove(item.name, photo.photo_id)}>
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p>No photos uploaded.</p>
+                )}
+              </div>
+            </div>
+
           </div>
         ))}
       </form>
