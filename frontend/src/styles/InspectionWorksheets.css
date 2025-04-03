@@ -224,3 +224,22 @@ input:checked + .slider:before {
   overflow: hidden; /* Prevents scrollbar from appearing */
   resize: none; /* Prevent manual resizing */
 }
+
+.photo-item {
+  width: 206px;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-item img {
+  max-height: 150px;
+}
+
+.photo-item button {
+  border-radius: 0px !important;
+}
+
+.photo-preview {
+  display: flex;
+  flex-wrap: wrap;
+}

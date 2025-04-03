@@ -95,16 +95,20 @@ const HomeInspectionReport = () => {
     return (
       <div className="inspection-item" key={itemName}>
         <h3 className="item-header">{indexPrefix} {itemName}</h3>
-        {materialList && (
-          <div className="item-block">
-            <strong>Style & Materials:</strong> {materialList}
-          </div>
-        )}
-        {conditionList && (
-          <div className="item-block">
-            <strong>Condition:</strong> {conditionList}
-          </div>
-        )}
+
+        <div className="item-details">
+          {materialList && (
+            <div className="item-block">
+              <strong>Styles & Materials:</strong> {materialList}
+            </div>
+          )}
+          {conditionList && (
+            <div className="item-block">
+              <strong>Condition:</strong> {conditionList}
+            </div>
+          )}
+          
+        </div>
         {photosByItem[itemName] && (
           <div className="item-photos">
             <div className="photo-gallery">
@@ -120,9 +124,9 @@ const HomeInspectionReport = () => {
           </div>
         )}
         {item.comments && item.comments.trim() !== "" && (
-          <div className="item-block">
-            <p><em>{item.comments}</em></p>
-          </div>
+            <div className="item-block">
+              <p><em>{item.comments}</em></p>
+            </div>
         )}
       </div>
     );
