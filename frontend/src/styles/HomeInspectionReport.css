@@ -122,3 +122,7 @@ body {
   border-top: 1px solid #ccc;
   margin-top: 3rem;
 }
+
+.desc-desc {
+  font-size: 14px !important;
+}

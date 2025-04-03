@@ -130,7 +130,9 @@ function InspectionDetails() {
                         <option value="Muddy">Muddy</option>
                     </select>
                 </div>
-                <div className="info-item">
+                <div className="info-item"></div>
+                <div className="info-item"></div>
+                <div className="info-item item-checkbox">
                     <strong>Rain in Last 3 Days:</strong>
                     <input
                         type="checkbox"
@@ -139,7 +141,7 @@ function InspectionDetails() {
                         onChange={handleInputChange}
                     />
                 </div>
-                <div className="info-item">
+                <div className="info-item item-checkbox">
                     <strong>Radon Test Conducted:</strong>
                     <input
                         type="checkbox"
@@ -148,7 +150,7 @@ function InspectionDetails() {
                         onChange={handleInputChange}
                     />
                 </div>
-                <div className="info-item">
+                <div className="info-item item-checkbox">
                     <strong>Mold Test Conducted:</strong>
                     <input
                         type="checkbox"
