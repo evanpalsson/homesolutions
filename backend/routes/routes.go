@@ -72,6 +72,9 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// SYSTEMS COMPONENTS
 	router.HandleFunc("/api/inspection-systemsComponents/{inspection_id}", inspection.GetSystemsComponentsData()).Methods("GET")
 	router.HandleFunc("/api/inspection-systemsComponents", inspection.SaveSystemsComponentsData()).Methods("POST")
+	// PHOTO HANDLING
+	router.HandleFunc("/api/inspection-photo", inspection.UploadInspectionPhoto).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/inspection-photo/{inspection_id}/{item_name}", inspection.GetInspectionPhotos).Methods("GET")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(

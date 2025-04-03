@@ -7,11 +7,8 @@ import './styles/App.css';
 function App() {
   return (
     <Router>
-      <div style={{ display: "flex" }}>
-        
-        <div style={{ marginLeft: "250px", padding: "20px", width: "100%" }}>
-      <AppRoutes />
-      </div>
+      <div>  
+          <AppRoutes />
       </div>
     </Router>
   );
