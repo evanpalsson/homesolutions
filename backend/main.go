@@ -18,6 +18,9 @@ func main() {
 	// Register routes
 	router := routes.RegisterRoutes(db)
 
+	// Serve static files from the uploads directory
+	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
+
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))

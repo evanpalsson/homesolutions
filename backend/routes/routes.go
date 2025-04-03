@@ -75,6 +75,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// PHOTO HANDLING
 	router.HandleFunc("/api/inspection-photo", inspection.UploadInspectionPhoto).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/inspection-photo/{inspection_id}/{item_name}", inspection.GetInspectionPhotos).Methods("GET")
+	router.HandleFunc("/api/inspection-photo/{photo_id}", inspection.DeleteInspectionPhoto).Methods("DELETE")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(
@@ -82,6 +83,11 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 		handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "PUT", "DELETE"}), // Include OPTIONS for preflight
 		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
 	)(router)
+
+	// This line ensures any request to /uploads/... will serve files from the ./uploads/ folder
+	router.PathPrefix("/uploads/").Handler(
+		http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))),
+	)
 
 	// Start the server
 	http.ListenAndServe(":8080", corsHandler)
