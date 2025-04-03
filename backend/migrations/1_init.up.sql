@@ -193,3 +193,14 @@ CREATE TABLE IF NOT EXISTS inspection_systemsComponents (
     PRIMARY KEY (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS inspection_photos (
+  photo_id INT AUTO_INCREMENT PRIMARY KEY,
+  inspection_id VARCHAR(255) NOT NULL,
+  item_name VARCHAR(255) NOT NULL,
+  photo_url VARCHAR(1024) NOT NULL,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id),
+  INDEX idx_inspection_item (inspection_id, item_name)
+);

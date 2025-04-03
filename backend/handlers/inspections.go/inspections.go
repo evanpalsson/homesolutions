@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -283,7 +284,7 @@ func SaveExteriorData() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("Payload received: %+v", data)
+		// log.Printf("Payload received: %+v", data)
 
 		query := `
 			INSERT INTO inspection_exterior (inspection_id, item_name, materials, conditions, comments)
@@ -312,8 +313,8 @@ func SaveExteriorData() http.HandlerFunc {
 				conditionsJSON = []byte("{}")
 			}
 
-			log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, conditions=%s, comments=%s",
-				record.InspectionID, record.ItemName, string(materialsJSON), string(conditionsJSON), record.Comments)
+			// log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, conditions=%s, comments=%s",
+			// 	record.InspectionID, record.ItemName, string(materialsJSON), string(conditionsJSON), record.Comments)
 
 			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
 
@@ -1639,4 +1640,131 @@ func GetSystemsComponentsData() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(data)
 	}
+}
+
+// STORING PHOTOS -------------------------------------------------------------------------------------------
+// UploadInspectionPhoto handles photo uploads for an inspection item.
+func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
+	// Allow CORS (if needed)
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+
+	// Parse the multipart form with a 10 MB max memory
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve form values
+	inspectionId := r.FormValue("inspection_id")
+	itemName := r.FormValue("item_name")
+	if inspectionId == "" || itemName == "" {
+		http.Error(w, "Missing inspection_id or item_name", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve the photo file
+	file, handler, err := r.FormFile("photo")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Create a unique filename and save the file to a local uploads folder (adjust as needed)
+	filename := uuid.New().String() + "_" + handler.Filename
+	filePath := "./uploads/" + filename
+	dst, err := os.Create(filePath)
+	if err != nil {
+		http.Error(w, "Error saving the file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		http.Error(w, "Error saving the file", http.StatusInternalServerError)
+		return
+	}
+
+	// For now, we'll assume the photo_url is the local file path.
+	photoUrl := filePath
+
+	// Get a DB connection
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Insert the photo record into the inspection_photos table
+	query := "INSERT INTO inspection_photos (inspection_id, item_name, photo_url) VALUES (?, ?, ?)"
+	_, err = db.Exec(query, inspectionId, itemName, photoUrl)
+	if err != nil {
+		log.Printf("Error inserting photo record: %v", err)
+		http.Error(w, "Failed to save photo record", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with success and the photo URL
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message":   "Photo uploaded successfully",
+		"photo_url": photoUrl,
+	})
+}
+
+// GetInspectionPhotos fetches photos for a given inspection and item.
+func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	inspectionId := vars["inspection_id"]
+	itemName := vars["item_name"]
+	if inspectionId == "" || itemName == "" {
+		http.Error(w, "inspection_id and item_name are required", http.StatusBadRequest)
+		return
+	}
+
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	query := "SELECT photo_id, photo_url, uploaded_at FROM inspection_photos WHERE inspection_id = ? AND item_name = ?"
+	rows, err := db.Query(query, inspectionId, itemName)
+	if err != nil {
+		http.Error(w, "Failed to query photos", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type Photo struct {
+		PhotoID    int       `json:"photo_id"`
+		PhotoURL   string    `json:"photo_url"`
+		UploadedAt time.Time `json:"uploaded_at"`
+	}
+
+	var photos []Photo
+	for rows.Next() {
+		var photo Photo
+		if err := rows.Scan(&photo.PhotoID, &photo.PhotoURL, &photo.UploadedAt); err != nil {
+			http.Error(w, "Failed to scan photo record", http.StatusInternalServerError)
+			return
+		}
+		photos = append(photos, photo)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(photos)
 }
