@@ -25,17 +25,17 @@ const HomeInspectionReport = () => {
   ], []);
 
   const sectionTitles = {
-    roof: "1. ROOFING",
-    exterior: "2. EXTERIOR",
-    basementFoundation: "3. STRUCTURAL COMPONENTS",
-    heating: "4. HVAC - HEATING",
-    cooling: "5. HVAC - COOLING",
-    plumbing: "6. PLUMBING SYSTEM",
-    electrical: "7. ELECTRICAL SYSTEM",
-    attic: "8. ATTIC",
-    doorsWindows: "9. DOORS & WINDOWS",
-    fireplace: "10. FIREPLACE",
-    systemsComponents: "11. SYSTEMS & COMPONENTS",
+    roof: "ROOFING",
+    exterior: "EXTERIOR",
+    basementFoundation: "STRUCTURAL COMPONENTS",
+    heating: "HVAC - HEATING",
+    cooling: "HVAC - COOLING",
+    plumbing: "PLUMBING SYSTEM",
+    electrical: "ELECTRICAL SYSTEM",
+    attic: "ATTIC",
+    doorsWindows: "DOORS & WINDOWS",
+    fireplace: "FIREPLACE",
+    systemsComponents: "SYSTEMS & COMPONENTS",
   };
 
   const sectionDescriptions = {
@@ -85,23 +85,24 @@ const HomeInspectionReport = () => {
 
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
+    const materialList = item.materials
+      ? Object.keys(item.materials).filter(key => item.materials[key]).join(", ")
+      : "";
+    const conditionList = item.conditions
+      ? Object.keys(item.conditions).filter(key => item.conditions[key]).join(", ")
+      : "";
+
     return (
       <div className="inspection-item" key={itemName}>
-        <h3 className="item-header">Item {indexPrefix} {itemName}</h3>
-        {item.materials && Object.keys(item.materials).some(key => item.materials[key]) && (
+        <h3 className="item-header">{indexPrefix} {itemName}</h3>
+        {materialList && (
           <div className="item-block">
-            <strong>Style & Materials:</strong>
-            <ul>
-              {Object.entries(item.materials).filter(([_, val]) => val).map(([mat]) => <li key={mat}>{mat}</li>)}
-            </ul>
+            <strong>Style & Materials:</strong> {materialList}
           </div>
         )}
-        {item.conditions && Object.keys(item.conditions).some(key => item.conditions[key]) && (
+        {conditionList && (
           <div className="item-block">
-            <strong>Conditions:</strong>
-            <ul>
-              {Object.entries(item.conditions).filter(([_, val]) => val).map(([cond]) => <li key={cond}>{cond}</li>)}
-            </ul>
+            <strong>Condition:</strong> {conditionList}
           </div>
         )}
         {photosByItem[itemName] && (
@@ -120,8 +121,7 @@ const HomeInspectionReport = () => {
         )}
         {item.comments && item.comments.trim() !== "" && (
           <div className="item-block">
-            <strong>Comments:</strong>
-            <p>{item.comments}</p>
+            <p><em>{item.comments}</em></p>
           </div>
         )}
       </div>
@@ -150,14 +150,18 @@ const HomeInspectionReport = () => {
         </div>
       </section>
 
-      {sections.map((section, sectionIdx) => {
+      {sections.reduce((acc, section) => {
         const data = sectionData[section];
         const hasPhotos = data?.some(item => photosByItem[item.item_name || item.itemName]);
-        if ((!data || data.length === 0) && !hasPhotos) return null;
+        if ((!data || data.length === 0) && !hasPhotos) return acc;
 
+        acc.push({ section, data });
+        return acc;
+      }, []).map((sectionInfo, visibleIdx) => {
+        const { section, data } = sectionInfo;
         return (
           <section key={section} className="report-section">
-            <h2 className="section-header">{sectionTitles[section]}</h2>
+            <h2 className="section-header">{`${visibleIdx + 1}. ${sectionTitles[section]}`}</h2>
 
             {sectionDescriptions[section] && (
               <div
@@ -167,7 +171,7 @@ const HomeInspectionReport = () => {
             )}
 
             {data.map((item, idx) => {
-              const prefix = `${sectionTitles[section].split(".")[0]}.${idx + 1}`;
+              const prefix = `${visibleIdx + 1}.${idx + 1}`;
               return renderItem(item, prefix);
             })}
           </section>
