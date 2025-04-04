@@ -1996,6 +1996,7 @@ func UploadPropertyPhoto(w http.ResponseWriter, r *http.Request) {
 
 func GetPropertyPhoto(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	vars := mux.Vars(r)
 	inspectionId := vars["inspection_id"]
@@ -2102,4 +2103,5 @@ func DeletePropertyPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "Photo deleted successfully"}`))
 }
