@@ -9,6 +9,7 @@ const HomeInspectionReport = () => {
   const [inspectionData, setInspectionData] = useState(null);
   const [photosByItem, setPhotosByItem] = useState({});
   const [sectionData, setSectionData] = useState({});
+  const [propertyPhotoUrl, setPropertyPhotoUrl] = useState(null);
 
   const sections = useMemo(() => [
     "roof",
@@ -54,34 +55,65 @@ const HomeInspectionReport = () => {
 
   useEffect(() => {
     if (!inspectionId || !propertyId) return;
-
-    axios.get(`http://localhost:8080/api/get-address/${propertyId}`)
-      .then(res => setPropertyData(res.data))
-      .catch(err => console.error("Address fetch error:", err));
-
-    axios.get(`http://localhost:8080/api/inspection-details/${inspectionId}/${propertyId}`)
-      .then(res => setInspectionData(res.data))
-      .catch(err => console.error("Inspection fetch error:", err));
-
-    sections.forEach(section => {
-      axios.get(`http://localhost:8080/api/inspection-${section}/${inspectionId}`)
-        .then(res => {
-          setSectionData(prev => ({ ...prev, [section]: res.data || [] }));
-        })
-        .catch(err => console.error(`Error fetching ${section}:`, err));
-    });
-
-    axios.get(`http://localhost:8080/api/inspection-photo-all/${inspectionId}`)
-      .then(res => {
-        const grouped = {};
-        res.data.forEach(photo => {
-          if (!grouped[photo.item_name]) grouped[photo.item_name] = [];
-          grouped[photo.item_name].push(photo);
+  
+    const fetchData = async () => {
+      try {
+        const apiBase = "http://localhost:8080";
+  
+        // 1. Get address and inspection details
+        const [addressRes, detailsRes] = await Promise.all([
+          axios.get(`${apiBase}/api/get-address/${propertyId}`),
+          axios.get(`${apiBase}/api/inspection-details/${inspectionId}/${propertyId}`)
+        ]);
+        setPropertyData(addressRes.data);
+        setInspectionData(detailsRes.data);
+  
+        // 2. Get section data
+        const sectionResults = await Promise.all(
+          sections.map(section =>
+            axios.get(`${apiBase}/api/inspection-${section}/${inspectionId}`)
+              .then(res => ({ section, data: res.data || [] }))
+              .catch(err => {
+                console.error(`Error loading ${section} data:`, err);
+                return { section, data: [] };
+              })
+          )
+        );
+        const sectionMap = {};
+        sectionResults.forEach(({ section, data }) => {
+          sectionMap[section] = data;
         });
-        setPhotosByItem(grouped);
-      })
-      .catch(err => console.error("Photo fetch error:", err));
+        setSectionData(sectionMap);
+  
+        // 3. Get item photos grouped by item_name
+        const photoRes = await axios.get(`${apiBase}/api/inspection-photo-all/${inspectionId}`);
+        const groupedPhotos = {};
+        photoRes.data.forEach(photo => {
+          if (!groupedPhotos[photo.item_name]) {
+            groupedPhotos[photo.item_name] = [];
+          }
+          groupedPhotos[photo.item_name].push(photo);
+        });
+        setPhotosByItem(groupedPhotos);
+  
+        // 4. Get cover photo (property photo)
+        const coverRes = await axios.get(`${apiBase}/api/property-photo/${inspectionId}`);
+        if (Array.isArray(coverRes.data) && coverRes.data.length > 0) {
+            const rawUrl = coverRes.data[0].photo_url;
+            setPropertyPhotoUrl(rawUrl.startsWith("http") ? rawUrl : `${apiBase}/${rawUrl}`);
+        } else {
+          console.log("No cover photo found.");
+          setPropertyPhotoUrl("/images/house_placeholder.png");
+        }
+  
+      } catch (error) {
+        console.error("Error fetching inspection report data:", error);
+      }
+    };
+  
+    fetchData();
   }, [inspectionId, propertyId, sections]);
+  
 
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
@@ -131,27 +163,45 @@ const HomeInspectionReport = () => {
       </div>
     );
   };
-
+  
   return (
     <div className="report-wrapper">
       <section className="cover-page">
-        <div className="cover-title">
+      <div className="cover-title">
           <h1>INSPECTION REPORT</h1>
-          <h2>{propertyData?.street}</h2>
-          <h3>{propertyData ? `${propertyData.city}, ${propertyData.state} ${propertyData.postal_code}` : ""}</h3>
-        </div>
-        <div className="cover-meta">
-          <div>
-            <h4>INSPECTED BY:</h4>
-            <p>Russell Buchanan</p>
-            <p>HomeGauge Software</p>
-          </div>
-          <div>
-            <h4>INSPECTION DATE:</h4>
-            <p>{inspectionData?.inspection_date}</p>
-            <p>{inspectionData?.inspection_time}</p>
-          </div>
-        </div>
+      </div>
+        {propertyPhotoUrl && (
+            <div className="property-photo-container">
+            <div className="property-photo-wrapper">
+              <img
+                src={propertyPhotoUrl}
+                alt="Property"
+                className="property-photo"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/images/house_placeholder.png";
+                }}
+              />
+              <div className="property-overlay-text">
+                <div className="opacity-overlay"></div>
+                <h2 className="overlay-address">{propertyData?.street}</h2>
+                <h2 className="overlay-city">
+                  {propertyData ? `${propertyData.city}, ${propertyData.state} ${propertyData.postal_code}` : ""}
+                </h2>
+                <div className="overlay-inspector">
+                    <h3>INSPECTED BY:</h3>
+                    <h4>Placeholder</h4>
+                    <h4>H3 Inspections</h4>
+                </div>
+                <div className="overlay-date">
+                    <h3>INSPECTION DATE:</h3>
+                    <h4>{inspectionData?.inspection_date}</h4>
+                    <h4>{inspectionData?.inspection_time}</h4>
+                </div>
+              </div>
+            </div>
+          </div>                
+        )}
       </section>
 
       {sections.reduce((acc, section) => {
