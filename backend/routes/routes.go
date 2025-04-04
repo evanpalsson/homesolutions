@@ -72,11 +72,15 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// SYSTEMS COMPONENTS
 	router.HandleFunc("/api/inspection-systemsComponents/{inspection_id}", inspection.GetSystemsComponentsData()).Methods("GET")
 	router.HandleFunc("/api/inspection-systemsComponents", inspection.SaveSystemsComponentsData()).Methods("POST")
-	// PHOTO HANDLING
+	// INSPECTIONS WORKSHEETS AND REPORT PHOTO HANDLING
 	router.HandleFunc("/api/inspection-photo", inspection.UploadInspectionPhoto).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/inspection-photo/{inspection_id}/{item_name}", inspection.GetInspectionPhotos).Methods("GET")
 	router.HandleFunc("/api/inspection-photo/{photo_id}", inspection.DeleteInspectionPhoto).Methods("DELETE")
 	router.HandleFunc("/api/inspection-photo-all/{inspection_id}", inspection.GetAllInspectionPhotos).Methods("GET")
+	// PROPERTY DETAILS COMPONENT PHOTO HANDLING
+	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.UploadPropertyPhoto).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.GetPropertyPhoto).Methods("GET")
+	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.DeletePropertyPhoto).Methods("DELETE", "OPTIONS")
 
 	// Enable CORS
 	corsHandler := handlers.CORS(

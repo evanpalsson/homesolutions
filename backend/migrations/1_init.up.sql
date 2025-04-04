@@ -204,3 +204,10 @@ CREATE TABLE IF NOT EXISTS inspection_photos (
   FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id),
   INDEX idx_inspection_item (inspection_id, item_name)
 );
+
+CREATE TABLE property_photos (
+  photo_id VARCHAR(255) PRIMARY KEY,
+  inspection_id VARCHAR(255),
+  photo_url TEXT NOT NULL,
+  uploaded_at DATETIME NOT NULL
+);

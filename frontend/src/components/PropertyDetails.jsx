@@ -6,7 +6,6 @@ import '../styles/InspectionForm.css';
 function PropertyDetails() {
     const { propertyId, inspectionId } = useParams();
     const [addressDetails, setAddressDetails] = useState(null);
-
     const [propertyDetails, setPropertyDetails] = useState({
         property_id: propertyId,
         year_built: "",
@@ -17,48 +16,50 @@ function PropertyDetails() {
         property_type: "",
     });
 
-    // Generate years from 1900 to current year
+    const [photoURL, setPhotoURL] = useState(null);
+
     const years = Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i).reverse();
 
     useEffect(() => {
+        const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+
         const fetchAddress = async () => {
-            const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-            const endpoint = `http://localhost:${apiPort}/api/get-address/${propertyId}`;
             try {
-                const response = await axios.get(endpoint);
-                if (response.status === 200) {
-                    setAddressDetails(response.data);
-                }
+                const response = await axios.get(`http://localhost:${apiPort}/api/get-address/${propertyId}`);
+                if (response.status === 200) setAddressDetails(response.data);
             } catch (error) {
                 console.error("Error fetching address:", error.response?.data || error.message);
             }
         };
-    
-        fetchAddress();
-    }, [propertyId]);
 
-    // Fetch property details on page load
-    useEffect(() => {
         const fetchPropertyDetails = async () => {
-            const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-            const endpoint = `http://localhost:${apiPort}/api/property-details/${propertyId}/${inspectionId}`;
             try {
-                const response = await axios.get(endpoint);
+                const response = await axios.get(`http://localhost:${apiPort}/api/property-details/${propertyId}/${inspectionId}`);
                 if (response.status === 200) {
-                    setPropertyDetails((prevState) => ({
-                        ...prevState,
-                        ...response.data, // Merge fetched details
-                    }));
+                    setPropertyDetails((prevState) => ({ ...prevState, ...response.data }));
                 }
             } catch (error) {
                 console.error("Error fetching property details:", error.response?.data || error.message);
             }
         };
-    
+
+        const fetchPhoto = async () => {
+            try {
+                const response = await axios.get(`http://localhost:${apiPort}/api/property-photo/${inspectionId}`);
+                if (response.data.length > 0) {
+                    setPhotoURL(response.data[0].photo_url);
+                }
+            } catch (error) {
+                console.warn("No property photo found:", error.response?.data || error.message);
+            }
+        };
+
         if (propertyId && inspectionId) {
+            fetchAddress();
             fetchPropertyDetails();
+            fetchPhoto();
         }
-    }, [propertyId, inspectionId]); // Include inspectionId in the dependency array
+    }, [propertyId, inspectionId]);
 
     const debounce = (func, delay) => {
         let timer;
@@ -70,27 +71,58 @@ function PropertyDetails() {
 
     const updateBackend = async (updatedDetails) => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-        const endpoint = `http://localhost:${apiPort}/api/property-details`;
-    
-        // Format the payload
         const formattedPayload = formatPayload(updatedDetails);
-    
         try {
-            await axios.put(endpoint, formattedPayload);
+            await axios.put(`http://localhost:${apiPort}/api/property-details`, formattedPayload);
         } catch (error) {
             console.error("Error updating property details:", error.response?.data || error.message);
         }
     };
 
+    const debouncedUpdate = debounce(updateBackend, 500);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         const updatedDetails = { ...propertyDetails, [name]: value };
         setPropertyDetails(updatedDetails);
-
         debouncedUpdate(updatedDetails);
     };
 
-    const debouncedUpdate = debounce(updateBackend, 500);
+    const handlePhotoChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+    
+        const uploadPhoto = async () => {
+            const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+            const formData = new FormData();
+            formData.append("photo", file);
+    
+            try {
+                const response = await axios.post(
+                    `http://localhost:${apiPort}/api/property-photo/${inspectionId}`,
+                    formData,
+                    { headers: { "Content-Type": "multipart/form-data" } }
+                );
+                if (response.status === 200) {
+                    setPhotoURL(response.data.photo_url);
+                }
+            } catch (error) {
+                console.error("Upload failed:", error.response?.data || error.message);
+            }
+        };
+    
+        uploadPhoto();
+    };    
+
+    const handleDelete = async () => {
+        const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+        try {
+            await axios.delete(`http://localhost:${apiPort}/api/property-photo/${inspectionId}`);
+            setPhotoURL(null);
+        } catch (error) {
+            console.error("Delete failed:", error.response?.data || error.message);
+        }
+    };
 
     const formatPayload = (details) => ({
         property_id: details.property_id,
@@ -100,104 +132,75 @@ function PropertyDetails() {
         bathrooms: details.bathrooms ? parseFloat(details.bathrooms) : null,
         lot_size: details.lot_size ? parseFloat(details.lot_size) : null,
         property_type: details.property_type,
-    }); 
+    });
 
-    if (!addressDetails) {
-        return <div>Loading...</div>;
-    }
-
-    if (!propertyDetails) {
-        return <div>Loading...</div>;
-    }
+    if (!addressDetails || !propertyDetails) return <div>Loading...</div>;
 
     return (
-        <>
-        <div>
-            <div className="container">
-                <h1>PROPERTY DETAILS</h1>
-                <div className="info-section">
-                    <div className="info-item">
-                        <strong>Property Address</strong>
-                        <p>{addressDetails.street}<br />{addressDetails.city}, {addressDetails.state} {addressDetails.postal_code}</p>
-                    </div>
+        <div className="container">
+            <h1>PROPERTY DETAILS</h1>
+            <div className="info-section">
+                <div className="info-item">
+                    <strong>Property Address</strong>
+                    <p>{addressDetails.street}<br />{addressDetails.city}, {addressDetails.state} {addressDetails.postal_code}</p>
+                </div>
                 <div className="info-item">
                     <strong>Year Built:</strong>
-                    <select
-                        name="year_built"
-                        value={propertyDetails.year_built ?? ""} // Use an empty string if value is null
-                        onChange={handleInputChange}
-                    >
+                    <select name="year_built" value={propertyDetails.year_built ?? ""} onChange={handleInputChange}>
                         <option value="" disabled>Select year</option>
-                        {years.map((year) => (
-                            <option key={year} value={year}>
-                                {year}
-                            </option>
-                        ))}
+                        {years.map(year => <option key={year} value={year}>{year}</option>)}
                     </select>
                 </div>
-                <div className="info-section">
-                    <div className="info-item">
-                        <strong>Property ID</strong>
-                        <p>{addressDetails.property_id}</p>
-                    </div>
+                <div className="info-item">
+                    <strong>Property ID</strong>
+                    <p>{addressDetails.property_id}</p>
                 </div>
                 <div className="info-item">
                     <strong>Size (sqft):</strong>
-                    <input
-                        type="number"
-                        name="square_footage"
-                        value={propertyDetails.square_footage ?? ""}
-                        onChange={handleInputChange}
-                    />
+                    <input type="number" name="square_footage" value={propertyDetails.square_footage ?? ""} onChange={handleInputChange} />
                 </div>
                 <div className="info-item">
                     <strong>Bedrooms:</strong>
-                    <input
-                        type="number"
-                        name="bedrooms"
-                        value={propertyDetails.bedrooms ?? ""}
-                        onChange={handleInputChange}
-                    />
+                    <input type="number" name="bedrooms" value={propertyDetails.bedrooms ?? ""} onChange={handleInputChange} />
                 </div>
                 <div className="info-item">
                     <strong>Bathrooms:</strong>
-                    <input
-                        type="number"
-                        name="bathrooms"
-                        value={propertyDetails.bathrooms ?? ""}
-                        onChange={handleInputChange}
-                    />
+                    <input type="number" name="bathrooms" value={propertyDetails.bathrooms ?? ""} onChange={handleInputChange} />
                 </div>
                 <div className="info-item">
                     <strong>Lot Size (acres):</strong>
-                    <input
-                        type="number"
-                        name="lot_size"
-                        step="0.01"
-                        value={propertyDetails.lot_size ?? ""}
-                        onChange={handleInputChange}
-                    />
+                    <input type="number" step="0.01" name="lot_size" value={propertyDetails.lot_size ?? ""} onChange={handleInputChange} />
                 </div>
                 <div className="info-item">
                     <strong>Property Type:</strong>
-                    <select
-                        name="property_type"
-                        value={propertyDetails.property_type ?? ""}
-                        onChange={handleInputChange}
-                    >
+                    <select name="property_type" value={propertyDetails.property_type ?? ""} onChange={handleInputChange}>
                         <option value="" disabled>Select type</option>
                         <option value="Residential">Residential</option>
                         <option value="Commercial">Commercial</option>
                         <option value="Industrial">Industrial</option>
                         <option value="Mixed-Use">Mixed-Use</option>
                     </select>
-                </div>  
+                </div>
+
+                <div className="info-item">
+                    <strong>Upload Property Photo:</strong>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                    />
+                    {photoURL && (
+                        <div style={{ marginTop: '10px' }}>
+                            <img src={photoURL} alt="Property" style={{ maxWidth: '300px', height: 'auto' }} />
+                            <br />
+                            <button style={{ backgroundColor: 'red', color: 'white', marginTop: '5px' }} onClick={handleDelete}>
+                                Delete Photo
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
-            </div>
-        </div></>
-
-
-
+        </div>
     );
 }
 
