@@ -1914,3 +1914,192 @@ func GetAllInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(photos)
 }
+
+// PROPERTY DETAILS COMPONENT PHOTO HANDLING
+type PropertyPhoto struct {
+	PhotoID    string `json:"photo_id"`
+	PhotoURL   string `json:"photo_url"`
+	UploadedAt string `json:"uploaded_at"`
+}
+
+func UploadPropertyPhoto(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	vars := mux.Vars(r)
+	inspectionId := vars["inspection_id"]
+	if inspectionId == "" {
+		http.Error(w, "Missing inspection_id", http.StatusBadRequest)
+		return
+	}
+
+	file, handler, err := r.FormFile("photo")
+	if err != nil {
+		log.Println("FormFile error:", err)
+		http.Error(w, "Missing file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	ext := path.Ext(handler.Filename)
+	filename := uuid.New().String() + ext
+	uploadDir := "./uploads/property_photos"
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		log.Println("Mkdir error:", err)
+		http.Error(w, "Unable to create upload directory", http.StatusInternalServerError)
+		return
+	}
+
+	fullPath := path.Join(uploadDir, filename)
+	dst, err := os.Create(fullPath)
+	if err != nil {
+		log.Println("File creation error:", err)
+		http.Error(w, "Failed to save file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+	io.Copy(dst, file)
+
+	photoURL := fmt.Sprintf("http://localhost:8080/uploads/property_photos/%s", filename)
+
+	// Save metadata to DB
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("DB connection error:", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`INSERT INTO property_photos (photo_id, inspection_id, photo_url, uploaded_at) VALUES (?, ?, ?, ?)`,
+		uuid.New().String(), inspectionId, photoURL, time.Now().Format("2006-01-02 15:04:05"))
+
+	if err != nil {
+		log.Println("Insert error:", err)
+		http.Error(w, "Failed to save photo record", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"photo_url": photoURL})
+}
+
+func GetPropertyPhoto(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+
+	vars := mux.Vars(r)
+	inspectionId := vars["inspection_id"]
+
+	if inspectionId == "" {
+		http.Error(w, "inspection_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// Database setup
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("DB connection failed:", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	query := `SELECT photo_id, photo_url, uploaded_at FROM property_photos WHERE inspection_id = ? LIMIT 1`
+	row := db.QueryRow(query, inspectionId)
+
+	var photo struct {
+		PhotoID    string `json:"photo_id"`
+		PhotoURL   string `json:"photo_url"`
+		UploadedAt string `json:"uploaded_at"`
+	}
+
+	err = row.Scan(&photo.PhotoID, &photo.PhotoURL, &photo.UploadedAt)
+	if err == sql.ErrNoRows {
+		json.NewEncoder(w).Encode([]interface{}{}) // return empty array if no photo
+		return
+	} else if err != nil {
+		log.Println("Query error:", err)
+		http.Error(w, "Failed to retrieve photo", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode([]interface{}{photo})
+}
+
+func DeletePropertyPhoto(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	vars := mux.Vars(r)
+	inspectionId := vars["inspection_id"]
+	if inspectionId == "" {
+		http.Error(w, "inspection_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// DB connection setup
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Println("DB connection error:", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// Fetch photo URL to delete file
+	var fileURL string
+	err = db.QueryRow(`SELECT photo_url FROM property_photos WHERE inspection_id = ?`, inspectionId).Scan(&fileURL)
+	if err == sql.ErrNoRows {
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if err != nil {
+		log.Println("Query error:", err)
+		http.Error(w, "Failed to fetch photo record", http.StatusInternalServerError)
+		return
+	}
+
+	// Remove file from disk
+	filename := path.Base(fileURL)
+	filePath := path.Join("./uploads/property_photos", filename)
+	if err := os.Remove(filePath); err != nil && !os.IsNotExist(err) {
+		log.Println("File deletion error:", err)
+		http.Error(w, "Failed to delete photo file", http.StatusInternalServerError)
+		return
+	}
+
+	// Remove DB record
+	_, err = db.Exec(`DELETE FROM property_photos WHERE inspection_id = ?`, inspectionId)
+	if err != nil {
+		log.Println("DB delete error:", err)
+		http.Error(w, "Failed to delete photo record", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
