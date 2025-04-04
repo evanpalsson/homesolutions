@@ -20,7 +20,7 @@ body {
 }
 
 .cover-title h1 {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
   color: #003366;
 }
@@ -139,6 +139,11 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.report-photo:hover {
+  transform: scale(2);
+  transition: transform .5s ease;
+}
+
 .report-footer {
   text-align: center;
   font-size: 0.85rem;
@@ -181,6 +186,11 @@ body {
   overflow: hidden;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.property-photo-wrapper img:hover {
+  transform: scale(1.05);
+  transition: transform .5s ease;
 }
 
 .property-photo {
@@ -255,4 +265,37 @@ body {
 .property-overlay-text h4 {
   margin: 0 !important;
   left: 2%;
+}
+
+.property-type {
+  font-size: 1.25rem;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.report-summary {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
 }

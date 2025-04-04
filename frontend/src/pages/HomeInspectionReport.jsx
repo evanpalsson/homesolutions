@@ -65,7 +65,12 @@ const HomeInspectionReport = () => {
           axios.get(`${apiBase}/api/get-address/${propertyId}`),
           axios.get(`${apiBase}/api/inspection-details/${inspectionId}/${propertyId}`)
         ]);
-        setPropertyData(addressRes.data);
+        const propertyDetailsRes = await axios.get(`${apiBase}/api/property-details/${propertyId}/${inspectionId}`);
+        const propertyType = propertyDetailsRes.data?.property_type || "";
+        setPropertyData({
+            ...addressRes.data,
+            property_type: propertyType,
+        });
         setInspectionData(detailsRes.data);
   
         // 2. Get section data
@@ -88,11 +93,13 @@ const HomeInspectionReport = () => {
         // 3. Get item photos grouped by item_name
         const photoRes = await axios.get(`${apiBase}/api/inspection-photo-all/${inspectionId}`);
         const groupedPhotos = {};
-        photoRes.data.forEach(photo => {
-          if (!groupedPhotos[photo.item_name]) {
+        const photos = Array.isArray(photoRes.data) ? photoRes.data : [];
+
+        photos.forEach(photo => {
+        if (!groupedPhotos[photo.item_name]) {
             groupedPhotos[photo.item_name] = [];
-          }
-          groupedPhotos[photo.item_name].push(photo);
+        }
+        groupedPhotos[photo.item_name].push(photo);
         });
         setPhotosByItem(groupedPhotos);
   
@@ -168,7 +175,9 @@ const HomeInspectionReport = () => {
     <div className="report-wrapper">
       <section className="cover-page">
       <div className="cover-title">
-          <h1>INSPECTION REPORT</h1>
+      <h1 className="property-type">
+        {propertyData?.property_type || "PROPERTY"} INSPECTION REPORT
+      </h1>
       </div>
         {propertyPhotoUrl && (
             <div className="property-photo-container">
@@ -201,8 +210,37 @@ const HomeInspectionReport = () => {
               </div>
             </div>
           </div>                
-        )}
+      )}
       </section>
+
+      {propertyData && (
+        <section className="report-summary">
+            <h2 className="section-header general-info">GENERAL INFORMATION</h2>
+            <div className="overview-grid">
+            <div><strong>Year Built:</strong> {propertyData.year_built || "N/A"}</div>
+            <div><strong>Square Footage:</strong> {propertyData.square_footage ? `${propertyData.square_footage} sq ft` : "N/A"}</div>
+            <div><strong>Bedrooms:</strong> {propertyData.bedrooms || "N/A"}</div>
+            <div><strong>Bathrooms:</strong> {propertyData.bathrooms || "N/A"}</div>
+            <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
+            <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
+            </div>
+        </section>
+      )}
+
+      {inspectionData && (
+        <section className="report-summary">
+            <h2 className="section-header inspection-overview">INSPECTION OVERVIEW</h2>
+            <div className="overview-grid">
+            <div><strong>Inspection Date:</strong> {inspectionData.inspection_date}</div>
+            <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
+            <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
+            <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
+            <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
+            <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
+            <div><strong>Mold Test Performed:</strong> {inspectionData.mold_test ? "Yes" : "No"}</div>
+            </div>
+        </section>
+        )}
 
       {sections.reduce((acc, section) => {
         const data = sectionData[section];
