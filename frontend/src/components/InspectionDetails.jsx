@@ -58,6 +58,7 @@ function InspectionDetails() {
         } catch (error) {
             console.error('Error updating inspection details:', error.response?.data || error.message);
         }
+        console.log("Sending update to backend:", updatedDetails);
     };
 
     const debouncedUpdate = debounce(updateBackend, 500);
@@ -66,9 +67,13 @@ function InspectionDetails() {
         const { name, value, type, checked } = e.target;
         const updatedDetails = {
             ...inspectionDetails,
-            [name]: type === 'checkbox' ? checked : value,
-            inspection_id: inspectionId, // Include inspection_id
-        };
+            [name]: type === 'checkbox'
+                ? checked
+                : name === 'temperature'
+                    ? (value === '' ? null : Number(value))
+                    : (value === '' ? null : value),
+            inspection_id: inspectionId,
+        };        
         setInspectionDetails(updatedDetails);
         debouncedUpdate(updatedDetails);
     };    

@@ -24,6 +24,23 @@ type CreateInspectionResponse struct {
 	InspectionID string `json:"inspection_id"`
 }
 
+type NullableInt struct {
+	Value *int
+}
+
+func (n *NullableInt) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" || string(b) == `""` {
+		n.Value = nil
+		return nil
+	}
+	var i int
+	if err := json.Unmarshal(b, &i); err != nil {
+		return err
+	}
+	n.Value = &i
+	return nil
+}
+
 // COVERPAGE WORKSHEET -------------------------------------------------------------------------------------------
 // CreateInspectionHelper creates a new inspection form and returns the form ID
 func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string) (string, error) {
@@ -219,17 +236,18 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var inspection struct {
-		InspectionID    string  `json:"inspection_id"`
-		InspectionDate  *string `json:"inspection_date"`
-		Temperature     *int    `json:"temperature"`
-		Weather         *string `json:"weather"`
-		GroundCondition *string `json:"ground_condition"`
-		RainLast3Days   *bool   `json:"rain_last_three_days"`
-		RadonTest       *bool   `json:"radon_test"`
-		MoldTest        *bool   `json:"mold_test"`
+		InspectionID    string      `json:"inspection_id"`
+		InspectionDate  *string     `json:"inspection_date"`
+		Temperature     NullableInt `json:"temperature"`
+		Weather         *string     `json:"weather"`
+		GroundCondition *string     `json:"ground_condition"`
+		RainLast3Days   *bool       `json:"rain_last_three_days"`
+		RadonTest       *bool       `json:"radon_test"`
+		MoldTest        *bool       `json:"mold_test"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&inspection); err != nil {
+		log.Printf("❌ Failed to decode inspection update: %v", err)
 		http.Error(w, "Invalid payload", http.StatusBadRequest)
 		return
 	}
@@ -241,7 +259,7 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
         WHERE inspection_id = ?
     `
 
-	_, err = db.Exec(query, inspection.InspectionDate, inspection.Temperature, inspection.Weather,
+	_, err = db.Exec(query, inspection.InspectionDate, inspection.Temperature.Value, inspection.Weather,
 		inspection.GroundCondition, inspection.RainLast3Days, inspection.RadonTest, inspection.MoldTest, inspection.InspectionID)
 
 	if err != nil {
