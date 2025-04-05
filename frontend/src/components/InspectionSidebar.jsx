@@ -6,7 +6,7 @@ const InspectionSidebar = () => {
   const { inspectionId, propertyId } = useParams();
 
   const worksheets = [
-    { name: 'HOME DETAILS', path: 'HomeDetails' },
+    { name: 'HOME DETAILS', path: 'HomeDetails', },
     { name: '1. EXTERIOR', path: 'Exterior' },
     { name: '2. ROOF', path: 'Roof' },
     { name: '3. BASEMENT & FOUNDATION', path: 'BasementFoundation' },
@@ -18,6 +18,7 @@ const InspectionSidebar = () => {
     { name: '9. DOORS & WINDOWS', path: 'DoorsWindows' },
     { name: '10. FIREPLACE', path: 'Fireplace' },
     { name: '11. OPTIONAL SYSTEMS & COMPONENTS', path: 'SystemsComponents' },
+    { name: 'SUMMARY', path: 'Summary' },
   ];
 
   return (

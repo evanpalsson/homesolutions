@@ -66,10 +66,9 @@ const HomeInspectionReport = () => {
           axios.get(`${apiBase}/api/inspection-details/${inspectionId}/${propertyId}`)
         ]);
         const propertyDetailsRes = await axios.get(`${apiBase}/api/property-details/${propertyId}/${inspectionId}`);
-        const propertyType = propertyDetailsRes.data?.property_type || "";
-        setPropertyData({
+            setPropertyData({
             ...addressRes.data,
-            property_type: propertyType,
+            ...propertyDetailsRes.data,
         });
         setInspectionData(detailsRes.data);
   
@@ -148,6 +147,13 @@ const HomeInspectionReport = () => {
           )}
           
         </div>
+
+        {item.comments && item.comments.trim() !== "" && (
+            <div className="item-block">
+              <strong>Observation:</strong> {item.comments}
+            </div>
+        )}
+
         {photosByItem[itemName] && (
           <div className="item-photos">
             <div className="photo-gallery">
@@ -161,11 +167,6 @@ const HomeInspectionReport = () => {
               ))}
             </div>
           </div>
-        )}
-        {item.comments && item.comments.trim() !== "" && (
-            <div className="item-block">
-              <p><em>{item.comments}</em></p>
-            </div>
         )}
       </div>
     );
@@ -215,14 +216,14 @@ const HomeInspectionReport = () => {
 
       {propertyData && (
         <section className="report-summary">
-            <h2 className="section-header general-info">GENERAL INFORMATION</h2>
+            <h2 className="section-header property-info">PROPERTY INFO</h2>
             <div className="overview-grid">
+            <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
             <div><strong>Year Built:</strong> {propertyData.year_built || "N/A"}</div>
             <div><strong>Square Footage:</strong> {propertyData.square_footage ? `${propertyData.square_footage} sq ft` : "N/A"}</div>
+            <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
             <div><strong>Bedrooms:</strong> {propertyData.bedrooms || "N/A"}</div>
             <div><strong>Bathrooms:</strong> {propertyData.bathrooms || "N/A"}</div>
-            <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
-            <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
             </div>
         </section>
       )}
