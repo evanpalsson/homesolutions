@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import '../styles/InspectionSidebar.css'; // Assuming there is a CSS file for styling
+import '../styles/InspectionSidebar.css';
 
 const InspectionSidebar = () => {
   const { inspectionId, propertyId } = useParams();
@@ -25,10 +25,10 @@ const InspectionSidebar = () => {
     <div className="inspection-sidebar">
       <ul>
         {worksheets.map((worksheet) => (
-          <li key={worksheet.path}>
+          <li key={worksheet.path} className={`sidebar-item ${worksheet.path.toLowerCase()}`}>
             <NavLink
               to={`/inspection-form/${inspectionId}/${propertyId}/${worksheet.path}`}
-              className={({ isActive }) => (isActive ? 'active' : '')}
+              className={({ isActive }) => `worksheet-link ${isActive ? 'active' : ''}`}
             >
               {worksheet.name}
             </NavLink>

@@ -1,5 +1,6 @@
 .home-details-section {
-    padding: 2rem;
+    margin-left: 3rem;
+    max-width: 900px;
     border-bottom: 2px solid #ccc;
   }
   
