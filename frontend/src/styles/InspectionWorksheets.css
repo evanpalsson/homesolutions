@@ -243,3 +243,8 @@ input:checked + .slider:before {
   display: flex;
   flex-wrap: wrap;
 }
+
+.report-wrapper {
+  margin: 0;
+  margin-left: 3rem;
+}

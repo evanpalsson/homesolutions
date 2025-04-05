@@ -50,7 +50,7 @@ body {
 }
 
 .report-section {
-  margin-bottom: 2.5rem;
+  margin-top: 2.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #ccc;
 }
@@ -163,7 +163,6 @@ body {
 
 .item-block p em {
   font-style: normal;
-  font-family: 'DM Sans', Helvetica, sans-serif;
 }
 
 .property-photo-container {
@@ -277,7 +276,7 @@ body {
 }
 
 .report-summary {
-  margin: 2rem 0;
+  margin: 1rem 0;
   padding: 1.5rem;
   background-color: #f8f9fa;
   border-radius: 8px;
@@ -298,4 +297,47 @@ body {
   gap: 1rem;
   font-size: 1rem;
   line-height: 1.4;
+}
+
+.report-summary .section-header::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  background-image: url("/public/images/section-header.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  padding-bottom: 6px;
+}
+
+.report-summary .section-header.property-info::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  background-image: url("/public/images/general.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  padding-bottom: 6px;
+}
+
+.report-summary .section-header.inspection-overview::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  background-image: url("/public/images/details.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  padding-bottom: 6px;
+}
+
+.inspection-content {
+  padding: 0;
 }
