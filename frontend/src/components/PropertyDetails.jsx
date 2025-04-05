@@ -145,15 +145,15 @@ function PropertyDetails() {
                     <p>{addressDetails.street}<br />{addressDetails.city}, {addressDetails.state} {addressDetails.postal_code}</p>
                 </div>
                 <div className="info-item">
+                    <strong>Property ID</strong>
+                    <p>{addressDetails.property_id}</p>
+                </div>
+                <div className="info-item">
                     <strong>Year Built:</strong>
                     <select name="year_built" value={propertyDetails.year_built ?? ""} onChange={handleInputChange}>
                         <option value="" disabled>Select year</option>
                         {years.map(year => <option key={year} value={year}>{year}</option>)}
                     </select>
-                </div>
-                <div className="info-item">
-                    <strong>Property ID</strong>
-                    <p>{addressDetails.property_id}</p>
                 </div>
                 <div className="info-item">
                     <strong>Size (sqft):</strong>

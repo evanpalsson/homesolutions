@@ -8,29 +8,45 @@ body {
   }
   
   h1 {
-    text-align: center;
     color: #2c3e50;
     margin-top: 20px;
     margin-bottom: 20px;
-    font-size: 2.5rem;
+    margin-left: 3rem;
+    font-size: 1.5rem;
     letter-spacing: 1px;
+  }
+
+  .inspection-content .container h1 {
+    margin-left: 0;
   }
   
   form {
     max-width: 900px;
-    margin: 30px auto;
-    background: #ffffff;
+    margin-left: 3rem;
+    background: #f9f9f9;
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   }
   
   h3 {
-    color: #4a90e2;
+    color: maroon;
     margin-bottom: 10px;
     font-size: 1.5rem;
     border-bottom: 2px solid #ddd;
     padding-bottom: 5px;
+  }
+
+  h3:before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 26px;
+    margin-right: 5px;
+    background-image: url("/public/images/details.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
   }
   
   label {
@@ -247,4 +263,9 @@ input:checked + .slider:before {
 .report-wrapper {
   margin: 0;
   margin-left: 3rem;
+}
+
+.report-photo {
+  width: 150px;
+  height: auto;
 }

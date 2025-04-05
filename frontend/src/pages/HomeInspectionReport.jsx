@@ -109,7 +109,7 @@ const HomeInspectionReport = () => {
             setPropertyPhotoUrl(rawUrl.startsWith("http") ? rawUrl : `${apiBase}/${rawUrl}`);
         } else {
           console.log("No cover photo found.");
-          setPropertyPhotoUrl("/images/house_placeholder.png");
+          setPropertyPhotoUrl("/images/placeholder.png");
         }
   
       } catch (error) {
