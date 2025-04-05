@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS inspections (
     property_id VARCHAR(255) NOT NULL, -- Foreign key
     inspection_date DATE,
     status VARCHAR(50) DEFAULT 'in-progress',
-    temperature INT, -- Outside temperature during inspection
+    temperature INT NULL, -- Outside temperature during inspection
     weather VARCHAR(50), -- Weather condition
     ground_condition VARCHAR(50), -- Ground/soil surface condition
     rain_last_three_days BOOLEAN,
