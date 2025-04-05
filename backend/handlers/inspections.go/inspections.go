@@ -1675,7 +1675,7 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received file: %s, size: %d", handler.Filename, handler.Size)
 
 	// Ensure the uploads directory exists
-	uploadDir := "./uploads/"
+	uploadDir := "./uploads/inspection_photos/"
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		log.Printf("Error creating upload directory: %v", err)
 		http.Error(w, "Failed to create upload directory", http.StatusInternalServerError)
@@ -1704,7 +1704,7 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Construct the relative URL to store in the database
-	photoUrl := "/uploads/" + filename
+	photoUrl := "/uploads/inspection_photos/" + filename
 
 	// Get a DB connection and insert the photo record
 	user := os.Getenv("DB_USER")
