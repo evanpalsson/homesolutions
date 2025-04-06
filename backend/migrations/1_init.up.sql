@@ -66,6 +66,7 @@ INSERT INTO inspections (
 CREATE TABLE IF NOT EXISTS inspection_exterior (
     inspection_id VARCHAR(255) NOT NULL,
     item_name VARCHAR(255) NOT NULL,
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON NOT NULL,
     conditions JSON NOT NULL,
     comments TEXT,
@@ -78,6 +79,7 @@ CREATE TABLE IF NOT EXISTS inspection_exterior (
 CREATE TABLE IF NOT EXISTS inspection_roof (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -90,6 +92,7 @@ CREATE TABLE IF NOT EXISTS inspection_roof (
 CREATE TABLE IF NOT EXISTS inspection_basementFoundation (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -102,6 +105,7 @@ CREATE TABLE IF NOT EXISTS inspection_basementFoundation (
 CREATE TABLE IF NOT EXISTS inspection_heating (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -114,6 +118,7 @@ CREATE TABLE IF NOT EXISTS inspection_heating (
 CREATE TABLE IF NOT EXISTS inspection_cooling (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -126,6 +131,7 @@ CREATE TABLE IF NOT EXISTS inspection_cooling (
 CREATE TABLE IF NOT EXISTS inspection_plumbing (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -138,6 +144,7 @@ CREATE TABLE IF NOT EXISTS inspection_plumbing (
 CREATE TABLE IF NOT EXISTS inspection_electrical (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -150,6 +157,7 @@ CREATE TABLE IF NOT EXISTS inspection_electrical (
 CREATE TABLE IF NOT EXISTS inspection_attic (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -162,6 +170,7 @@ CREATE TABLE IF NOT EXISTS inspection_attic (
 CREATE TABLE IF NOT EXISTS inspection_doorsWindows (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -174,6 +183,7 @@ CREATE TABLE IF NOT EXISTS inspection_doorsWindows (
 CREATE TABLE IF NOT EXISTS inspection_fireplace (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,
@@ -186,6 +196,7 @@ CREATE TABLE IF NOT EXISTS inspection_fireplace (
 CREATE TABLE IF NOT EXISTS inspection_systemsComponents (
     inspection_id VARCHAR(36),
     item_name VARCHAR(255),
+    inspection_status VARCHAR(50) DEFAULT 'Not Inspected',
     materials JSON,
     conditions JSON,
     comments TEXT,

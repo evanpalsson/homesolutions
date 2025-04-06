@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo, memo } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import InspectionStatusDropdown from "../components/InspectionStatusDropdown";
 import '../styles/InspectionWorksheets.css';
 
 function SystemsComponents() {
@@ -61,6 +62,7 @@ function SystemsComponents() {
             materials: item.materials,
             conditions: item.conditions || {},
             comment: item.comments || "",
+            inspection_status: item.inspection_status || "Not Inspected",
           };
           return acc;
         }, {});
@@ -91,6 +93,7 @@ function SystemsComponents() {
         materials: details.materials || {},
         conditions: details.conditions || {},
         comments: details.comment || "",
+        inspection_status: details.inspection_status || "Not Inspected",
       }));
 
       await axios.post("http://localhost:8080/api/inspection-systemsComponents", payload);
@@ -124,6 +127,18 @@ function SystemsComponents() {
     setFormData(updatedData);
     debouncedUpdate(updatedData);
   };
+
+  const handleStatusChange = (itemName, status) => {
+    const updatedData = {
+      ...formData,
+      [itemName]: {
+        ...formData[itemName],
+        inspection_status: status,
+      },
+    };
+    setFormData(updatedData);
+    debouncedUpdate(updatedData);
+  };  
 
   const handleResize = (textarea) => {
     textarea.style.height = "auto";
@@ -165,7 +180,15 @@ function SystemsComponents() {
       <form>
         {items.map((item, index) => (
           <div key={index} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc" }}>
-            <h3>{item.name}</h3>
+
+            <div className='item-header-name'>
+              <h3>{item.name}</h3>
+              <InspectionStatusDropdown
+                  value={formData[item.name]?.inspection_status}
+                  onChange={(status) => handleStatusChange(item.name, status)}
+              />
+            </div>
+
             <div className="flex-right">
               <div className="item-list">
                 <strong>Material: </strong>
