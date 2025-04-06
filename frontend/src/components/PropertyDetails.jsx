@@ -17,6 +17,7 @@ function PropertyDetails() {
     });
 
     const [photoURL, setPhotoURL] = useState(null);
+    const [reportId, setReportId] = useState(null);
 
     const years = Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i).reverse();
 
@@ -54,10 +55,23 @@ function PropertyDetails() {
             }
         };
 
+        const fetchReportId = async () => {
+            const apiPort = process.env.REACT_APP_DB_PORT || 8080;
+            try {
+                const response = await axios.get(`http://localhost:${apiPort}/api/inspection-details/${inspectionId}/${propertyId}`);
+                if (response.status === 200 && response.data.report_id) {
+                    setReportId(response.data.report_id);
+                }
+            } catch (error) {
+                console.error("Error fetching report ID:", error.response?.data || error.message);
+            }
+        };
+
         if (propertyId && inspectionId) {
             fetchAddress();
             fetchPropertyDetails();
             fetchPhoto();
+            fetchReportId();
         }
     }, [propertyId, inspectionId]);
 
@@ -145,8 +159,8 @@ function PropertyDetails() {
                     <p>{addressDetails.street}<br />{addressDetails.city}, {addressDetails.state} {addressDetails.postal_code}</p>
                 </div>
                 <div className="info-item">
-                    <strong>Property ID</strong>
-                    <p>{addressDetails.property_id}</p>
+                    <strong>Report#</strong>
+                    <p>{reportId || "Loading..."}</p>
                 </div>
                 <div className="info-item">
                     <strong>Year Built:</strong>

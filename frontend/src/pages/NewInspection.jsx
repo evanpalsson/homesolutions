@@ -105,41 +105,20 @@ function NewInspection() {
     const handleSubmitAddress = async () => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
         const saveAddressEndpoint = `http://localhost:${apiPort}/api/save-address`;
-        const createInspectionEndpoint = `http://localhost:${apiPort}/api/create-inspection`;
-        
+    
         try {
-            // Save the address
-            const addressResponse = await axios.post(saveAddressEndpoint, addressDetails);
-            if (addressResponse.status === 200) {
-                console.log('Address saved successfully!');
-                const propertyId = addressResponse.data.property_id;
-
-                // Create an inspection form
-                const payload = {
-                    property_id: propertyId,
-                    inspection_date: new Date().toISOString().split('T')[0], // Use current date as a valid default
-                };
+            const response = await axios.post(saveAddressEndpoint, addressDetails);
+            if (response.status === 200) {
+                const { property_id, inspection_id } = response.data;
     
-                console.log('Payload for inspection form:', payload);
-    
-                const inspectionResponse = await axios.post(createInspectionEndpoint, payload);
-                if (inspectionResponse.status === 200) {
-                    console.log('Inspection form created successfully!');
-                    const inspectionId = inspectionResponse.data.inspection_id;
-    
-                    // Navigate to the inspection form and default to HomeDetails
-                    navigate(`/inspection-form/${inspectionId}/${propertyId}/HomeDetails`);
-                    console.log("Navigating to HomeDetails:", { inspectionId, propertyId });
-
-                }
+                navigate(`/inspection-form/${inspection_id}/${property_id}/HomeDetails`);
+                console.log("Navigating to HomeDetails:", { inspection_id, property_id });
             }
         } catch (error) {
             console.error('Error processing request:', error.response?.data || error.message);
         }
     };
-
-
-
+    
     return (
         <div style={{ marginTop: '10%', textAlign: 'center' }} id="address-validation-container">
             {isLoaded && (

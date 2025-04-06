@@ -46,25 +46,29 @@ func (n *NullableInt) UnmarshalJSON(b []byte) error {
 func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string) (string, error) {
 	inspectionID := uuid.New().String()
 
-	// Validate and set default for InspectionDate
 	if inspectionDate == "" {
-		inspectionDate = time.Now().Format("2006-01-02") // Default to current date
+		inspectionDate = time.Now().Format("2006-01-02")
 	} else {
 		_, err := time.Parse("2006-01-02", inspectionDate)
 		if err != nil {
-			log.Printf("Invalid inspection_date format: %s", inspectionDate)
 			return "", fmt.Errorf("invalid date format")
 		}
 	}
 
-	query := `INSERT INTO inspections (inspection_id, property_id, inspection_date, status)
-              VALUES (?, ?, ?, ?)`
-	// log.Printf("Inserting inspection with inspection_id=%s, property_id=%s, inspection_date=%s", inspectionID, propertyID, inspectionDate)
-
-	_, err := db.Exec(query, inspectionID, propertyID, inspectionDate, "in-progress")
+	// Get the next report number for this property
+	var count int
+	err := db.QueryRow(`SELECT COUNT(*) FROM inspections WHERE property_id = ?`, propertyID).Scan(&count)
 	if err != nil {
-		log.Printf("Error inserting inspection form with parameters: inspection_id=%s, property_id=%s, inspection_date=%s, error=%v",
-			inspectionID, propertyID, inspectionDate, err)
+		return "", fmt.Errorf("failed to count previous inspections: %v", err)
+	}
+	reportID := fmt.Sprintf("%s-%d", propertyID, count+1)
+
+	query := `INSERT INTO inspections (inspection_id, property_id, inspection_date, status, report_id)
+              VALUES (?, ?, ?, ?, ?)`
+
+	_, err = db.Exec(query, inspectionID, propertyID, inspectionDate, "in-progress", reportID)
+	if err != nil {
+		log.Printf("Error inserting inspection: %v", err)
 		return "", err
 	}
 
@@ -149,8 +153,7 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	query := `
-        SELECT inspection_id, property_id, inspection_date, status, temperature, weather, 
-               ground_condition, rain_last_three_days, radon_test, mold_test
+        SELECT inspection_id, property_id, report_id, inspection_date, status, temperature, weather, ground_condition, rain_last_three_days, radon_test, mold_test
         FROM inspections 
         WHERE inspection_id = ? AND property_id = ?
     `
@@ -158,6 +161,7 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 	var inspectionData struct {
 		InspectionID    string  `json:"inspection_id"`
 		PropertyID      string  `json:"property_id"`
+		ReportID        string  `json:"report_id"`
 		InspectionDate  string  `json:"inspection_date"`
 		Status          string  `json:"status"`
 		Temperature     *int    `json:"temperature"`
@@ -171,6 +175,7 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 	err = db.QueryRow(query, inspectionId, propertyId).Scan(
 		&inspectionData.InspectionID,
 		&inspectionData.PropertyID,
+		&inspectionData.ReportID,
 		&inspectionDateStr,
 		&inspectionData.Status,
 		&inspectionData.Temperature,
