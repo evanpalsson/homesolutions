@@ -108,7 +108,12 @@ body {
 
 .item-block {
   margin-top: 0.5rem;
-  padding-left: 1rem;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.item-block:hover {
+  background-color: #E5E4E2;
 }
 
 .item-block ul {

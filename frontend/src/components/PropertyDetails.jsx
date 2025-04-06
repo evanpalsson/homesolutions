@@ -184,18 +184,32 @@ function PropertyDetails() {
 
                 <div className="info-item">
                     <strong>Upload Property Photo:</strong>
-                    <input
+
+                    {!photoURL && (
+                        <input
                         type="file"
                         accept="image/*"
                         onChange={handlePhotoChange}
-                    />
+                        />
+                    )}
+
                     {photoURL && (
-                        <div style={{ marginTop: '10px' }}>
-                            <img src={photoURL} alt="Property" style={{ maxWidth: '300px', height: 'auto' }} />
-                            <br />
-                            <button style={{ backgroundColor: 'red', color: 'white', marginTop: '5px' }} onClick={handleDelete}>
-                                Delete Photo
-                            </button>
+                        <div style={{ marginTop: '0px' }}>
+                        <img src={photoURL} alt="Property" style={{ maxWidth: '225px', height: 'auto' }} />
+                        <button
+                            style={{
+                            backgroundColor: '#4a90e2',
+                            color: 'white',
+                            border: 'none',
+                            padding: '12px 20px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            width: '100%'
+                            }}
+                            onClick={handleDelete}
+                        >
+                            Delete Photo
+                        </button>
                         </div>
                     )}
                 </div>

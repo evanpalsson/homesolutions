@@ -135,34 +135,41 @@ function InspectionDetails() {
                         <option value="Muddy">Muddy</option>
                     </select>
                 </div>
-                <div className="info-item"></div>
-                <div className="info-item"></div>
                 <div className="info-item item-checkbox">
-                    <strong>Rain in Last 3 Days:</strong>
-                    <input
-                        type="checkbox"
-                        name="rain_last_three_days"
-                        checked={inspectionDetails.rain_last_three_days || false}
-                        onChange={handleInputChange}
-                    />
-                </div>
-                <div className="info-item item-checkbox">
-                    <strong>Radon Test Conducted:</strong>
-                    <input
-                        type="checkbox"
-                        name="radon_test"
-                        checked={inspectionDetails.radon_test || false}
-                        onChange={handleInputChange}
-                    />
-                </div>
-                <div className="info-item item-checkbox">
-                    <strong>Mold Test Conducted:</strong>
-                    <input
+                    <strong>Mold Test Conducted:</strong>  
+                    <label className="toggle-switch">
+                        <input
                         type="checkbox"
                         name="mold_test"
                         checked={inspectionDetails.mold_test || false}
                         onChange={handleInputChange}
-                    />
+                        />
+                        <span className="toggle-slider"></span>
+                    </label>
+                </div>
+                <div className="info-item item-checkbox">
+                    <strong>Radon Test Conducted:</strong>
+                    <label className="toggle-switch">
+                        <input
+                        type="checkbox"
+                        name="radon_test"
+                        checked={inspectionDetails.radon_test || false}
+                        onChange={handleInputChange}
+                        />
+                        <span className="toggle-slider"></span>
+                    </label>
+                </div>
+                <div className="info-item item-checkbox">
+                    <strong>Rain in Last 3 Days:</strong>
+                    <label className="toggle-switch">
+                        <input
+                        type="checkbox"
+                        name="rain_last_three_days"
+                        checked={inspectionDetails.rain_last_three_days || false}
+                        onChange={handleInputChange}
+                        />
+                        <span className="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
         </div>

@@ -20,7 +20,7 @@
 
 .container {
     font-family: Arial, sans-serif;
-    width: 80%;
+    width: 70%;
     /* margin: auto; */
     padding: 20px;
   }
@@ -43,8 +43,6 @@
     width: 250px;
     flex-flow: column;
     display: flex;
-    margin-bottom: 20px;
-    margin-right: 50px;
   }
   
   .info-item:last-child {
@@ -54,12 +52,12 @@
   .info-item strong {
     display: block;
     margin-bottom: 5px;
-    color: #34495e;
+    color: maroon;
   }
   
   .info-item p {
     margin: 0;
-    color: #7f8c8d;
+    color: #36454F;
     align-content: center;
   }
 

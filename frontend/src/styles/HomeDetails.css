@@ -15,14 +15,133 @@
   
   .details-box {
     display: flex;
-    gap: 2rem;
-    padding: 1.5rem;
+    padding: 0.5rem;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
     background-color: #f9f9f9;
     border-radius: 6px;
+    justify-content: center;
   }
   
   .column {
-    flex: 1;
+    width: 325px
   }
-  
+
+  .info-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 225px;
+    margin-right: 120px;
+}
+
+.info-item input,
+.info-item select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    margin-top: 0.25rem;
+    transition: border-color 0.2s ease;
+}
+
+.info-item input:focus,
+.info-item select:focus {
+    border-color: #003366;
+    outline: none;
+}
+
+.item-checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #003366;
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 60px;
+  height: 28px;
+  bottom: 2px;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #e74c3c; /* red by default */
+  border-radius: 34px;
+  height: 100%;
+  width: 100%;
+  transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+  content: "NO";
+  font-weight: bold;
+  color: white;
+  font-size: 16px;
+  position: absolute;
+  left: 32px;
+  top: 5px;
+  transition: content 0.3s;
+}
+
+.toggle-slider::after {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #2ecc71; /* green */
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  content: "YES";
+  left: 8px;
+}
+
+.toggle-switch input:checked + .toggle-slider::after {
+  transform: translateX(32px);
+}
+
+.item-checkbox strong {
+  width: 150px;
+  text-align: right;
+}
+
+.info-item.item-checkbox {
+  margin-right: 0px;
+}
+
+.info-item button {
+  font-size: 16px !important;
+  font-weight: bold;
+}
