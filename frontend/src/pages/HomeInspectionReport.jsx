@@ -236,9 +236,9 @@ const HomeInspectionReport = () => {
             <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
             <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
             <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
-            <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
-            <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
             <div><strong>Mold Test Performed:</strong> {inspectionData.mold_test ? "Yes" : "No"}</div>
+            <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
+            <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
             </div>
         </section>
         )}
