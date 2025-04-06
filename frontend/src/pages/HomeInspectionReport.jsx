@@ -199,14 +199,18 @@ const HomeInspectionReport = () => {
                   {propertyData ? `${propertyData.city}, ${propertyData.state} ${propertyData.postal_code}` : ""}
                 </h2>
                 <div className="overlay-inspector">
-                    <h3>INSPECTED BY:</h3>
+                    <h3>INSPECTED BY</h3>
                     <h4>Placeholder</h4>
                     <h4>H3 Inspections</h4>
                 </div>
                 <div className="overlay-date">
-                    <h3>INSPECTION DATE:</h3>
+                    <h3>INSPECTION DATE</h3>
                     <h4>{inspectionData?.inspection_date}</h4>
                     <h4>{inspectionData?.inspection_time}</h4>
+                </div>
+                <div className="overlay-reportid">
+                    <h3>REPORT ID</h3>
+                    <h4>{inspectionData?.report_id || "Loading..."}</h4>
                 </div>
               </div>
             </div>

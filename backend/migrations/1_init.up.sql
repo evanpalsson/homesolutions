@@ -43,6 +43,7 @@ INSERT INTO properties (
 CREATE TABLE IF NOT EXISTS inspections (
     inspection_id CHAR(36) PRIMARY KEY, -- Use CHAR(36) to store UUIDs
     property_id VARCHAR(255) NOT NULL, -- Foreign key
+    report_id VARCHAR(255) UNIQUE,
     inspection_date DATE,
     status VARCHAR(50) DEFAULT 'in-progress',
     temperature INT NULL, -- Outside temperature during inspection

@@ -260,7 +260,13 @@ body {
 .overlay-date {
   position: absolute;
   top: 5%;
-  left: 80%;
+  left: 67%;
+}
+
+.overlay-reportid {
+  position: absolute;
+    top: 5%;
+    left: 86%;
 }
 
 .property-overlay-text h3 {
