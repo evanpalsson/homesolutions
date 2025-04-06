@@ -279,11 +279,12 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
 
 // EXTERIOR WORKSHEET -------------------------------------------------------------------------------------------
 type ExteriorData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"` // New
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveExteriorData() http.HandlerFunc {
@@ -311,12 +312,13 @@ func SaveExteriorData() http.HandlerFunc {
 		// log.Printf("Payload received: %+v", data)
 
 		query := `
-			INSERT INTO inspection_exterior (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_exterior (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
 			materials = VALUES(materials),
 			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+			comments = VALUES(comments),
+			inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -340,7 +342,7 @@ func SaveExteriorData() http.HandlerFunc {
 			// log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, conditions=%s, comments=%s",
 			// 	record.InspectionID, record.ItemName, string(materialsJSON), string(conditionsJSON), record.Comments)
 
-			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 
 			if err != nil {
 				log.Printf("Error executing query: %v", err)
@@ -377,7 +379,7 @@ func GetExteriorData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_exterior WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_exterior WHERE inspection_id = ?`
 
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
@@ -393,8 +395,9 @@ func GetExteriorData() http.HandlerFunc {
 			var materialsJSON string
 			var itemCondition sql.NullString
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &itemCondition, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &itemCondition, &comments, &status); err != nil {
 				log.Printf("Error scanning row: %v", err)
 				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
 				return
@@ -408,7 +411,7 @@ func GetExteriorData() http.HandlerFunc {
 
 			// Handle NULL values
 			var conditionsJSON string
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Error scanning row: %v", err)
 				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
 				return
@@ -418,6 +421,11 @@ func GetExteriorData() http.HandlerFunc {
 				log.Printf("Error unmarshalling condition: %v", err)
 				http.Error(w, "Failed to parse condition", http.StatusInternalServerError)
 				return
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			if comments.Valid {
@@ -436,11 +444,12 @@ func GetExteriorData() http.HandlerFunc {
 
 // ROOF WORKSHEET -------------------------------------------------------------------------------------------
 type RoofData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveRoofData() http.HandlerFunc {
@@ -466,12 +475,13 @@ func SaveRoofData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_roof (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_roof (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -482,7 +492,7 @@ func SaveRoofData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -517,7 +527,7 @@ func GetRoofData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_roof WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_roof WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying roof data: %v", err)
@@ -531,8 +541,9 @@ func GetRoofData() http.HandlerFunc {
 			var record RoofData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -545,6 +556,10 @@ func GetRoofData() http.HandlerFunc {
 			if comments.Valid {
 				record.Comments = comments.String
 			}
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
+			}
 
 			data = append(data, record)
 		}
@@ -556,11 +571,12 @@ func GetRoofData() http.HandlerFunc {
 
 // BASEMENT FOUNDATION WORKSHEET -------------------------------------------------------------------------------------------
 type BasementData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveBasementData() http.HandlerFunc {
@@ -586,13 +602,14 @@ func SaveBasementData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_basementFoundation (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_basementFoundation (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
-		`
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
+			`
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
@@ -602,7 +619,7 @@ func SaveBasementData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -637,7 +654,8 @@ func GetBasementData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_basementFoundation WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_basementFoundation WHERE inspection_id = ?`
+
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying basement data: %v", err)
@@ -651,8 +669,9 @@ func GetBasementData() http.HandlerFunc {
 			var record BasementData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -666,7 +685,13 @@ func GetBasementData() http.HandlerFunc {
 				record.Comments = comments.String
 			}
 
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
+			}
+
 			data = append(data, record)
+
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -676,11 +701,12 @@ func GetBasementData() http.HandlerFunc {
 
 // HEATING WORKSHEET -------------------------------------------------------------------------------------------
 type HeatingData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"` // ✅ add this
 }
 
 func SaveHeatingData() http.HandlerFunc {
@@ -706,12 +732,13 @@ func SaveHeatingData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_heating (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_heating (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -722,7 +749,7 @@ func SaveHeatingData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -757,7 +784,7 @@ func GetHeatingData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_heating WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_heating WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying heating data: %v", err)
@@ -771,8 +798,9 @@ func GetHeatingData() http.HandlerFunc {
 			var record HeatingData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -784,6 +812,11 @@ func GetHeatingData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -800,11 +833,12 @@ func GetHeatingData() http.HandlerFunc {
 
 // COOLING WORKSHEET -------------------------------------------------------------------------------------------
 type CoolingData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
 }
 
 func SaveCoolingData() http.HandlerFunc {
@@ -830,13 +864,14 @@ func SaveCoolingData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_cooling (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_cooling (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
-		`
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
+			`
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
@@ -846,7 +881,7 @@ func SaveCoolingData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -881,7 +916,7 @@ func GetCoolingData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_cooling WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_cooling WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying cooling data: %v", err)
@@ -895,8 +930,9 @@ func GetCoolingData() http.HandlerFunc {
 			var record CoolingData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -908,6 +944,11 @@ func GetCoolingData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -924,11 +965,12 @@ func GetCoolingData() http.HandlerFunc {
 
 // PLUMBING WORKSHEET -------------------------------------------------------------------------------------------
 type PlumbingData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
 }
 
 func SavePlumbingData() http.HandlerFunc {
@@ -954,13 +996,14 @@ func SavePlumbingData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_plumbing (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_plumbing (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
-		`
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
+			`
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
@@ -970,7 +1013,7 @@ func SavePlumbingData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1005,7 +1048,7 @@ func GetPlumbingData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_plumbing WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_plumbing WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying plumbing data: %v", err)
@@ -1019,8 +1062,9 @@ func GetPlumbingData() http.HandlerFunc {
 			var record PlumbingData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1032,6 +1076,11 @@ func GetPlumbingData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1048,11 +1097,12 @@ func GetPlumbingData() http.HandlerFunc {
 
 // ELECTRICAL WORKSHEET -------------------------------------------------------------------------------------------
 type ElectricalData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveElectricalData() http.HandlerFunc {
@@ -1078,12 +1128,13 @@ func SaveElectricalData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_electrical (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
-			ON DUPLICATE KEY UPDATE
+		INSERT INTO inspection_electrical (inspection_id, item_name, materials, conditions, comments, inspection_status)
+		VALUES (?, ?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
 			materials = VALUES(materials),
 			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+			comments = VALUES(comments),
+			inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -1094,7 +1145,7 @@ func SaveElectricalData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1129,7 +1180,7 @@ func GetElectricalData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_electrical WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_electrical WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying electrical data: %v", err)
@@ -1143,8 +1194,9 @@ func GetElectricalData() http.HandlerFunc {
 			var record ElectricalData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1156,6 +1208,11 @@ func GetElectricalData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1172,11 +1229,12 @@ func GetElectricalData() http.HandlerFunc {
 
 // ATTIC WORKSHEET -------------------------------------------------------------------------------------------
 type AtticData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveAtticData() http.HandlerFunc {
@@ -1202,13 +1260,14 @@ func SaveAtticData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_attic (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
-			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
-		`
+			INSERT INTO inspection_attic (inspection_id, item_name, materials, conditions, comments, inspection_status)
+				VALUES (?, ?, ?, ?, ?, ?)
+				ON DUPLICATE KEY UPDATE
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
+			`
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
@@ -1218,7 +1277,7 @@ func SaveAtticData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1253,7 +1312,7 @@ func GetAtticData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_attic WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_attic WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying attic data: %v", err)
@@ -1267,8 +1326,9 @@ func GetAtticData() http.HandlerFunc {
 			var record AtticData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1280,6 +1340,11 @@ func GetAtticData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1296,11 +1361,12 @@ func GetAtticData() http.HandlerFunc {
 
 // DOORS WINDOWS WORKSHEET -------------------------------------------------------------------------------------------
 type DoorsWindowsData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
 }
 
 func SaveDoorsWindowsData() http.HandlerFunc {
@@ -1326,12 +1392,13 @@ func SaveDoorsWindowsData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_doorsWindows (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_doorsWindows (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -1342,7 +1409,7 @@ func SaveDoorsWindowsData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1377,7 +1444,7 @@ func GetDoorsWindowsData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_doorsWindows WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_doorsWindows WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying doors/windows data: %v", err)
@@ -1391,8 +1458,9 @@ func GetDoorsWindowsData() http.HandlerFunc {
 			var record DoorsWindowsData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1404,6 +1472,11 @@ func GetDoorsWindowsData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1420,11 +1493,12 @@ func GetDoorsWindowsData() http.HandlerFunc {
 
 // FIREPLACE WORKSHEET -------------------------------------------------------------------------------------------
 type FireplaceData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"`
 }
 
 func SaveFireplaceData() http.HandlerFunc {
@@ -1450,12 +1524,13 @@ func SaveFireplaceData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_fireplace (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_fireplace (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -1466,7 +1541,7 @@ func SaveFireplaceData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1501,7 +1576,7 @@ func GetFireplaceData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_fireplace WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_fireplace WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying fireplace data: %v", err)
@@ -1515,8 +1590,9 @@ func GetFireplaceData() http.HandlerFunc {
 			var record FireplaceData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1528,6 +1604,11 @@ func GetFireplaceData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1544,11 +1625,12 @@ func GetFireplaceData() http.HandlerFunc {
 
 // SYSTEMS COMPONENTS WORKSHEET -------------------------------------------------------------------------------------------
 type SystemsComponentsData struct {
-	InspectionID string          `json:"inspection_id"`
-	ItemName     string          `json:"item_name"`
-	Materials    map[string]bool `json:"materials"`
-	Conditions   map[string]bool `json:"conditions"`
-	Comments     string          `json:"comments"`
+	InspectionID     string          `json:"inspection_id"`
+	ItemName         string          `json:"item_name"`
+	Materials        map[string]bool `json:"materials"`
+	Conditions       map[string]bool `json:"conditions"`
+	Comments         string          `json:"comments"`
+	InspectionStatus string          `json:"inspection_status"` // ✅ Add this
 }
 
 func SaveSystemsComponentsData() http.HandlerFunc {
@@ -1574,12 +1656,13 @@ func SaveSystemsComponentsData() http.HandlerFunc {
 		}
 
 		query := `
-			INSERT INTO inspection_systemsComponents (inspection_id, item_name, materials, conditions, comments)
-			VALUES (?, ?, ?, ?, ?)
+			INSERT INTO inspection_systemsComponents (inspection_id, item_name, materials, conditions, comments, inspection_status)
+			VALUES (?, ?, ?, ?, ?, ?)
 			ON DUPLICATE KEY UPDATE
-			materials = VALUES(materials),
-			conditions = VALUES(conditions),
-			comments = VALUES(comments)
+				materials = VALUES(materials),
+				conditions = VALUES(conditions),
+				comments = VALUES(comments),
+				inspection_status = VALUES(inspection_status)
 		`
 
 		for _, record := range data {
@@ -1590,7 +1673,7 @@ func SaveSystemsComponentsData() http.HandlerFunc {
 			materialsJSON, _ := json.Marshal(record.Materials)
 			conditionsJSON, _ := json.Marshal(record.Conditions)
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments)
+			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1625,7 +1708,7 @@ func GetSystemsComponentsData() http.HandlerFunc {
 		}
 		defer db.Close()
 
-		query := `SELECT item_name, materials, conditions, comments FROM inspection_systemsComponents WHERE inspection_id = ?`
+		query := `SELECT item_name, materials, conditions, comments, inspection_status FROM inspection_systemsComponents WHERE inspection_id = ?`
 		rows, err := db.Query(query, inspectionId)
 		if err != nil {
 			log.Printf("Error querying systems & components data: %v", err)
@@ -1639,8 +1722,9 @@ func GetSystemsComponentsData() http.HandlerFunc {
 			var record SystemsComponentsData
 			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
+			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Row scan error: %v", err)
 				http.Error(w, "Row scan failed", http.StatusInternalServerError)
 				return
@@ -1652,6 +1736,10 @@ func GetSystemsComponentsData() http.HandlerFunc {
 			record.Comments = ""
 			if comments.Valid {
 				record.Comments = comments.String
+			}
+			record.InspectionStatus = ""
+			if status.Valid {
+				record.InspectionStatus = status.String
 			}
 
 			data = append(data, record)
@@ -1767,7 +1855,7 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Fetching photos for inspection_id=%s, item_name=%s", inspectionId, itemName)
+	// log.Printf("Fetching photos for inspection_id=%s, item_name=%s", inspectionId, itemName)
 
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
@@ -1824,7 +1912,7 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 		photos = append(photos, photo)
 	}
 
-	log.Printf("Found %d photos for item %s", len(photos), itemName)
+	// log.Printf("Found %d photos for item %s", len(photos), itemName)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(photos); err != nil {
