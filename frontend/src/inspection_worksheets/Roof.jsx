@@ -12,27 +12,27 @@ const Roof = () => {
     {
       name: "Roof Covering",
       materials: ["Asphalt Shingles", "Metal", "Tile", "Slate", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Worn", "Missing Shingles", "Cracked", "Ponding", "Multiple Layers"],
     },
     {
       name: "Flashing",
       materials: ["Metal", "Rubber", "Plastic", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Damaged", "Loose", "Improperly Installed", "Corroded", "Missing"],
     },
     {
       name: "Gutters",
       materials: ["Aluminum", "Copper", "Vinyl", "Steel", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Clogged", "Leaking", "Detached", "Improper Slope", "Missing Sections"],
     },
     {
       name: "Downspouts",
       materials: ["Aluminum", "Copper", "Vinyl", "Steel", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Disconnected", "Leaking", "Improper Termination", "Crushed", "Blocked"],
     },
     {
       name: "Skylights",
       materials: ["Glass", "Plastic", "Acrylic", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Leaking", "Cracked", "Hazy", "Improper Flashing", "Broken Seal"],
     },
   ], []);
 

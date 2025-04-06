@@ -12,27 +12,27 @@ const Electrical = () => {
     {
       name: "Service Panel",
       materials: ["Circuit Breakers", "Fuses", "Subpanel", "Main Panel", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Overloaded", "Hazardous"],
+      condition: ["Properly Labeled", "Overloaded", "Double Taps", "Loose Connections"],
     },
     {
       name: "Wiring",
       materials: ["Copper", "Aluminum", "Knob & Tube", "BX", "Romex", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Exposed", "Hazardous"],
+      condition: ["Exposed", "Damaged Insulation", "Outdated", "Improper Splices"],
     },
     {
       name: "Outlets & Switches",
       materials: ["GFCI", "AFCI", "Ungrounded", "Three-prong", "Other (see comments)"],
-      condition: ["Functional", "Non-functional", "Loose", "Missing Covers"],
+      condition: ["Functional", "Hot to Touch", "Ungrounded", "Loose"],
     },
     {
       name: "Lighting",
       materials: ["Ceiling", "Wall-mounted", "Recessed", "Track", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Flickering", "Damaged"],
+      condition: ["Operational", "Non-functional", "Flickering", "Missing Bulbs"],
     },
     {
         name: "Smoke and CO Detectors",
       materials: ["Smoke", "CO", "Combo Unit", "Battery-powered", "Hardwired"],
-      condition: ["Present", "Missing", "Non-functional", "Expired"],
+      condition: ["Present", "Expired", "Missing", "Not Functional"],
     },
   ], []);
 

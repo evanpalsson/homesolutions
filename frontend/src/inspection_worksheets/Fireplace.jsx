@@ -12,27 +12,27 @@ const Fireplace = () => {
     {
       name: "Fireplace Type",
       materials: ["Wood Burning", "Gas", "Electric", "Pellet", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Inoperable", "Hazardous"],
+      condition: ["Operational", "Inoperable", "Excessive Creosote", "Draft Issues"],
     },
     {
       name: "Chimney - Vent",
       materials: ["Masonry", "Metal", "Direct Vent", "Power Vent", "Other (see comments)"],
-      condition: ["Clear", "Blocked", "Damaged", "Needs Cleaning"],
+      condition: ["Clear", "Blocked", "Damaged Flue", "Needs Cleaning"],
     },
     {
       name: "Damper",
       materials: ["Present", "Missing", "Inoperable", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Unknown"],
+      condition: ["Operational", "Stuck", "Missing", "Broken Handle"],
     },
     {
       name: "Firebox",
       materials: ["Brick", "Steel", "Cast Iron", "Other (see comments)"],
-      condition: ["Good", "Cracked", "Corroded", "Leaking"],
+      condition: ["Good", "Cracked", "Leaking", "Corroded"],
     },
     {
       name: "Hearth",
       materials: ["Tile", "Stone", "Concrete", "Other (see comments)"],
-      condition: ["Intact", "Cracked", "Loose", "Missing"],
+      condition: ["Intact", "Cracked", "Loose", "Missing Tiles"],
     },
   ], []);
 

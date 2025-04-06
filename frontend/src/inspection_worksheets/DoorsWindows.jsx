@@ -12,27 +12,27 @@ const DoorsWindows = () => {
     {
       name: "Exterior Doors",
       materials: ["Wood", "Steel", "Fiberglass", "Glass", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Damaged", "Misaligned"],
+      condition: ["Misaligned", "Weathered", "Broken Seal", "Drafty"],
     },
     {
       name: "Interior Doors",
       materials: ["Hollow Core", "Solid Wood", "Glass Panel", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Damaged", "Sticking"],
+      condition: ["Sticking", "Loose Hinges", "Damaged", "Does Not Latch"],
     },
     {
       name: "Windows",
       materials: ["Single Pane", "Double Pane", "Vinyl", "Wood", "Other (see comments)"],
-      condition: ["Operational", "Broken", "Fogged", "Missing Screens"],
+      condition: ["Operational", "Broken", "Fogged", "Leaking"],
     },
     {
       name: "Skylights",
       materials: ["Fixed", "Ventilated", "Glass", "Plastic", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Leaking", "Damaged"],
+      condition: ["Clear", "Leaking", "Cracked", "Cloudy"],
     },
     {
       name: "Storm Doors - Windows",
       materials: ["Aluminum", "Wood", "Vinyl", "Other (see comments)"],
-      condition: ["Installed", "Missing", "Damaged", "Non-functional"],
+      condition: ["Installed", "Missing", "Non-functional", "Damaged"],
     },
   ], []);
 
