@@ -119,8 +119,16 @@ func SaveAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	inspectionID, err := inspections.CreateInspectionHelper(db, propertyID, "")
+	if err != nil {
+		log.Println("Error creating inspection form:", err)
+		http.Error(w, "Failed to create inspection form", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf(`{"message": "Address saved successfully", "property_id": "%s"}`, propertyID)))
+	w.Write([]byte(fmt.Sprintf(`{"message": "Inspection form created successfully", "property_id": "%s", "inspection_id": "%s"}`, propertyID, inspectionID)))
+
 }
 
 func GetAddressByPropertyID(w http.ResponseWriter, r *http.Request) {

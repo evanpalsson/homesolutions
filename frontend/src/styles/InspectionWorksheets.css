@@ -11,7 +11,7 @@ body {
     color: #2c3e50;
     margin-top: 20px;
     margin-bottom: 20px;
-    margin-left: 3rem;
+    margin-left: 1rem;
     font-size: 1.5rem;
     letter-spacing: 1px;
   }
@@ -23,7 +23,7 @@ body {
   
   form {
     max-width: 900px;
-    margin-left: 3rem;
+    margin-left: 1rem;
     background: #f9f9f9;
     padding: 30px;
     border-radius: 10px;
@@ -267,7 +267,7 @@ input:checked + .slider:before {
 
 .report-wrapper {
   margin: 0;
-  margin-left: 3rem;
+  margin-left: 1rem;
 }
 
 .report-photo {
