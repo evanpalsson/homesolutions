@@ -271,6 +271,6 @@ input:checked + .slider:before {
 }
 
 .report-photo {
-  width: 150px;
-  height: auto;
+  width: auto;
+  max-height: 150px;
 }
