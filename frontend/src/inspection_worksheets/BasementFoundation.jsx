@@ -12,27 +12,27 @@ const BasementFoundation = () => {
     {
       name: "Foundation Walls",
       materials: ["Concrete", "Block", "Brick", "Stone", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Cracked", "Efflorescence", "Leaking", "Bow/Bulge", "Settlement Signs"],
     },
     {
       name: "Floor Structure",
       materials: ["Concrete", "Wood Joists", "Steel Beams", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Sagging", "Water Damage", "Termite Damage", "Rotting", "Loose Joists"],
     },
     {
       name: "Support Posts & Columns",
       materials: ["Steel", "Wood", "Concrete", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Rusting", "Shifting", "Improper Support", "Rotting", "Unstable Base"],
     },
     {
       name: "Basement Windows",
       materials: ["Glass Block", "Single Pane", "Double Pane", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Cracked", "Leaking", "Hazy Glass", "Broken Locks", "Water Stains"],
     },
     {
       name: "Sump Pump",
       materials: ["Present", "Operational", "Battery Backup", "None"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Operational", "Not Working", "Missing Cover", "Clogged", "Disconnected"],
     },
   ], []);
 

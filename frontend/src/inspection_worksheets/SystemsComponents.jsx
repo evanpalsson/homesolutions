@@ -10,29 +10,29 @@ function SystemsComponents() {
 
   const items = useMemo(() => [
     {
-      name: "Garage Door Opener",
+      name: "Garage Door",
       materials: ["Chain Drive", "Belt Drive", "Screw Drive", "Direct Drive", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Noisy", "Unsafe"],
+      condition: ["Operational", "Non-functional", "Reversing Issues", "No Remote"],
     },
     {
       name: "Ceiling Fans",
       materials: ["Wood Blades", "Metal Blades", "Remote Control", "Other (see comments)"],
-      condition: ["Functional", "Wobbly", "Noisy", "Inoperable"],
+      condition: ["Balanced", "Wobbly", "Noisy", "Inoperable"],
     },
     {
       name: "Central Vacuum",
       materials: ["Installed", "Wall Inlets", "Accessories Present", "Other (see comments)"],
-      condition: ["Operational", "Clogged", "Leaking", "Non-functional"],
+      condition: ["Operational", "Clogged", "Low Suction", "Leaking"],
     },
     {
       name: "Doorbell",
       materials: ["Wired", "Wireless", "Video", "Other (see comments)"],
-      condition: ["Functional", "No Sound", "Delayed", "Non-functional"],
+      condition: ["Functional", "No Sound", "Delayed", "Disconnected"],
     },
     {
       name: "Intercom",
       materials: ["Audio Only", "Video", "Room-to-Room", "Other (see comments)"],
-      condition: ["Functional", "Static", "Non-functional", "Outdated"],
+      condition: ["Operational", "Static", "Unclear Audio", "Non-functional"],
     },
   ], []);
 

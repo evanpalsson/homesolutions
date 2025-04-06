@@ -12,27 +12,27 @@ const Heating = () => {
     {
       name: "Heating System",
       materials: ["Forced Air", "Boiler/Radiator", "Electric Baseboard", "Heat Pump", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Operational", "No Heat", "Leaking", "Noisy Operation"],
     },
     {
       name: "Fuel Type",
       materials: ["Natural Gas", "Electric", "Oil", "Propane", "Wood", "Other (see comments)"],
-      condition: ["Operational", "In Use", "Disconnected", "Unknown"],
+      condition: ["Connected", "Disconnected", "Leak Suspected", "Unknown"],
     },
     {
       name: "Distribution",
       materials: ["Ductwork", "Radiators", "Baseboards", "Floor Heating", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Even Heating", "Cold Spots", "Leaking Pipes", "Air Locked"],
     },
     {
       name: "Thermostat",
       materials: ["Manual", "Programmable", "Smart", "Zoned", "Other (see comments)"],
-      condition: ["Functional", "Non-functional", "Unknown"],
+      condition: ["Functional", "Non-functional", "Inaccurate", "Unresponsive"],
     },
     {
       name: "Chimney - Vent",
       materials: ["Metal", "Masonry", "Direct Vent", "Power Vent", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Good", "Blocked", "Improper Termination", "Rust Present"],
     },
   ], []);
 

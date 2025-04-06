@@ -12,27 +12,27 @@ const Cooling = () => {
     {
       name: "Cooling System",
       materials: ["Central Air", "Ductless Mini-Split", "Window Unit", "Evaporative Cooler", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Operational", "Leaking", "No Cool Air", "Excessive Noise"],
     },
     {
       name: "Distribution",
       materials: ["Ductwork", "Wall Unit", "Ceiling Unit", "Portable", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Even Airflow", "Blocked Vents", "Leaking Ducts", "Disconnected"],
     },
     {
       name: "Thermostat",
       materials: ["Manual", "Programmable", "Smart", "Zoned", "Other (see comments)"],
-      condition: ["Functional", "Non-functional", "Unknown"],
+      condition: ["Functional", "Non-functional", "Incorrect Calibration", "No Display"],
     },
     {
       name: "Cooling Source",
       materials: ["Electric", "Gas", "Solar", "Other (see comments)"],
-      condition: ["Operational", "Disconnected", "Unknown"],
+      condition: ["Connected", "Disconnected", "Improper Installation", "Unknown"],
     },
     {
       name: "Ventilation",
       materials: ["Attic Fan", "Exhaust Fan", "Whole House Fan", "Natural", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Hazardous"],
+      condition: ["Adequate", "Blocked", "Noisy", "None"],
     },
   ], []);
 
