@@ -47,7 +47,7 @@ func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string
 	inspectionID := uuid.New().String()
 
 	if inspectionDate == "" {
-		inspectionDate = time.Now().Format("2006-01-02")
+		inspectionDate = time.Now().UTC().Format("2006-01-02")
 	} else {
 		_, err := time.Parse("2006-01-02", inspectionDate)
 		if err != nil {

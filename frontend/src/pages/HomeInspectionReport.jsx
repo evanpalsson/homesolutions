@@ -119,8 +119,18 @@ const HomeInspectionReport = () => {
   
     fetchData();
   }, [inspectionId, propertyId, sections]);
-  
 
+  const formatDate = (isoDate) => {
+    if (!isoDate) return "";
+    const date = new Date(isoDate + "T00:00:00Z"); // Ensures UTC midnight
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+      timeZone: "UTC"
+    });
+  };
+  
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
     const materialList = item.materials
@@ -205,11 +215,11 @@ const HomeInspectionReport = () => {
                 </div>
                 <div className="overlay-date">
                     <h3>INSPECTION DATE</h3>
-                    <h4>{inspectionData?.inspection_date}</h4>
+                    <h4>{formatDate(inspectionData?.inspection_date)}</h4>
                     <h4>{inspectionData?.inspection_time}</h4>
                 </div>
                 <div className="overlay-reportid">
-                    <h3>REPORT ID</h3>
+                    <h3>REPORT#</h3>
                     <h4>{inspectionData?.report_id || "Loading..."}</h4>
                 </div>
               </div>
@@ -236,7 +246,7 @@ const HomeInspectionReport = () => {
         <section className="report-summary">
             <h2 className="section-header inspection-overview">INSPECTION OVERVIEW</h2>
             <div className="overview-grid">
-            <div><strong>Inspection Date:</strong> {inspectionData.inspection_date}</div>
+            <div><strong>Inspection Date:</strong> {formatDate(inspectionData?.inspection_date)}</div>
             <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
             <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
             <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
