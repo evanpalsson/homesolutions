@@ -1,13 +1,22 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import InspectionStatusDropdown from "../components/InspectionStatusDropdown";
+import { InspectionCRUD } from "../components/InspectionCRUD";
 import "../styles/InspectionWorksheets.css";
 
 const Exterior = () => {
-  const { inspectionId } = useParams(); 
-  const [formData, setFormData] = useState({});
-  const [photos, setPhotos] = useState({});
+  const { inspectionId } = useParams();
+  const {
+    formData,
+    handleCheckboxChange,
+    handleCommentChange,
+    handleStatusChange,
+    handleResize,
+    handlePhotoUpload,
+    handlePhotoRemove,
+    photos,
+    fetchPhotos,
+  } = InspectionCRUD(inspectionId, "exterior");
 
   // Stable items array.
   const items = useMemo(() => [
@@ -103,149 +112,11 @@ const Exterior = () => {
     },
   ], []);
 
-  // Wrap fetchPhotos in useCallback so it doesn't change on every render.
-  const fetchPhotos = useCallback(async (itemName) => {
-    try {
-      const response = await axios.get(`http://localhost:8080/api/inspection-photo/${inspectionId}/${encodeURIComponent(itemName)}`);
-      setPhotos(prev => ({ ...prev, [itemName]: response.data }));
-    } catch (error) {
-      console.error(`Error fetching photos for ${itemName}:`, error);
-    }
-  }, [inspectionId]);
-
-  // Fetch photos for each item on mount/update.
   useEffect(() => {
     if (inspectionId) {
-      items.forEach((item) => {
-        fetchPhotos(item.name);
-      });
+      items.forEach(item => fetchPhotos(item.name));
     }
   }, [inspectionId, items, fetchPhotos]);
-
-  // Fetch existing exterior worksheet data.
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/inspection-exterior/${inspectionId}`);
-        const resData = response.data || []; // Default to empty array if null
-        const data = resData.reduce((acc, item) => {
-          acc[item.item_name] = {
-            materials: item.materials,
-            conditions: item.conditions || {},
-            comment: item.comments || "",
-            inspection_status: item.inspection_status || "Not Inspected",
-          };
-          return acc;
-        }, {});
-        setFormData(data);
-      } catch (error) {
-        console.error("Error fetching exterior data:", error);
-      }
-    };
-
-    if (inspectionId) {
-      fetchData();
-    }
-  }, [inspectionId]);
-
-  const debounce = (func, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
-
-  const updateBackend = async (updatedData) => {
-    try {
-      const payload = Object.entries(updatedData).map(([itemName, details]) => ({
-        inspection_id: inspectionId,
-        item_name: itemName,
-        materials: details.materials || {},
-        conditions: details.conditions || {},
-        comments: details.comment || "",
-        inspection_status: details.inspection_status || "Not Inspected",
-      }));
-      await axios.post("http://localhost:8080/api/inspection-exterior", payload);
-    } catch (error) {
-      console.error("Error updating backend:", error);
-    }
-  };
-
-  const debouncedUpdate = debounce(updateBackend, 500);
-
-  const handleCheckboxChange = (itemName, type, value) => {
-    const updatedData = {
-      ...formData,
-      [itemName]: {
-        ...formData[itemName],
-        [type]: {
-          ...formData[itemName]?.[type],
-          [value]: !formData[itemName]?.[type]?.[value],
-        },
-      },
-    };
-    setFormData(updatedData);
-    debouncedUpdate(updatedData);
-  };
-
-  const handleCommentChange = (itemName, comment) => {
-    const updatedData = {
-      ...formData,
-      [itemName]: { ...formData[itemName], comment },
-    };
-    setFormData(updatedData);
-    debouncedUpdate(updatedData);
-  };
-
-  const handleStatusChange = (itemName, status) => {
-    const updatedData = {
-      ...formData,
-      [itemName]: {
-        ...formData[itemName],
-        inspection_status: status,
-      },
-    };
-    setFormData(updatedData);
-    debouncedUpdate(updatedData);
-  };
-
-  const handleResize = (textarea) => {
-    textarea.style.height = "auto";  // Reset height to auto
-    textarea.style.height = textarea.scrollHeight + "px"; // Set to scroll height
-  };
-
-  // Handler to upload photos for a given item.
-  const handlePhotoUpload = async (itemName, e) => {
-    const files = e.target.files;
-    if (!files.length) return;
-    for (let i = 0; i < files.length; i++) {
-      const data = new FormData();
-      data.append("inspection_id", inspectionId);
-      data.append("item_name", itemName);
-      data.append("photo", files[i]);
-      try {
-        await axios.post("http://localhost:8080/api/inspection-photo", data, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        // Refresh photos for the item.
-        fetchPhotos(itemName);
-      } catch (error) {
-        console.error(`Error uploading photo for ${itemName}:`, error);
-      }
-    }
-    e.target.value = "";
-  };
-
-  // Handler to remove a photo.
-  const handlePhotoRemove = async (itemName, photoId) => {
-    try {
-      await axios.delete(`http://localhost:8080/api/inspection-photo/${photoId}`);
-      fetchPhotos(itemName);
-    } catch (error) {
-      console.error(`Error removing photo for ${itemName}:`, error);
-    }
-  };
 
   return (
     <div>
@@ -253,12 +124,12 @@ const Exterior = () => {
       <form>
         {items.map((item, index) => (
           <div key={index} style={{ marginBottom: "20px", borderBottom: "1px solid #ccc" }}>
-            
-            <div className='item-header-name'>
+
+            <div className="item-header-name">
               <h3>{item.name}</h3>
               <InspectionStatusDropdown
-                  value={formData[item.name]?.inspection_status}
-                  onChange={(status) => handleStatusChange(item.name, status)}
+                value={formData[item.name]?.inspection_status}
+                onChange={(status) => handleStatusChange(item.name, status)}
               />
             </div>
 
@@ -276,7 +147,7 @@ const Exterior = () => {
                       <span className="slider round"></span>
                     </label>
                     <span className="toggle-label">{material}</span>
-                  </div>                           
+                  </div>
                 ))}
               </div>
 
@@ -313,7 +184,6 @@ const Exterior = () => {
               </label>
             </div>
 
-            {/* PHOTO UPLOAD SECTION */}
             <div className="photo-upload-container">
               <strong>Photos:</strong>
               <input
@@ -327,7 +197,7 @@ const Exterior = () => {
                   photos[item.name].map((photo) => (
                     <div key={photo.photo_id} className="photo-item">
                       <img
-                        src={`http://localhost:8080${photo.photo_url}`} // <- prepend backend domain + port
+                        src={`http://localhost:8080${photo.photo_url}`}
                         alt={item.name}
                       />
                       <button type="button" onClick={() => handlePhotoRemove(item.name, photo.photo_id)}>
@@ -340,6 +210,7 @@ const Exterior = () => {
                 )}
               </div>
             </div>
+
           </div>
         ))}
       </form>
