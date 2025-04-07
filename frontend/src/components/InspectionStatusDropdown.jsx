@@ -12,6 +12,7 @@ const InspectionStatusDropdown = ({ value, onChange }) => {
         <option value="Inspected">Inspected</option>
         <option value="Not Inspected">Not Inspected</option>
         <option value="Not Present">Not Present</option>
+        <option value="Repair or Replace">Repair or Replace</option>
       </select>
     </div>
   );

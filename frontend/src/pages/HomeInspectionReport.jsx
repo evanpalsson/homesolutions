@@ -142,8 +142,13 @@ const HomeInspectionReport = () => {
 
     return (
       <div className="inspection-item" key={itemName}>
-        <h3 className="item-header">{indexPrefix} {itemName}</h3>
-
+        <div className="item-header-line">
+          <h3 className="item-header">{indexPrefix} {itemName}</h3>
+          <span className={`status-pill ${item.inspection_status || "Not Inspected"}`}>
+            {item.inspection_status || "Not Inspected"}
+          </span>    
+        </div>
+        
         <div className="item-details">
           {materialList && (
             <div className="item-block">
