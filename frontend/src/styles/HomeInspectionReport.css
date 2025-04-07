@@ -353,3 +353,45 @@ body {
 .inspection-content {
   padding: 0;
 }
+
+.item-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.item-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.status-pill {
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #e0e0e0;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.status-pill.Inspected {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pill.Not.Present {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.status-pill.Not.Inspected {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-pill.Repair {
+  background-color: #f8d7da;
+  color: #721c24;
+}
