@@ -28,7 +28,8 @@ const InspectionSidebar = () => {
           <li key={worksheet.path} className={`sidebar-item ${worksheet.path.toLowerCase()}`}>
             <NavLink
               to={`/inspection-form/${inspectionId}/${propertyId}/${worksheet.path}`}
-              className={({ isActive }) => `worksheet-link ${isActive ? 'active' : ''}`}
+              className="worksheet-link"
+              activeClassName="active"
             >
               {worksheet.name}
             </NavLink>

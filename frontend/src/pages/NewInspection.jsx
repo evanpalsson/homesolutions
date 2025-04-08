@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useJsApiLoader, StandaloneSearchBox } from '@react-google-maps/api';
 import axios from 'axios';
 import '../styles/NewInspection.css';
@@ -33,7 +33,7 @@ const libraries = ['places'];
 // testAPI();
 
 function NewInspection() {
-    const navigate = useNavigate();
+    const history = useHistory();
     const inputref = useRef(null);
     const [addressDetails, setAddressDetails] = useState({
         street: '',
@@ -111,7 +111,7 @@ function NewInspection() {
             if (response.status === 200) {
                 const { property_id, inspection_id } = response.data;
     
-                navigate(`/inspection-form/${inspection_id}/${property_id}/HomeDetails`);
+                history.push(`/inspection-form/${inspection_id}/${property_id}/HomeDetails`);
                 console.log("Navigating to HomeDetails:", { inspection_id, property_id });
             }
         } catch (error) {
