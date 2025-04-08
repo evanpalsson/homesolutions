@@ -52,7 +52,7 @@
   width: 18px;
   height: 18px;
   margin-right: 8px;
-  background-image: url("/public/images/section-header.png");
+  background-image: url("/images/section-header.png");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
@@ -65,7 +65,7 @@
   width: 20px;
   height: 17px;
   margin-right: 8px;
-  background-image: url("/public/images/general.png");
+  background-image: url("/images/general.png");
   background-size: contain;
   background-repeat: no-repeat;
   vertical-align: middle;
