@@ -1,5 +1,25 @@
+// InspectionCRUD.jsx
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
+import React from "react";
+
+export const InspectionStatusDropdown = ({ value, onChange }) => {
+  return (
+    <div className="item-list">
+      <label><strong>Status:</strong></label>
+      <select
+        value={value || "Not Inspected"}
+        onChange={(e) => onChange(e.target.value)}
+        className="status-dropdown"
+      >
+        <option value="Inspected">Inspected</option>
+        <option value="Not Inspected">Not Inspected</option>
+        <option value="Not Present">Not Present</option>
+        <option value="Repair or Replace">Repair or Replace</option>
+      </select>
+    </div>
+  );
+};
 
 export function InspectionCRUD(inspectionId, section) {
   const [formData, setFormData] = useState({});

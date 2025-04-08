@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import InspectionStatusDropdown from "./InspectionStatusDropdown";
+import { InspectionStatusDropdown } from "../components/InspectionCRUD";
 import "../styles/InspectionWorksheets.css";
 
 const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) => {
