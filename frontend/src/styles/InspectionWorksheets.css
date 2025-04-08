@@ -42,7 +42,7 @@ body {
     width: 24px;
     height: 26px;
     margin-right: 5px;
-    background-image: url("/public/images/details.png");
+    background-image: url("/images/details.png");
     background-size: contain;
     background-repeat: no-repeat;
     vertical-align: middle;

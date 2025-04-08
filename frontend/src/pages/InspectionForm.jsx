@@ -72,15 +72,15 @@ const InspectionForm = () => {
                     key={worksheetId}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20, display: 'none'}}
+                    exit={{ opacity: 0, x: 20, display: 'none'}}
                     transition={{ duration: 0.4 }}
                     className="inspection-content"
                 >
                     <WorksheetComponent
-                    inspectionData={inspectionData}
-                    propertyId={propertyId}
-                    onFieldChange={handleFieldChange}
-                    />
+                        inspectionData={inspectionData}
+                        propertyId={propertyId}
+                        onFieldChange={handleFieldChange}
+                    /> 
                 </motion.div>
             </AnimatePresence>
         </div>
