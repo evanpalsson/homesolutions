@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import HomeInspectionReport from '../pages/HomeInspectionReport';
 import SignUpForm from '../pages/SignUpForm';
@@ -8,15 +8,19 @@ import NewInspection from '../pages/NewInspection';
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/:inspectionId/:propertyId/home-inspection-report" element={<HomeInspectionReport />} />
-      <Route path="/sign-up-form" element={<SignUpForm />} />
-      <Route path="/new-inspection" element={<NewInspection />} />
-
-      {/* Dynamic route for inspection worksheets */}
-      <Route path="/inspection-form/:inspectionId/:propertyId/:worksheetId" element={<InspectionForm />} />
-    </Routes>
+    <Switch>
+      <Route exact path="/" component={HomePage} />
+      <Route
+        path="/:inspectionId/:propertyId/home-inspection-report"
+        component={HomeInspectionReport}
+      />
+      <Route path="/sign-up-form" component={SignUpForm} />
+      <Route path="/new-inspection" component={NewInspection} />
+      <Route
+        path="/inspection-form/:inspectionId/:propertyId/:worksheetId"
+        component={InspectionForm}
+      />
+    </Switch>
   );
 };
 

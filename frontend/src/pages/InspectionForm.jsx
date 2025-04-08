@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../components/InspectionSidebar";
 import axios from "axios";
 import "../styles/InspectionForm.css";
 
 const InspectionForm = () => {
     const { inspectionId, propertyId, worksheetId } = useParams(); // propertyId may be used for advanced API logic
-    const navigate = useNavigate();
     const [WorksheetComponent, setWorksheetComponent] = useState(null);
     const [inspectionData, setInspectionData] = useState({});
     const apiEndpoint = `http://localhost:8080/api/inspection-details/${inspectionId}/${propertyId}`;
@@ -14,7 +14,6 @@ const InspectionForm = () => {
     useEffect(() => {
         if (!inspectionId) {
             console.error("Inspection ID is missing!");
-            navigate("/error"); // Redirect to an error page or fallback route
             return;
         }
 
@@ -31,7 +30,7 @@ const InspectionForm = () => {
         };
 
         fetchInspectionData();
-    }, [inspectionId, apiEndpoint, navigate]);
+    }, [inspectionId, apiEndpoint]);
 
     useEffect(() => {
         // Determine the active worksheet
@@ -68,13 +67,22 @@ const InspectionForm = () => {
     return (
         <div className="inspection-form-container">
             <Sidebar />
-            <div className="inspection-content">
-                <WorksheetComponent
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={worksheetId}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20, display: 'none'}}
+                    transition={{ duration: 0.4 }}
+                    className="inspection-content"
+                >
+                    <WorksheetComponent
                     inspectionData={inspectionData}
                     propertyId={propertyId}
                     onFieldChange={handleFieldChange}
-                />
-            </div>
+                    />
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 };

@@ -40,6 +40,20 @@ services:
         condition: service_healthy
     command: air # Assuming you use the air tool for live reload
 
+  # frontend:
+  #   container_name: frontend
+  #   build:
+  #     context: ./frontend
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   depends_on:
+  #     mysql:
+  #       condition: service_healthy
+  #   command: npm start # Development server
+
   frontend:
     container_name: frontend
     build:
@@ -52,7 +66,9 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    command: npm start # Development server
+    command: npm run dev
+    stdin_open: true
+    tty: true
 
 volumes:
   db_data:
