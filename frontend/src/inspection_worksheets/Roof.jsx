@@ -48,7 +48,7 @@ const Roof = () => {
 
   return (
     <div>
-      <h1>6. PLUMBING</h1>
+      <h1>2. ROOF</h1>
       <InspectionSections
         items={items}
         formData={formData}

@@ -53,180 +53,156 @@ const Summary = () => {
 //     systemsComponents: "<p class='question intro-description'>DESCRIPTION</p><p class='desc-desc'>Covers built-in systems and miscellaneous components like garage doors and safety features.</p>",
 //   };
 
-  useEffect(() => {
-    if (!inspectionId || !propertyId) return;
-  
-    const fetchData = async () => {
-      try {
-        const apiBase = "http://localhost:8080";
-  
-        // 1. Get address and inspection details
-        const [addressRes, detailsRes] = await Promise.all([
-          axios.get(`${apiBase}/api/get-address/${propertyId}`),
-          axios.get(`${apiBase}/api/inspection-details/${inspectionId}/${propertyId}`)
-        ]);
-        const propertyDetailsRes = await axios.get(`${apiBase}/api/property-details/${propertyId}/${inspectionId}`);
-            setPropertyData({
-            ...addressRes.data,
-            ...propertyDetailsRes.data,
-        });
-        setInspectionData(detailsRes.data);
-  
-        // 2. Get section data
-        const sectionResults = await Promise.all(
-          sections.map(section =>
-            axios.get(`${apiBase}/api/inspection-${section}/${inspectionId}`)
-              .then(res => ({ section, data: res.data || [] }))
-              .catch(err => {
-                console.error(`Error loading ${section} data:`, err);
-                return { section, data: [] };
-              })
-          )
-        );
-        const sectionMap = {};
-        sectionResults.forEach(({ section, data }) => {
-          sectionMap[section] = data;
-        });
-        setSectionData(sectionMap);
-  
-        // 3. Get item photos grouped by item_name
-        const photoRes = await axios.get(`${apiBase}/api/inspection-photo-all/${inspectionId}`);
-        const groupedPhotos = {};
-        const photos = Array.isArray(photoRes.data) ? photoRes.data : [];
+useEffect(() => {
+  if (!inspectionId || !propertyId) return;
 
-        photos.forEach(photo => {
+  const fetchData = async () => {
+    try {
+      const apiBase = "http://localhost:8080";
+
+      const [addressRes, detailsRes] = await Promise.all([
+        axios.get(`${apiBase}/api/get-address/${propertyId}`),
+        axios.get(`${apiBase}/api/inspection-details/${inspectionId}/${propertyId}`)
+      ]);
+      const propertyDetailsRes = await axios.get(`${apiBase}/api/property-details/${propertyId}/${inspectionId}`);
+      setPropertyData({ ...addressRes.data, ...propertyDetailsRes.data });
+      setInspectionData(detailsRes.data);
+
+      const sectionResults = await Promise.all(
+        sections.map(section =>
+          axios.get(`${apiBase}/api/inspection-${section}/${inspectionId}`)
+            .then(res => ({ section, data: res.data || [] }))
+            .catch(err => {
+              console.error(`Error loading ${section} data:`, err);
+              return { section, data: [] };
+            })
+        )
+      );
+      const sectionMap = {};
+      sectionResults.forEach(({ section, data }) => {
+        sectionMap[section] = data;
+      });
+      setSectionData(sectionMap);
+
+      const photoRes = await axios.get(`${apiBase}/api/inspection-photo-all/${inspectionId}`);
+      const groupedPhotos = {};
+      const photos = Array.isArray(photoRes.data) ? photoRes.data : [];
+
+      photos.forEach(photo => {
         if (!groupedPhotos[photo.item_name]) {
-            groupedPhotos[photo.item_name] = [];
+          groupedPhotos[photo.item_name] = [];
         }
         groupedPhotos[photo.item_name].push(photo);
-        });
-        setPhotosByItem(groupedPhotos);
-  
-      } catch (error) {
-        console.error("Error fetching inspection report data:", error);
-      }
-    };
-  
-    fetchData();
-  }, [inspectionId, propertyId, sections]);
-  
+      });
+      setPhotosByItem(groupedPhotos);
 
-  const renderItem = (item, indexPrefix) => {
-    const itemName = item.item_name || item.itemName;
-    const materialList = item.materials
-      ? Object.keys(item.materials).filter(key => item.materials[key]).join(", ")
-      : "";
-    const conditionList = item.conditions
-      ? Object.keys(item.conditions).filter(key => item.conditions[key]).join(", ")
-      : "";
-
-    return (
-      <div className="inspection-item" key={itemName}>
-        <h3 className="item-header">{indexPrefix} {itemName}</h3>
-
-        <div className="item-details">
-          {materialList && (
-            <div className="item-block">
-              <strong>Styles & Materials:</strong> {materialList}
-            </div>
-          )}
-          {conditionList && (
-            <div className="item-block">
-              <strong>Condition:</strong> {conditionList}
-            </div>
-          )}
-          
-        </div>
-
-        {item.comments && item.comments.trim() !== "" && (
-            <div className="item-block">
-              <strong>Observation:</strong> {item.comments}
-            </div>
-        )}
-
-        {photosByItem[itemName] && (
-          <div className="item-photos">
-            <div className="photo-gallery">
-              {photosByItem[itemName].map(photo => (
-                <img
-                  key={photo.photo_id}
-                  src={`http://localhost:8080${photo.photo_url}`}
-                  alt={itemName}
-                  className="report-photo"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+    } catch (error) {
+      console.error("Error fetching inspection report data:", error);
+    }
   };
-  
-  return (
-    <div className="report-wrapper">
 
-      {propertyData && (
-        <section className="report-summary">
-            <h2 className="section-header property-info">PROPERTY INFO</h2>
-            <div className="overview-grid">
-            <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
-            <div><strong>Year Built:</strong> {propertyData.year_built || "N/A"}</div>
-            <div><strong>Square Footage:</strong> {propertyData.square_footage ? `${propertyData.square_footage} sq ft` : "N/A"}</div>
-            <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
-            <div><strong>Bedrooms:</strong> {propertyData.bedrooms || "N/A"}</div>
-            <div><strong>Bathrooms:</strong> {propertyData.bathrooms || "N/A"}</div>
-            </div>
-        </section>
+  fetchData();
+}, [inspectionId, propertyId, sections]);
+
+const renderItem = (item, indexPrefix) => {
+  const itemName = item.item_name || item.itemName;
+  const materialList = item.materials ? Object.keys(item.materials).filter(key => item.materials[key]).join(", ") : "";
+  const conditionList = item.conditions ? Object.keys(item.conditions).filter(key => item.conditions[key]).join(", ") : "";
+
+  return (
+    <div className="inspection-item" key={itemName}>
+      <div className="item-header-line">
+        <h3 className="item-header">{indexPrefix} {itemName}</h3>
+        <span className={`status-pill ${item.inspection_status || "Not Inspected"}`}>
+          {item.inspection_status || "Not Inspected"}
+        </span>
+      </div>
+
+      <div className="item-details">
+        {materialList && <div className="item-block"><strong>Styles & Materials:</strong> {materialList}</div>}
+        {conditionList && <div className="item-block"><strong>Condition:</strong> {conditionList}</div>}
+      </div>
+
+      {item.comments && item.comments.trim() !== "" && (
+        <div className="item-block">
+          <strong>Observation:</strong> {item.comments}
+        </div>
       )}
 
-      {inspectionData && (
-        <section className="report-summary">
-            <h2 className="section-header inspection-overview">INSPECTION OVERVIEW</h2>
-            <div className="overview-grid">
-            <div><strong>Inspection Date:</strong> {inspectionData.inspection_date}</div>
-            <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
-            <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
-            <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
-            <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
-            <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
-            <div><strong>Mold Test Performed:</strong> {inspectionData.mold_test ? "Yes" : "No"}</div>
-            </div>
-        </section>
-        )}
-
-      {sections.reduce((acc, section) => {
-        const data = sectionData[section];
-        const hasPhotos = data?.some(item => photosByItem[item.item_name || item.itemName]);
-        if ((!data || data.length === 0) && !hasPhotos) return acc;
-
-        acc.push({ section, data });
-        return acc;
-      }, []).map((sectionInfo, visibleIdx) => {
-        const { section, data } = sectionInfo;
-        return (
-          <section key={section} className="report-section">
-            <h2 className="section-header">{`${visibleIdx + 1}. ${sectionTitles[section]}`}</h2>
-
-            {/* {sectionDescriptions[section] && (
-              <div
-                className="section-description"
-                dangerouslySetInnerHTML={{ __html: sectionDescriptions[section] }}
+      {photosByItem[itemName] && (
+        <div className="item-photos">
+          <div className="photo-gallery">
+            {photosByItem[itemName].map(photo => (
+              <img
+                key={photo.photo_id}
+                src={`http://localhost:8080${photo.photo_url}`}
+                alt={itemName}
+                className="report-photo"
               />
-            )} */}
-
-            {data.map((item, idx) => {
-              const prefix = `${visibleIdx + 1}.${idx + 1}`;
-              return renderItem(item, prefix);
-            })}
-          </section>
-        );
-      })}
-
-      <footer className="report-footer">
-        <p>© Total Home Solutions. All rights reserved.</p>
-      </footer>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
+};
+
+return (
+  <div className="report-wrapper">
+    <h1 className="section-title">SUMMARY</h1>
+    {propertyData && (
+      <section className="report-summary">
+        <h2 className="section-header property-info">PROPERTY INFO</h2>
+        <div className="overview-grid">
+          <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
+          <div><strong>Year Built:</strong> {propertyData.year_built || "N/A"}</div>
+          <div><strong>Square Footage:</strong> {propertyData.square_footage ? `${propertyData.square_footage} sq ft` : "N/A"}</div>
+          <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
+          <div><strong>Bedrooms:</strong> {propertyData.bedrooms || "N/A"}</div>
+          <div><strong>Bathrooms:</strong> {propertyData.bathrooms || "N/A"}</div>
+        </div>
+      </section>
+    )}
+
+    {inspectionData && (
+      <section className="report-summary">
+        <h2 className="section-header inspection-overview">INSPECTION OVERVIEW</h2>
+        <div className="overview-grid">
+          <div><strong>Inspection Date:</strong> {inspectionData.inspection_date}</div>
+          <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
+          <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
+          <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
+          <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
+          <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
+          <div><strong>Mold Test Performed:</strong> {inspectionData.mold_test ? "Yes" : "No"}</div>
+        </div>
+      </section>
+    )}
+
+    {sections.reduce((acc, section) => {
+      const data = sectionData[section];
+      const hasPhotos = data?.some(item => photosByItem[item.item_name || item.itemName]);
+      if ((!data || data.length === 0) && !hasPhotos) return acc;
+      acc.push({ section, data });
+      return acc;
+    }, []).map((sectionInfo, visibleIdx) => {
+      const { section, data } = sectionInfo;
+      return (
+        <section key={section} className="report-section">
+          <h2 className="section-header">{`${visibleIdx + 1}. ${sectionTitles[section]}`}</h2>
+          {data.map((item, idx) => {
+            const prefix = `${visibleIdx + 1}.${idx + 1}`;
+            return renderItem(item, prefix);
+          })}
+        </section>
+      );
+    })}
+
+    <footer className="report-footer">
+      <p>© Total Home Solutions. All rights reserved.</p>
+    </footer>
+  </div>
+);
 };
 
 export default Summary;

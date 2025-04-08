@@ -13,7 +13,6 @@ body {
     margin-bottom: 20px;
     margin-left: 1rem;
     font-size: 1.5rem;
-    letter-spacing: 1px;
   }
 
   .inspection-content .container h1 {
@@ -25,7 +24,7 @@ body {
     max-width: 900px;
     margin-left: 1rem;
     background: #f9f9f9;
-    padding: 30px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   }

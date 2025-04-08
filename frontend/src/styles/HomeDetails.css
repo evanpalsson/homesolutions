@@ -5,12 +5,13 @@
   }
   
   .section-title {
-    font-size: 1.75rem;
     color: #003366;
-    font-weight: bold;
+    font-size: 1.5rem;
     margin-bottom: 1rem;
-    border-bottom: 2px solid #003366;
-    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #bdc3c7;
+    padding-bottom: 5px;
+    margin-top: 20px;
+    margin-left: 0px;
   }
   
   .details-box {

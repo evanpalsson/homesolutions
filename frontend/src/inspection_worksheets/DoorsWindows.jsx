@@ -48,7 +48,7 @@ const DoorsWindows = () => {
 
   return (
     <div>
-      <h1>3. BASEMENT & FOUNDATION</h1>
+      <h1>9. DOORS & WINDOWS</h1>
       <InspectionSections
         items={items}
         formData={formData}

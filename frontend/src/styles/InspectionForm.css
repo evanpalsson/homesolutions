@@ -16,13 +16,13 @@
   padding: 20px;
   overflow-y: auto;
   margin-left: 250px;
+  max-width: 900px;
 }
 
 .container {
     font-family: Arial, sans-serif;
     width: 70%;
-    /* margin: auto; */
-    padding: 20px;
+    padding: 0px 20px;
   }
   
   h1 {
