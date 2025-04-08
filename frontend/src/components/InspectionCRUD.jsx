@@ -82,9 +82,13 @@ export function InspectionCRUD(inspectionId, section) {
       Object.values(updated.materials || {}).some(Boolean) ||
       Object.values(updated.conditions || {}).some(Boolean);
 
-    if (!isOverride && hasSelected) {
-      updated.inspection_status = "Inspected";
-    }
+      if (
+        !isOverride &&
+        currentStatus === "Not Inspected" &&
+        hasSelected
+      ) {
+        updated.inspection_status = "Inspected";
+      }      
 
     const updatedData = {
       ...formData,
