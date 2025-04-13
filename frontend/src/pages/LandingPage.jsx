@@ -14,7 +14,7 @@ const LandingPage = () => {
       />
       <h1 className="landing-title">Welcome to Homebrella</h1>
       <p className="landing-subtitle">All your home’s vital info under one roof.</p>
-      <button className="landing-button" onClick={() => history.push("/sign-up-form")}>
+      <button className="landing-button" onClick={() => history.push("/login")}>
         Login
       </button>
     </div>

@@ -1,38 +1,28 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
+	// "fmt"
 	"log"
 	"net/http"
 
+	// "golang.org/x/crypto/bcrypt"
+
 	database "home_solutions/backend/database"
+	middleware "home_solutions/backend/middleware"
 	routes "home_solutions/backend/routes"
 )
 
 func main() {
-	// Initialize database
+	// hash, _ := bcrypt.GenerateFromPassword([]byte("test123"), bcrypt.DefaultCost)
+	// fmt.Println(string(hash))
 	db := database.Connect()
 	defer db.Close()
 
-	// Register routes
 	router := routes.RegisterRoutes(db)
 
-	// Serve static files from the uploads directory
 	router.PathPrefix("/uploads/").Handler(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
 
-	// Start the server
+	handler := middleware.CORSMiddleware(router)
 	log.Println("Server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
-
-	// testing the db
-	url := "http://localhost:8080/api/save-address"
-	jsonData := `{"street_name_num": "test"}`
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(jsonData)))
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	defer resp.Body.Close()
-	fmt.Println("Response Status:", resp.Status)
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }

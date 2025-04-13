@@ -3,6 +3,7 @@ package auth
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -21,6 +22,7 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Token    string `json:"token"`
 	UserType string `json:"user_type"`
+	UserID   int    `json:"user_id"`
 }
 
 func Login(db *sql.DB) http.HandlerFunc {
@@ -33,20 +35,26 @@ func Login(db *sql.DB) http.HandlerFunc {
 
 		user, err := users.GetUserByEmail(db, req.Email)
 		if err != nil {
+			log.Println("User not found for email:", req.Email)
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
+		log.Printf("Found user: %s (%s)", user.Email, user.UserType)
+		log.Printf("Stored hash: %s", user.Password)
+		log.Printf("Entered password: %s", req.Password)
+
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+			log.Println("Password mismatch:", err)
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
 		// Generate JWT
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"user_id": user.ID,
-			"role":    user.UserType,
-			"exp":     time.Now().Add(24 * time.Hour).Unix(),
+			"user_id":   user.ID,
+			"user_type": user.UserType,
+			"exp":       time.Now().Add(24 * time.Hour).Unix(),
 		})
 
 		refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -81,6 +89,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 		res := LoginResponse{
 			Token:    tokenString,
 			UserType: user.UserType,
+			UserID:   user.ID,
 		}
 
 		w.Header().Set("Content-Type", "application/json")

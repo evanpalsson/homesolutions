@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 
-	"home_solutions/backend/handlers/inspections.go"
+	"home_solutions/backend/handlers/inspections"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"

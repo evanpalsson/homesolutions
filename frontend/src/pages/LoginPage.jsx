@@ -15,33 +15,34 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-  
+
     if (!form.email || !form.password) {
       setError("Please enter both email and password.");
       return;
     }
-  
+
     try {
-      const res = await axios.post("http://localhost:8080/api/login", {
-        email: form.email,
-        password: form.password,
-      });
-  
-      const { token, role } = res.data;
-  
-      // Store token locally
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-  
-      // Redirect user to the appropriate dashboard
-      if (userType === "admin") history.push("/admin");
-      else if (userType === "inspector") history.push("/inspector");
-      else history.push("/dashboard");
-  
-    } catch (err) {
-      console.error(err);
-      setError("Invalid credentials. Please try again.");
-    }
+        const response = await axios.post("/login", {
+            email: form.email,
+            password: form.password,
+          });          
+      
+        const { token, user_type, user_id } = response.data;
+      
+        localStorage.setItem("token", token);
+        localStorage.setItem("user_type", user_type);
+        localStorage.setItem("user_id", user_id);
+      
+        console.log("Login successful, user_type:", user_type);
+      
+        if (user_type === "admin") history.push("/admin/dashboard");
+        else if (user_type === "inspector") history.push("/inspector/dashboard");
+        else if (user_type === "homeowner") history.push("/dashboard");
+        else history.push("/");
+      } catch (err) {
+        console.error(err);
+        setError("Invalid credentials. Please try again.");
+      }
   };
 
   return (

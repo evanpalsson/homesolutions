@@ -1,6 +1,6 @@
 -- Create Users table
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password TEXT,
@@ -9,11 +9,12 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (name, email, password, user_type)
+INSERT INTO users (id, name, email, password, user_type)
 VALUES (
-  'Test Homeowner',
+  1,
+  'Evan',
   'homeowner@example.com',
-  '$2a$10$7zWpZQ6D.xMIAXPMn5E38O0M.Xi2s3pxKdUimClI5s20rwXccacXK', -- plaintext: "test123"
+  '$2a$10$pR89ZB4RBGtYLViGNL7.I./uRIWG.jBne9PA4vwFuwCIvlEZT18fq',
   'homeowner'
 );
 

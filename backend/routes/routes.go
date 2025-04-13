@@ -3,13 +3,13 @@ package routes
 import (
 	"database/sql"
 	auth "home_solutions/backend/handlers/auth"
-	inspection "home_solutions/backend/handlers/inspections.go"
+	homeowner "home_solutions/backend/handlers/homeowner"
+	inspection "home_solutions/backend/handlers/inspections"
 	properties "home_solutions/backend/handlers/properties"
 
 	// users "home_solutions/backend/models/users"
 	"net/http"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -21,9 +21,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/login", auth.Login(db)).Methods("POST")
 	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST")
 	router.HandleFunc("/api/refresh-token", auth.RefreshToken).Methods("POST")
+	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST", "OPTIONS")
 
-	// User routes
-	// router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
+	// Dashboard routes
+	router.HandleFunc("/api/homeowner/{userId}/dashboard", homeowner.GetHomeownerDashboard(db)).Methods("GET", "OPTIONS")
 
 	// Address handling routes
 	router.HandleFunc("/api/get-address/{property_id}", properties.GetAddressByPropertyID).Methods("GET")
@@ -82,20 +83,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.GetPropertyPhoto).Methods("GET")
 	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.DeletePropertyPhoto).Methods("DELETE", "OPTIONS")
 
-	// Enable CORS
-	corsHandler := handlers.CORS(
-		handlers.AllowedOrigins([]string{"http://localhost:3000"}),                   // Allow frontend origin
-		handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "PUT", "DELETE"}), // Include OPTIONS for preflight
-		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
-	)(router)
-
 	// This line ensures any request to /uploads/... will serve files from the ./uploads/ folder
 	router.PathPrefix("/uploads/").Handler(
 		http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))),
 	)
-
-	// Start the server
-	http.ListenAndServe(":8080", corsHandler)
 
 	return router
 }
