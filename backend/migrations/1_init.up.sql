@@ -9,6 +9,14 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+INSERT INTO users (name, email, password, user_type)
+VALUES (
+  'Test Homeowner',
+  'homeowner@example.com',
+  '$2a$10$7zWpZQ6D.xMIAXPMn5E38O0M.Xi2s3pxKdUimClI5s20rwXccacXK', -- plaintext: "test123"
+  'homeowner'
+);
+
 -- Create Properties table
 CREATE TABLE IF NOT EXISTS properties (
     property_id VARCHAR(255) PRIMARY KEY,
