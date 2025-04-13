@@ -2,7 +2,8 @@ package users
 
 import (
 	"database/sql"
-	"errors"
+	"log"
+	"strings"
 )
 
 type User struct {
@@ -14,15 +15,34 @@ type User struct {
 }
 
 // GetUserByEmail fetches a user by email from the database
-func GetUserByEmail(db *sql.DB, email string) (User, error) {
+func GetUserByEmail(db *sql.DB, email string) (*User, error) {
+	// Normalize input
+	email = strings.TrimSpace(strings.ToLower(email))
+
 	var user User
-	query := "SELECT id, name, email, password, user_type FROM users WHERE email = ?"
+	query := `
+		SELECT user_id, name, email, password, user_type
+		FROM users
+		WHERE TRIM(LOWER(email)) = TRIM(LOWER(?))
+	`
 	err := db.QueryRow(query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.UserType)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return user, errors.New("user not found")
+		log.Printf("User not found or error during lookup for email '%s': %v", email, err)
+
+		// Optional: debug available emails in DB
+		if rows, dbErr := db.Query("SELECT email FROM users"); dbErr == nil {
+			defer rows.Close()
+			log.Println("Current DB emails:")
+			for rows.Next() {
+				var em string
+				rows.Scan(&em)
+				log.Printf(" - %s", em)
+			}
 		}
-		return user, err
+
+		return nil, err
 	}
-	return user, nil
+
+	log.Printf("User found: ID=%d, Email=%s, Type=%s", user.ID, user.Email, user.UserType)
+	return &user, nil
 }

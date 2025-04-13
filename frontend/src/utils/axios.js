@@ -2,35 +2,40 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-const instance = axios.create({
+const api = axios.create({
   baseURL: "http://localhost:8080/api",
-  withCredentials: true, // needed to send refresh cookie
+  withCredentials: true, // Ensures cookies like refresh token are sent
 });
 
-instance.interceptors.request.use(async (config) => {
+api.interceptors.request.use(async (config) => {
   let token = localStorage.getItem("token");
 
   if (token) {
-    const decoded = jwtDecode(token);
-    const isExpired = decoded.exp * 1000 < Date.now();
+    try {
+      const decoded = jwtDecode(token);
+      const isExpired = decoded.exp * 1000 < Date.now();
 
-    if (isExpired) {
-      try {
-        const res = await axios.post("http://localhost:8080/api/refresh-token", {}, { withCredentials: true });
+      if (isExpired) {
+        // Attempt token refresh
+        const res = await axios.post(
+          "http://localhost:8080/api/refresh-token",
+          {},
+          { withCredentials: true }
+        );
+
         token = res.data.token;
         localStorage.setItem("token", token);
-      } catch (err) {
-        console.error("Session expired");
-        localStorage.clear();
-        window.location.href = "/login";
-        return config;
       }
-    }
 
-    config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
+    } catch (error) {
+      console.error("Token expired or invalid. Logging out.");
+      localStorage.clear();
+      window.location.href = "/login";
+    }
   }
 
   return config;
 });
 
-export default instance;
+export default api;

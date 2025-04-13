@@ -16,8 +16,16 @@ const AppRoutes = () => {
     <Switch>
       <Route exact path="/" component={LandingPage} />
       <Route path="/login" component={LoginPage} />
-      <ProtectedRoute path="/inspector" component={InspectorDashboard} allowedRoles={["inspector"]} />
-      <ProtectedRoute path="/dashboard" component={HomeownerDashboard} allowedRoles={["homeowner"]} />
+      <ProtectedRoute
+        path="/inspector/dashboard"
+        component={InspectorDashboard}
+        allowedRoles={["inspector"]}
+      />
+      <ProtectedRoute
+        path="/dashboard"
+        component={HomeownerDashboard}
+        allowedRoles={["homeowner"]}
+      />
       <ProtectedRoute path="/admin" component={AdminDashboard} allowedRoles={["admin"]} />
       <Route
         path="/:inspectionId/:propertyId/home-inspection-report"

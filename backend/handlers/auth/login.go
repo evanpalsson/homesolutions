@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,65 +30,71 @@ func Login(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
+			http.Error(w, "Invalid request payload", http.StatusBadRequest)
 			return
 		}
 
-		user, err := users.GetUserByEmail(db, req.Email)
+		normalizedEmail := strings.ToLower(strings.TrimSpace(req.Email))
+
+		user, err := users.GetUserByEmail(db, normalizedEmail)
 		if err != nil {
-			log.Println("User not found for email:", req.Email)
+			log.Printf("User not found for email: %s (err: %v)", normalizedEmail, err)
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		log.Printf("Found user: %s (%s)", user.Email, user.UserType)
-		log.Printf("Stored hash: %s", user.Password)
-		log.Printf("Entered password: %s", req.Password)
+		log.Printf("Found user in DB: %s (type: %s)", user.Email, user.UserType)
 
+		// Compare password
 		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 			log.Println("Password mismatch:", err)
 			http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		// Generate JWT
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		// Generate access token
+		accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"user_id":   user.ID,
 			"user_type": user.UserType,
 			"exp":       time.Now().Add(24 * time.Hour).Unix(),
 		})
 
+		secret := os.Getenv("JWT_SECRET")
+		accessTokenStr, err := accessToken.SignedString([]byte(secret))
+		if err != nil {
+			log.Println("Failed to sign access token:", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Generate refresh token
 		refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"user_id":   user.ID,
 			"user_type": user.UserType,
 			"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
 		})
-		refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+		refreshTokenStr, err := refreshToken.SignedString([]byte(secret))
 		if err != nil {
-			http.Error(w, "Refresh token generation failed", http.StatusInternalServerError)
+			log.Println("Failed to sign refresh token:", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		// Set refresh token as cookie
+		// Set refresh token cookie
 		http.SetCookie(w, &http.Cookie{
 			Name:     "refresh_token",
-			Value:    refreshTokenString,
+			Value:    refreshTokenStr,
 			Path:     "/api/refresh-token",
 			HttpOnly: true,
-			Secure:   true, // only if using HTTPS
+			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  time.Now().Add(7 * 24 * time.Hour),
 		})
 
-		secret := os.Getenv("JWT_SECRET")
-		tokenString, err := token.SignedString([]byte(secret))
-		if err != nil {
-			http.Error(w, "Token generation failed", http.StatusInternalServerError)
-			return
-		}
-
+		// Respond with access token and user info
 		res := LoginResponse{
-			Token:    tokenString,
+			Token:    accessTokenStr,
 			UserType: user.UserType,
 			UserID:   user.ID,
 		}
@@ -127,4 +134,16 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	tokenString, _ := newAccessToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
 
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+}
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+	})
+	w.WriteHeader(http.StatusOK)
 }

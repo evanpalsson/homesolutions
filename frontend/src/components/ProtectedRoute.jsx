@@ -10,6 +10,7 @@ const ProtectedRoute = ({ component: Component, allowedRoles, ...rest }) => {
         const token = localStorage.getItem("token");
 
         if (!token) {
+          console.log("No token found. Redirecting to login.");
           return <Redirect to="/login" />;
         }
 
@@ -18,16 +19,21 @@ const ProtectedRoute = ({ component: Component, allowedRoles, ...rest }) => {
           const isExpired = decoded.exp * 1000 < Date.now();
 
           if (isExpired) {
+            console.log("Token expired. Logging out.");
             localStorage.clear();
             return <Redirect to="/login" />;
           }
 
-          if (allowedRoles && !allowedRoles.includes(decoded.user_type)) {
-            return <Redirect to="/login" />;
+          const userType = decoded.user_type;
+
+          if (allowedRoles && !allowedRoles.includes(userType)) {
+            console.log("Unauthorized user type:", userType);
+            return <Redirect to="/" />;
           }
 
           return <Component {...props} />;
         } catch (error) {
+          console.error("Invalid token. Logging out.", error);
           localStorage.clear();
           return <Redirect to="/login" />;
         }

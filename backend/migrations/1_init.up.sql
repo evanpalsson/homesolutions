@@ -9,15 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (id, name, email, password, user_type)
-VALUES (
-  1,
-  'Evan',
-  'homeowner@example.com',
-  '$2a$10$pR89ZB4RBGtYLViGNL7.I./uRIWG.jBne9PA4vwFuwCIvlEZT18fq',
-  'homeowner'
-);
-
 -- Create Properties table
 CREATE TABLE IF NOT EXISTS properties (
     property_id VARCHAR(255) PRIMARY KEY,
@@ -36,7 +27,7 @@ CREATE TABLE IF NOT EXISTS properties (
     property_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (owner_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 INSERT INTO properties (

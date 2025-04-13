@@ -22,6 +22,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST")
 	router.HandleFunc("/api/refresh-token", auth.RefreshToken).Methods("POST")
 	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST", "OPTIONS")
+	router.HandleFunc("/api/logout", auth.Logout).Methods("POST")
 
 	// Dashboard routes
 	router.HandleFunc("/api/homeowner/{userId}/dashboard", homeowner.GetHomeownerDashboard(db)).Methods("GET", "OPTIONS")

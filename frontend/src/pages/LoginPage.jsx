@@ -35,10 +35,15 @@ const LoginPage = () => {
       
         console.log("Login successful, user_type:", user_type);
       
-        if (user_type === "admin") history.push("/admin/dashboard");
-        else if (user_type === "inspector") history.push("/inspector/dashboard");
-        else if (user_type === "homeowner") history.push("/dashboard");
-        else history.push("/");
+        if (user_type === "admin") {
+            history.push("/admin/dashboard");
+          } else if (user_type === "inspector") {
+            history.push("/inspector/dashboard"); // ✅ Make sure this matches your route path
+          } else if (user_type === "homeowner") {
+            history.push("/dashboard");
+          } else {
+            history.push("/");
+          }
       } catch (err) {
         console.error(err);
         setError("Invalid credentials. Please try again.");
