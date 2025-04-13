@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../components/InspectionSidebar";
-import axios from "axios";
+import axios from "../utils/axios";
 import "../styles/InspectionForm.css";
 
 const InspectionForm = () => {

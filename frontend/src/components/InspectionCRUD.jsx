@@ -1,6 +1,6 @@
 // InspectionCRUD.jsx
 import { useState, useCallback, useEffect } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import React from "react";
 
 export const InspectionStatusDropdown = ({ value, onChange }) => {

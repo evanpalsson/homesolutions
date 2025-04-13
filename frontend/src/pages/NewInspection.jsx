@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useJsApiLoader, StandaloneSearchBox } from '@react-google-maps/api';
-import axios from 'axios';
+import axios from "../utils/axios";
 import '../styles/NewInspection.css';
 
 const libraries = ['places'];

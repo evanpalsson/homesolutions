@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from "../utils/axios";
 import '../styles/InspectionForm.css';
 
 function PropertyDetails() {

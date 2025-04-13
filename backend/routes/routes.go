@@ -20,6 +20,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// Authentication routes
 	router.HandleFunc("/login", auth.Login(db)).Methods("POST")
 	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST")
+	router.HandleFunc("/api/refresh-token", auth.RefreshToken).Methods("POST")
 
 	// User routes
 	// router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")

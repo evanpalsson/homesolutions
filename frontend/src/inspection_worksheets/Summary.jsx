@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios";
 import "../styles/HomeInspectionReport.css";
 import "../styles/InspectionWorksheets.css";
 

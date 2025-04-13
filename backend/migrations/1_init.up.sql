@@ -9,9 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (name, email, password_hash) VALUES
-('Admin User', 'admin@example.com', 'hashed_password_here');
-
 -- Create Properties table
 CREATE TABLE IF NOT EXISTS properties (
     property_id VARCHAR(255) PRIMARY KEY,

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import "../styles/LoginPage.css";
-import axios from "axios";
+import axios from "../utils/axios";
 
 const LoginPage = () => {
   const history = useHistory();
@@ -34,8 +34,8 @@ const LoginPage = () => {
       localStorage.setItem("role", role);
   
       // Redirect user to the appropriate dashboard
-      if (role === "admin") history.push("/admin");
-      else if (role === "inspector") history.push("/inspector");
+      if (userType === "admin") history.push("/admin");
+      else if (userType === "inspector") history.push("/inspector");
       else history.push("/dashboard");
   
     } catch (err) {

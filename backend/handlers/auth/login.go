@@ -49,6 +49,28 @@ func Login(db *sql.DB) http.HandlerFunc {
 			"exp":     time.Now().Add(24 * time.Hour).Unix(),
 		})
 
+		refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"user_id":   user.ID,
+			"user_type": user.UserType,
+			"exp":       time.Now().Add(7 * 24 * time.Hour).Unix(),
+		})
+		refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
+		if err != nil {
+			http.Error(w, "Refresh token generation failed", http.StatusInternalServerError)
+			return
+		}
+
+		// Set refresh token as cookie
+		http.SetCookie(w, &http.Cookie{
+			Name:     "refresh_token",
+			Value:    refreshTokenString,
+			Path:     "/api/refresh-token",
+			HttpOnly: true,
+			Secure:   true, // only if using HTTPS
+			SameSite: http.SameSiteStrictMode,
+			Expires:  time.Now().Add(7 * 24 * time.Hour),
+		})
+
 		secret := os.Getenv("JWT_SECRET")
 		tokenString, err := token.SignedString([]byte(secret))
 		if err != nil {
@@ -64,4 +86,36 @@ func Login(db *sql.DB) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(res)
 	}
+}
+
+func RefreshToken(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		http.Error(w, "Refresh token missing", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, "Invalid refresh token", http.StatusUnauthorized)
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		return
+	}
+
+	newAccessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":   claims["user_id"],
+		"user_type": claims["user_type"],
+		"exp":       time.Now().Add(15 * time.Minute).Unix(),
+	})
+	tokenString, _ := newAccessToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
 }
