@@ -2,42 +2,26 @@ package users
 
 import (
 	"database/sql"
-	"encoding/json"
-	"net/http"
+	"errors"
 )
 
-// User represents a user in the system
 type User struct {
-	ID       int    `json:"id" gorm:"primaryKey"`
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	Email    string `json:"email" gorm:"unique"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
+	UserType string `json:"user_type"` // was 'Role'
 }
 
-func GetUsers(db *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := db.Query("SELECT id, name, email FROM users")
-		if err != nil {
-			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
-			return
+func GetUserByEmail(db *sql.DB, email string) (User, error) {
+	var user User
+	query := "SELECT id, name, email, password, role FROM users WHERE email = ?"
+	err := db.QueryRow(query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.UserType)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user, errors.New("user not found")
 		}
-		defer rows.Close()
-
-		var users []map[string]interface{}
-		for rows.Next() {
-			var id int
-			var name, email string
-			if err := rows.Scan(&id, &name, &email); err != nil {
-				http.Error(w, "Failed to parse user data", http.StatusInternalServerError)
-				return
-			}
-			users = append(users, map[string]interface{}{
-				"id":    id,
-				"name":  name,
-				"email": email,
-			})
-		}
-
-		json.NewEncoder(w).Encode(users)
+		return user, err
 	}
+	return user, nil
 }

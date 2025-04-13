@@ -12,8 +12,8 @@ import (
 )
 
 func CreateUser(db *sql.DB, user users.User) error {
-	query := "INSERT INTO users (name, email, password) VALUES (?, ?, ?)"
-	_, err := db.Exec(query, user.Name, user.Email, user.Password)
+	query := "INSERT INTO users (name, email, password, user_type) VALUES (?, ?, ?, ?)"
+	_, err := db.Exec(query, user.Name, user.Email, user.Password, user.UserType)
 	if err != nil {
 		log.Println("Error creating user:", err)
 		return err

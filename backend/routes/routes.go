@@ -5,7 +5,8 @@ import (
 	auth "home_solutions/backend/handlers/auth"
 	inspection "home_solutions/backend/handlers/inspections.go"
 	properties "home_solutions/backend/handlers/properties"
-	users "home_solutions/backend/models/users"
+
+	// users "home_solutions/backend/models/users"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -19,11 +20,9 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	// Authentication routes
 	router.HandleFunc("/login", auth.Login(db)).Methods("POST")
 	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST")
-	router.HandleFunc("/api/auth/google", auth.GoogleAuthHandler).Methods("POST")
-	router.HandleFunc("/api/auth/apple", auth.AppleAuthHandler).Methods("POST")
 
 	// User routes
-	router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
+	// router.HandleFunc("/users", users.GetUsers(db)).Methods("GET")
 
 	// Address handling routes
 	router.HandleFunc("/api/get-address/{property_id}", properties.GetAddressByPropertyID).Methods("GET")
