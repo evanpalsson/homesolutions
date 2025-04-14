@@ -2,13 +2,14 @@ package routes
 
 import (
 	"database/sql"
+	"net/http"
+
 	auth "home_solutions/backend/handlers/auth"
 	dashboards "home_solutions/backend/handlers/dashboards"
 	homeowner "home_solutions/backend/handlers/homeowner"
 	inspection "home_solutions/backend/handlers/inspections"
 	properties "home_solutions/backend/handlers/properties"
-	"home_solutions/backend/middleware"
-	"net/http"
+	middleware "home_solutions/backend/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -16,78 +17,67 @@ import (
 func RegisterRoutes(db *sql.DB) *mux.Router {
 	router := mux.NewRouter()
 
-	// Authentication routes
-	router.HandleFunc("/login", auth.Login(db)).Methods("POST")
-	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST")
-	router.HandleFunc("/api/refresh-token", auth.RefreshToken).Methods("POST")
-	router.HandleFunc("/api/login", auth.Login(db)).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/logout", auth.Logout).Methods("POST")
+	// Helper to wrap with CORS middleware
+	withCORS := func(h http.HandlerFunc) http.Handler {
+		return middleware.EnableCORS(http.HandlerFunc(h))
+	}
+
+	// Auth routes
+	router.Handle("/api/login", withCORS(auth.Login(db))).Methods("POST", "OPTIONS")
+	router.Handle("/api/refresh-token", withCORS(http.HandlerFunc(auth.RefreshToken))).Methods("POST", "OPTIONS")
+	router.Handle("/api/logout", withCORS(http.HandlerFunc(auth.Logout))).Methods("POST", "OPTIONS")
 
 	// Dashboard routes
-	router.HandleFunc("/api/homeowner/{userId}/dashboard", homeowner.GetHomeownerDashboard(db)).Methods("GET", "OPTIONS")
-	router.HandleFunc("/api/inspector/{id}/dashboard", dashboards.GetInspectorDashboard).Methods("GET")
+	router.Handle("/api/homeowner/{userId}/dashboard", withCORS(homeowner.GetHomeownerDashboard(db))).Methods("GET", "OPTIONS")
+	router.Handle("/api/inspector/{id}/dashboard", withCORS(http.HandlerFunc(dashboards.GetInspectorDashboard))).Methods("GET", "OPTIONS")
 
-	// Address handling routes
-	router.HandleFunc("/api/get-address/{property_id}", properties.GetAddressByPropertyID).Methods("GET")
-	router.HandleFunc("/api/save-address", properties.SaveAddress).Methods("POST", "OPTIONS")
+	// Address and property routes
+	router.Handle("/api/get-address/{property_id}", withCORS(properties.GetAddressByPropertyID)).Methods("GET", "OPTIONS")
+	router.Handle("/api/save-address", withCORS(properties.SaveAddress)).Methods("POST", "OPTIONS")
+	router.Handle("/api/property-details/{property_id}/{inspection_id}", withCORS(properties.GetPropertyDetails)).Methods("GET", "OPTIONS")
+	router.Handle("/api/property-details", withCORS(properties.SaveOrUpdateProperty)).Methods("POST", "PUT", "OPTIONS")
 
-	// Property details handling
-	router.HandleFunc("/api/property-details/{property_id}/{inspection_id}", properties.GetPropertyDetails).Methods("GET")
-	router.HandleFunc("/api/property-details", properties.SaveOrUpdateProperty).Methods("POST", "PUT", "OPTIONS")
+	// Inspection routes
+	router.Handle("/api/inspection-details/{inspection_id}/{property_id}", withCORS(inspection.GetInspectionForm)).Methods("GET", "OPTIONS")
+	router.Handle("/api/create-inspection", withCORS(inspection.CreateInspection)).Methods("POST", "OPTIONS")
+	router.Handle("/api/update-inspection", withCORS(inspection.UpdateInspection)).Methods("PUT", "OPTIONS")
 
-	// Inspection details handling routes
-	router.HandleFunc("/api/inspection-details/{inspection_id}/{property_id}", inspection.GetInspectionForm).Methods("GET")
-	router.HandleFunc("/api/create-inspection", inspection.CreateInspection).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/update-inspection", inspection.UpdateInspection).Methods("PUT", "OPTIONS")
+	// Worksheet routes
+	worksheets := map[string]struct {
+		Get  http.HandlerFunc
+		Post http.HandlerFunc
+	}{
+		"exterior":           {inspection.GetExteriorData(), inspection.SaveExteriorData()},
+		"roof":               {inspection.GetRoofData(), inspection.SaveRoofData()},
+		"basementFoundation": {inspection.GetBasementData(), inspection.SaveBasementData()},
+		"heating":            {inspection.GetHeatingData(), inspection.SaveHeatingData()},
+		"cooling":            {inspection.GetCoolingData(), inspection.SaveCoolingData()},
+		"plumbing":           {inspection.GetPlumbingData(), inspection.SavePlumbingData()},
+		"electrical":         {inspection.GetElectricalData(), inspection.SaveElectricalData()},
+		"attic":              {inspection.GetAtticData(), inspection.SaveAtticData()},
+		"doorsWindows":       {inspection.GetDoorsWindowsData(), inspection.SaveDoorsWindowsData()},
+		"fireplace":          {inspection.GetFireplaceData(), inspection.SaveFireplaceData()},
+		"systemsComponents":  {inspection.GetSystemsComponentsData(), inspection.SaveSystemsComponentsData()},
+	}
 
-	// Inspection worksheets
-	// EXTERIOR
-	router.HandleFunc("/api/inspection-exterior/{inspection_id}", inspection.GetExteriorData()).Methods("GET")
-	router.HandleFunc("/api/inspection-exterior", inspection.SaveExteriorData()).Methods("POST")
-	// ROOF
-	router.HandleFunc("/api/inspection-roof/{inspection_id}", inspection.GetRoofData()).Methods("GET")
-	router.HandleFunc("/api/inspection-roof", inspection.SaveRoofData()).Methods("POST")
-	// BASEMENT FOUNDATION
-	router.HandleFunc("/api/inspection-basementFoundation/{inspection_id}", inspection.GetBasementData()).Methods("GET")
-	router.HandleFunc("/api/inspection-basementFoundation", inspection.SaveBasementData()).Methods("POST")
-	//  HEATING
-	router.HandleFunc("/api/inspection-heating/{inspection_id}", inspection.GetHeatingData()).Methods("GET")
-	router.HandleFunc("/api/inspection-heating", inspection.SaveHeatingData()).Methods("POST")
-	//  COOLING
-	router.HandleFunc("/api/inspection-cooling/{inspection_id}", inspection.GetCoolingData()).Methods("GET")
-	router.HandleFunc("/api/inspection-cooling", inspection.SaveCoolingData()).Methods("POST")
-	//  PLUMBING
-	router.HandleFunc("/api/inspection-plumbing/{inspection_id}", inspection.GetPlumbingData()).Methods("GET")
-	router.HandleFunc("/api/inspection-plumbing", inspection.SavePlumbingData()).Methods("POST")
-	// ELECTRICAL
-	router.HandleFunc("/api/inspection-electrical/{inspection_id}", inspection.GetElectricalData()).Methods("GET")
-	router.HandleFunc("/api/inspection-electrical", inspection.SaveElectricalData()).Methods("POST")
-	// ATTIC
-	router.HandleFunc("/api/inspection-attic/{inspection_id}", inspection.GetAtticData()).Methods("GET")
-	router.HandleFunc("/api/inspection-attic", inspection.SaveAtticData()).Methods("POST")
-	// DOORS WINDOWS
-	router.HandleFunc("/api/inspection-doorsWindows/{inspection_id}", inspection.GetDoorsWindowsData()).Methods("GET")
-	router.HandleFunc("/api/inspection-doorsWindows", inspection.SaveDoorsWindowsData()).Methods("POST")
-	// FIREPLACE
-	router.HandleFunc("/api/inspection-fireplace/{inspection_id}", inspection.GetFireplaceData()).Methods("GET")
-	router.HandleFunc("/api/inspection-fireplace", inspection.SaveFireplaceData()).Methods("POST")
-	// SYSTEMS COMPONENTS
-	router.HandleFunc("/api/inspection-systemsComponents/{inspection_id}", inspection.GetSystemsComponentsData()).Methods("GET")
-	router.HandleFunc("/api/inspection-systemsComponents", inspection.SaveSystemsComponentsData()).Methods("POST")
-	// INSPECTIONS WORKSHEETS AND REPORT PHOTO HANDLING
-	router.HandleFunc("/api/inspection-photo", inspection.UploadInspectionPhoto).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/inspection-photo/{inspection_id}/{item_name}", inspection.GetInspectionPhotos).Methods("GET")
-	router.HandleFunc("/api/inspection-photo/{photo_id}", inspection.DeleteInspectionPhoto).Methods("DELETE")
-	router.HandleFunc("/api/inspection-photo-all/{inspection_id}", inspection.GetAllInspectionPhotos).Methods("GET")
-	// PROPERTY DETAILS COMPONENT PHOTO HANDLING
-	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.UploadPropertyPhoto).Methods("POST", "OPTIONS")
-	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.GetPropertyPhoto).Methods("GET")
-	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.DeletePropertyPhoto).Methods("DELETE", "OPTIONS")
+	for section, handlers := range worksheets {
+		router.Handle("/api/inspection-"+section+"/{inspection_id}", withCORS(handlers.Get)).Methods("GET", "OPTIONS")
+		router.Handle("/api/inspection-"+section, withCORS(handlers.Post)).Methods("POST", "OPTIONS")
+	}
 
-	// Serve static files from ./uploads folder
-	uploadsHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/")))
-	router.PathPrefix("/uploads/").Handler(middleware.EnableCORS(uploadsHandler))
+	// Inspection photo routes
+	router.Handle("/api/inspection-photo", withCORS(http.HandlerFunc(inspection.UploadInspectionPhoto))).Methods("POST", "OPTIONS")
+	router.Handle("/api/inspection-photo/{inspection_id}/{item_name}", withCORS(http.HandlerFunc(inspection.GetInspectionPhotos))).Methods("GET", "OPTIONS")
+	router.Handle("/api/inspection-photo/{photo_id}", withCORS(http.HandlerFunc(inspection.DeleteInspectionPhoto))).Methods("DELETE", "OPTIONS")
+	router.Handle("/api/inspection-photo-all/{inspection_id}", withCORS(http.HandlerFunc(inspection.GetAllInspectionPhotos))).Methods("GET", "OPTIONS")
+
+	// Property photo routes
+	router.Handle("/api/property-photo/{inspection_id}", withCORS(http.HandlerFunc(inspection.UploadPropertyPhoto))).Methods("POST", "OPTIONS")
+	router.Handle("/api/property-photo/{inspection_id}", withCORS(http.HandlerFunc(inspection.GetPropertyPhoto))).Methods("GET", "OPTIONS")
+	router.Handle("/api/property-photo/{inspection_id}", withCORS(http.HandlerFunc(inspection.DeletePropertyPhoto))).Methods("DELETE", "OPTIONS")
+
+	// Static file serving
+	router.PathPrefix("/uploads/").Handler(middleware.CORSFileServer(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/")))))
 
 	return router
-
 }

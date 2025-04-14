@@ -18,61 +18,31 @@ function PropertyDetails() {
 
     const [photoURL, setPhotoURL] = useState(null);
     const [reportId, setReportId] = useState(null);
-
     const years = Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i).reverse();
 
     useEffect(() => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
 
-        const fetchAddress = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get(`http://localhost:${apiPort}/api/get-address/${propertyId}`);
-                if (response.status === 200) setAddressDetails(response.data);
-            } catch (error) {
-                console.error("Error fetching address:", error.response?.data || error.message);
+                const [addressRes, propertyRes, photoRes, reportRes] = await Promise.all([
+                    axios.get(`http://localhost:${apiPort}/api/get-address/${propertyId}`),
+                    axios.get(`http://localhost:${apiPort}/api/property-details/${propertyId}/${inspectionId}`),
+                    axios.get(`http://localhost:${apiPort}/api/property-photo/${inspectionId}`),
+                    axios.get(`http://localhost:${apiPort}/api/inspection-details/${inspectionId}/${propertyId}`)
+                ]);
+
+                if (addressRes.status === 200) setAddressDetails(addressRes.data);
+                if (propertyRes.status === 200) setPropertyDetails(prev => ({ ...prev, ...propertyRes.data }));
+                if (photoRes.data?.length > 0) setPhotoURL(`http://localhost:${apiPort}${photoRes.data[0].photo_url}`);
+                if (reportRes.status === 200 && reportRes.data?.report_id) setReportId(reportRes.data.report_id);
+
+            } catch (err) {
+                console.error("Error fetching initial data:", err.response?.data || err.message);
             }
         };
 
-        const fetchPropertyDetails = async () => {
-            try {
-                const response = await axios.get(`http://localhost:${apiPort}/api/property-details/${propertyId}/${inspectionId}`);
-                if (response.status === 200) {
-                    setPropertyDetails((prevState) => ({ ...prevState, ...response.data }));
-                }
-            } catch (error) {
-                console.error("Error fetching property details:", error.response?.data || error.message);
-            }
-        };
-
-        const fetchPhoto = async () => {
-            try {
-                const response = await axios.get(`http://localhost:${apiPort}/api/property-photo/${inspectionId}`);
-                if (response.data.length > 0) {
-                    setPhotoURL(response.data[0].photo_url);
-                }
-            } catch (error) {
-                console.warn("No property photo found:", error.response?.data || error.message);
-            }
-        };
-
-        const fetchReportId = async () => {
-            const apiPort = process.env.REACT_APP_DB_PORT || 8080;
-            try {
-                const response = await axios.get(`http://localhost:${apiPort}/api/inspection-details/${inspectionId}/${propertyId}`);
-                if (response.status === 200 && response.data.report_id) {
-                    setReportId(response.data.report_id);
-                }
-            } catch (error) {
-                console.error("Error fetching report ID:", error.response?.data || error.message);
-            }
-        };
-
-        if (propertyId && inspectionId) {
-            fetchAddress();
-            fetchPropertyDetails();
-            fetchPhoto();
-            fetchReportId();
-        }
+        if (propertyId && inspectionId) fetchData();
     }, [propertyId, inspectionId]);
 
     const debounce = (func, delay) => {
@@ -105,28 +75,29 @@ function PropertyDetails() {
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-    
+
         const uploadPhoto = async () => {
             const apiPort = process.env.REACT_APP_DB_PORT || 8080;
             const formData = new FormData();
             formData.append("photo", file);
-    
+
             try {
                 const response = await axios.post(
                     `http://localhost:${apiPort}/api/property-photo/${inspectionId}`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
-                if (response.status === 200) {
-                    setPhotoURL(response.data.photo_url);
+
+                if (response.status === 200 && response.data?.photo_url) {
+                    setPhotoURL(`http://localhost:${apiPort}${response.data.photo_url}`);
                 }
-            } catch (error) {
-                console.error("Upload failed:", error.response?.data || error.message);
+            } catch (err) {
+                console.error("Upload failed:", err.response?.data || err.message);
             }
         };
-    
+
         uploadPhoto();
-    };    
+    };
 
     const handleDelete = async () => {
         const apiPort = process.env.REACT_APP_DB_PORT || 8080;
@@ -198,32 +169,35 @@ function PropertyDetails() {
 
                 <div className="info-item">
                     <strong>Upload Property Photo:</strong>
-
                     {!photoURL && (
-                        <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        />
+                        <input type="file" accept="image/*" onChange={handlePhotoChange} />
                     )}
-
                     {photoURL && (
-                        <div style={{ marginTop: '0px' }}>
-                        <img src={photoURL} alt="Property" style={{ maxWidth: '225px', height: 'auto' }} />
-                        <button
-                            style={{
-                            backgroundColor: '#4a90e2',
-                            color: 'white',
-                            border: 'none',
-                            padding: '12px 20px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            width: '100%'
-                            }}
-                            onClick={handleDelete}
-                        >
-                            Delete Photo
-                        </button>
+                        <div style={{ marginTop: "10px" }}>
+                            <img
+                                src={photoURL}
+                                alt="Property"
+                                style={{ maxWidth: "225px", height: "auto" }}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/images/placeholder.png";
+                                }}
+                            />
+                            <button
+                                style={{
+                                    backgroundColor: "#4a90e2",
+                                    color: "white",
+                                    border: "none",
+                                    padding: "12px 20px",
+                                    borderRadius: "4px",
+                                    cursor: "pointer",
+                                    width: "100%",
+                                    marginTop: "10px"
+                                }}
+                                onClick={handleDelete}
+                            >
+                                Delete Photo
+                            </button>
                         </div>
                     )}
                 </div>

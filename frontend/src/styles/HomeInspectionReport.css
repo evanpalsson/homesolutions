@@ -77,14 +77,6 @@ body {
   padding-bottom: 6px;
 }
 
-.inspection-item {
-  margin-bottom: 0.8rem;
-  padding: 0.5rem;
-  background: #f9f9f9;
-  border-left: 4px solid #003366;
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
-}
-
 .item-header {
   font-size: 1.2rem;
   font-weight: bold;
@@ -113,7 +105,7 @@ body {
 }
 
 .item-block:hover {
-  background-color: #E5E4E2;
+  background-color: #E5E4E2 !important;
 }
 
 .item-block ul {
@@ -395,3 +387,43 @@ body {
   background-color: #f8d7da;
   color: #721c24;
 }
+
+.inspection-item img {
+  max-width: 250px;
+  height: auto;
+  transition: transform 0.3s ease;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inspection-item img:hover {
+  transform: scale(2);
+  z-index: 10;
+  position: relative;
+}
+
+.inspection-item.Inspected {
+  border-left: 4px solid #b6dbc2; /* green */
+}
+
+.inspection-item.Repair-or-Replace {
+  border-left: 4px solid #e6b9bd; /* red */
+}
+
+.inspection-item.Not-Inspected {
+  border-left: 4px solid #f0dcaa; /* yellow */
+}
+
+.inspection-item.Not-Present {
+  border-left: 4px solid #c8c8c8; /* gray */
+}
+
+.inspection-item {
+  margin-bottom: 0.8rem;
+  padding: 0.5rem;
+  background: #f9f9f9 !important;
+  border-left: 4px solid #003366;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+}
+
+
