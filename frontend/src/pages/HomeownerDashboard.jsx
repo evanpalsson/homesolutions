@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "../utils/axios";
 import "../styles/HomeownerDashboard.css";
 import { useHistory } from "react-router-dom";
+import { handleLogout } from "../utils/logout";
 
 const HomeownerDashboard = () => {
   const history = useHistory();
+  const logout = handleLogout(history);
 
   const [userData, setUserData] = useState(null);
   // eslint-disable-next-line
@@ -30,16 +32,6 @@ const HomeownerDashboard = () => {
 
     fetchData();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await axios.post("/logout", {}, { withCredentials: true }); // clear refresh cookie
-    } catch (err) {
-      console.error("Error logging out:", err);
-    }
-    localStorage.clear();
-    history.push("/"); // ✅ this now works
-  };
 
   return (
     <div className="dashboard-container">
@@ -110,7 +102,7 @@ const HomeownerDashboard = () => {
             ))}
             </section>
 
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={logout}>Logout</button>
         </>
         )}
     </div>

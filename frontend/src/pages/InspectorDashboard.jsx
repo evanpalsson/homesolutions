@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { handleLogout } from "../utils/logout";
 import axios from "../utils/axios";
 import "../styles/InspectorDashboard.css";
 
 const InspectorDashboard = () => {
   const history = useHistory();
+  const logout = handleLogout(history);
   const [inspectorName, setInspectorName] = useState("");
   const [activeCount, setActiveCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -65,6 +67,7 @@ const InspectorDashboard = () => {
           <p>No recent inspections.</p>
         )}
       </section>
+      <button onClick={logout}>Logout</button>
     </div>
   );
 };
