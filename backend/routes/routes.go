@@ -3,17 +3,16 @@ package routes
 import (
 	"database/sql"
 	auth "home_solutions/backend/handlers/auth"
+	dashboards "home_solutions/backend/handlers/dashboards"
 	homeowner "home_solutions/backend/handlers/homeowner"
 	inspection "home_solutions/backend/handlers/inspections"
 	properties "home_solutions/backend/handlers/properties"
-
-	// users "home_solutions/backend/models/users"
+	"home_solutions/backend/middleware"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-// RegisterRoutes registers all API routes
 func RegisterRoutes(db *sql.DB) *mux.Router {
 	router := mux.NewRouter()
 
@@ -26,6 +25,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 
 	// Dashboard routes
 	router.HandleFunc("/api/homeowner/{userId}/dashboard", homeowner.GetHomeownerDashboard(db)).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/inspector/{id}/dashboard", dashboards.GetInspectorDashboard).Methods("GET")
 
 	// Address handling routes
 	router.HandleFunc("/api/get-address/{property_id}", properties.GetAddressByPropertyID).Methods("GET")
@@ -84,10 +84,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.GetPropertyPhoto).Methods("GET")
 	router.HandleFunc("/api/property-photo/{inspection_id}", inspection.DeletePropertyPhoto).Methods("DELETE", "OPTIONS")
 
-	// This line ensures any request to /uploads/... will serve files from the ./uploads/ folder
-	router.PathPrefix("/uploads/").Handler(
-		http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))),
-	)
+	// Serve static files from ./uploads folder
+	uploadsHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/")))
+	router.PathPrefix("/uploads/").Handler(middleware.EnableCORS(uploadsHandler))
 
 	return router
+
 }

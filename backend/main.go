@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -71,13 +72,13 @@ func main() {
 	seedUsers(db)
 
 	router := routes.RegisterRoutes(db)
-	handler := middleware.CORSMiddleware(router)
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: handler,
-	}
+	// Serve static files separately from /uploads/ WITHOUT CORS
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
 
-	log.Println("Server is running on http://localhost:8080")
-	log.Fatal(server.ListenAndServe())
+	// Wrap all other routes with CORS
+	corsWrapped := middleware.EnableCORS(router)
+
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", corsWrapped))
 }

@@ -105,8 +105,8 @@ const HomeInspectionReport = () => {
         // 4. Get cover photo (property photo)
         const coverRes = await axios.get(`${apiBase}/api/property-photo/${inspectionId}`);
         if (Array.isArray(coverRes.data) && coverRes.data.length > 0) {
-            const rawUrl = coverRes.data[0].photo_url;
-            setPropertyPhotoUrl(rawUrl.startsWith("http") ? rawUrl : `${apiBase}/${rawUrl}`);
+          const rawUrl = coverRes.data[0].photo_url;
+          setPropertyPhotoUrl(`${apiBase}/${rawUrl.replace(/^\/+/, "")}`);          
         } else {
           console.log("No cover photo found.");
           setPropertyPhotoUrl("/images/placeholder.png");
@@ -175,10 +175,19 @@ const HomeInspectionReport = () => {
               {photosByItem[itemName].map(photo => (
                 <img
                   key={photo.photo_id}
-                  src={`http://localhost:8080${photo.photo_url}`}
-                  alt={itemName}
-                  className="report-photo"
-                />
+                  src={
+                    photo.photo_url.startsWith("http")
+                      ? photo.photo_url
+                      : `http://localhost:8080/${photo.photo_url}`
+                  }
+                  alt={`Image of ${itemName}`}
+                  className="property-photo"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/images/house_placeholder.png";
+                  }}
+                  crossOrigin="anonymous"
+                />              
               ))}
             </div>
           </div>
