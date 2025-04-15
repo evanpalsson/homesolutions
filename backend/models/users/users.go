@@ -7,11 +7,12 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	UserType string `json:"user_type"`
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	UserType  string `json:"user_type"`
 }
 
 // GetUserByEmail fetches a user by email from the database
@@ -21,11 +22,11 @@ func GetUserByEmail(db *sql.DB, email string) (*User, error) {
 
 	var user User
 	query := `
-		SELECT user_id, name, email, password, user_type
+		SELECT user_id, first_name, last_name, email, password, user_type
 		FROM users
 		WHERE TRIM(LOWER(email)) = TRIM(LOWER(?))
 	`
-	err := db.QueryRow(query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.UserType)
+	err := db.QueryRow(query, email).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.UserType)
 	if err != nil {
 		log.Printf("User not found or error during lookup for email '%s': %v", email, err)
 

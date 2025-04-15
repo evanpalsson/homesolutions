@@ -1,7 +1,8 @@
 -- Create Users table
 CREATE TABLE IF NOT EXISTS users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password TEXT,
     user_type ENUM('admin', 'inspector', 'homeowner') NOT NULL,
@@ -219,4 +220,14 @@ CREATE TABLE property_photos (
   inspection_id VARCHAR(255),
   photo_url TEXT NOT NULL,
   uploaded_at DATETIME NOT NULL
+);
+
+CREATE TABLE invitations (
+  invite_id CHAR(36) PRIMARY KEY,
+  email VARCHAR(100) NOT NULL,
+  user_type ENUM('inspector') NOT NULL,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP,
+  accepted BOOLEAN DEFAULT FALSE
 );

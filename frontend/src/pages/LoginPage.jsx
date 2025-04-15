@@ -74,6 +74,12 @@ const LoginPage = () => {
           className="login-input"
         />
         <button type="submit" className="login-button">Login</button>
+        <p className="signup-link">
+          Don't have an account?{" "}
+          <span onClick={() => history.push("/sign-up-form")} className="signup-clickable">
+            Sign up here
+          </span>
+        </p>
       </form>
     </div>
   );

@@ -54,3 +54,19 @@
     font-size: 0.9rem;
     margin: -0.5rem 0 0;
   }
+
+  .signup-link {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  
+  .signup-clickable {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .signup-clickable:hover {
+    color: #0056b3;
+  }
+  

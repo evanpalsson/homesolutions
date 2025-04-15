@@ -8,6 +8,7 @@ import (
 	dashboards "home_solutions/backend/handlers/dashboards"
 	homeowner "home_solutions/backend/handlers/homeowner"
 	inspection "home_solutions/backend/handlers/inspections"
+	invitations "home_solutions/backend/handlers/invitations"
 	properties "home_solutions/backend/handlers/properties"
 	middleware "home_solutions/backend/middleware"
 
@@ -26,6 +27,12 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 	router.Handle("/api/login", withCORS(auth.Login(db))).Methods("POST", "OPTIONS")
 	router.Handle("/api/refresh-token", withCORS(http.HandlerFunc(auth.RefreshToken))).Methods("POST", "OPTIONS")
 	router.Handle("/api/logout", withCORS(http.HandlerFunc(auth.Logout))).Methods("POST", "OPTIONS")
+	//Sign up
+	router.HandleFunc("/api/signup", auth.SignUp).Methods("POST")
+	// Invitations
+	router.HandleFunc("/api/invitations", invitations.CreateInvitation(db)).Methods("POST")
+	router.HandleFunc("/api/invitations", invitations.ListInvitations(db)).Methods("GET")
+	router.HandleFunc("/api/validate-invite", invitations.ValidateInvite(db)).Methods("GET")
 
 	// Dashboard routes
 	router.Handle("/api/homeowner/{userId}/dashboard", withCORS(homeowner.GetHomeownerDashboard(db))).Methods("GET", "OPTIONS")

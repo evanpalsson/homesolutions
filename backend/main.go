@@ -17,13 +17,14 @@ import (
 
 func seedUsers(db *sql.DB) {
 	users := []struct {
-		Name     string
-		Email    string
-		Password string
-		UserType string
+		FirstName string
+		LastName  string
+		Email     string
+		Password  string
+		UserType  string
 	}{
-		{"Evan", "homeowner@example.com", "test123", "homeowner"},
-		{"Evan", "inspector@example.com", "test123", "inspector"},
+		{"Evan", "Palsson", "homeowner@example.com", "test123", "homeowner"},
+		{"Evan", "Palsson", "inspector@example.com", "test123", "inspector"},
 	}
 
 	for _, user := range users {
@@ -53,10 +54,11 @@ func seedUsers(db *sql.DB) {
 		}
 
 		_, err = db.Exec(`
-			INSERT INTO users (name, email, password, user_type)
-			VALUES (?, ?, ?, ?)`,
-			user.Name, email, passwordToInsert, user.UserType,
+			INSERT INTO users (first_name, last_name, email, password, user_type)
+			VALUES (?, ?, ?, ?, ?)`,
+			user.FirstName, user.LastName, email, passwordToInsert, user.UserType,
 		)
+
 		if err != nil {
 			log.Printf("Failed to insert user %s: %v", email, err)
 		} else {

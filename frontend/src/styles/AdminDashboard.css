@@ -1,0 +1,32 @@
+.invite-section input {
+    padding: 0.5rem;
+    width: 250px;
+    margin-right: 10px;
+  }
+  
+  .invite-section button {
+    padding: 0.5rem 1rem;
+  }
+  
+  .success-msg {
+    color: green;
+    margin-top: 0.5rem;
+  }
+  
+  .error-msg {
+    color: red;
+    margin-top: 0.5rem;
+  }
+  
+  .invites-list table {
+    margin-top: 1rem;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .invites-list th, .invites-list td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: left;
+  }
+  
