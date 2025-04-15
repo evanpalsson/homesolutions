@@ -23,8 +23,9 @@ func seedUsers(db *sql.DB) {
 		Password  string
 		UserType  string
 	}{
-		{"Evan", "Palsson", "homeowner@example.com", "test123", "homeowner"},
-		{"Evan", "Palsson", "inspector@example.com", "test123", "inspector"},
+		{"Evan", "Palsson", "homeowner@example.com", "test1234", "homeowner"},
+		{"Evan", "Palsson", "inspector@example.com", "test1234", "inspector"},
+		{"Evan", "Palsson", "admin@example.com", "test1234", "admin"},
 	}
 
 	for _, user := range users {
