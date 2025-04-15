@@ -9,12 +9,13 @@ function SignUpForm() {
   const inviteToken = queryParams.get("invite");
 
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    password: "",
-    user_type: invitedRole === "inspector" ? "inspector" : "homeowner",
-  });
+    email: '',
+    password: '',
+    confirmPassword: '',
+    userType: 'homeowner',
+    inviteToken: '',
+    companyName: '',
+  });  
 
   const [inviteValid, setInviteValid] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -75,9 +76,16 @@ function SignUpForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          email: formData.email,
+          password: formData.password,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          user_type: formData.userType,
           invite: inviteToken || null,
-        }),        
+          ...(formData.userType === "inspector" && {
+            company_name: formData.companyName,
+          }),
+        }),     
       });
 
       const result = await response.json();
@@ -144,6 +152,20 @@ function SignUpForm() {
             required
           />
         </div>
+
+        {formData.userType === 'inspector' && (
+          <div className="form-group">
+            <label htmlFor="companyName">Company Name</label>
+            <input
+              type="text"
+              id="companyName"
+              name="companyName"
+              value={formData.companyName || ''}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        )}
 
         <div className="form-group">
           <label>Email</label>

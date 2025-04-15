@@ -21,6 +21,7 @@ type SignUpRequest struct {
 	Password    string `json:"password"`
 	UserType    string `json:"user_type"`
 	InviteToken string `json:"invite,omitempty"`
+	CompanyName string `json:"company_name,omitempty"`
 }
 
 type SignUpResponse struct {
@@ -92,6 +93,19 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	userID64, _ := res.LastInsertId()
 	userID := int(userID64)
+
+	// If inspector, insert into inspectors table
+	if req.UserType == "inspector" && req.CompanyName != "" {
+		stmt, err := db.Prepare("INSERT INTO inspectors (user_id, company_name) VALUES (?, ?)")
+		if err != nil {
+			log.Printf("Failed to prepare inspector insert: %v", err)
+		} else {
+			_, err = stmt.Exec(userID, req.CompanyName)
+			if err != nil {
+				log.Printf("Failed to insert inspector data: %v", err)
+			}
+		}
+	}
 
 	// Generate access token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
