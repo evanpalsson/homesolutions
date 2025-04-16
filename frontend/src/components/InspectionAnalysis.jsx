@@ -1,51 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import axios from "../utils/axios";
-import "../styles/InspectionAnalysis.css";  // (create styling as needed)
+import InspectionAnalysisCard from "./InspectionAnalysisCard";
 
 const InspectionAnalysis = () => {
-  const { inspectionId, propertyId } = useParams();
+  const { inspectionId } = useParams();
   const location = useLocation();
-  const [analysisText, setAnalysisText] = useState("");
+  const propertyId = location.state?.propertyId;
+
+  const [analysis, setAnalysis] = useState([]);
 
   useEffect(() => {
-    // If navigated from HomeInspectionReport, we might have analysis in state (optional)
-    if (location.state && location.state.analysis) {
-      setAnalysisText(location.state.analysis);
-      return;
-    }
-    // Otherwise, fetch from API
     const fetchAnalysis = async () => {
       try {
-        const res = await axios.get(`/api/inspection-analysis/${inspectionId}`);
-        if (res.data && res.data.analysisText) {
-          setAnalysisText(res.data.analysisText);
-        } else {
-          setAnalysisText("No analysis available for this inspection.");
-        }
+        const res = await axios.get(`/inspection-analysis/${inspectionId}`);
+        setAnalysis(res.data); // Ensure this data is in the right format!
       } catch (err) {
-        console.error("Failed to fetch analysis:", err);
-        setAnalysisText("Error loading analysis.");
+        console.error("Failed to load analysis:", err);
       }
     };
+
     fetchAnalysis();
-  }, [inspectionId, location.state]);
+  }, [inspectionId]);
 
   return (
     <div className="analysis-page">
-      <h1>Inspection Analysis</h1>
-      {analysisText ? (
-        // Use <pre> or styled div to preserve formatting of the analysis text
-        <pre className="analysis-content">{analysisText}</pre>
+      <h1>Inspection Analysis Report</h1>
+      {analysis.length > 0 ? (
+        analysis.map((section, idx) => (
+          <InspectionAnalysisCard key={idx} section={section} />
+        ))
       ) : (
-        <p>Loading analysis...</p>
+        <p>No analysis available for this inspection.</p>
       )}
-      <div className="analysis-actions">
-        <Link to={`/property/${propertyId}/inspection/${inspectionId}`}>
-          &#8592; Back to Report
-        </Link>
-        {/* (In the future, a Download PDF button could be added here) */}
-      </div>
     </div>
   );
 };

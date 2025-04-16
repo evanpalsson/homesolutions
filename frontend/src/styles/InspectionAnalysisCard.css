@@ -1,0 +1,42 @@
+.analysis-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 6px solid #bbb;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-body {
+  padding-top: 0.5rem;
+}
+
+.analysis-card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.severity-critical {
+  border-left-color: #c9302c;
+}
+
+.severity-moderate {
+  border-left-color: #f0ad4e;
+}
+
+.severity-informational {
+  border-left-color: #5bc0de;
+}
+
+.severity {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #333;
+}

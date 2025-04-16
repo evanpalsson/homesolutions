@@ -89,7 +89,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 
 	// Analyze home inspection
 	router.Handle("/api/inspection-analysis/{inspection_id}", withCORS(analysis.GetAnalysisHandler(db))).Methods("GET", "OPTIONS")
-	router.Handle("/api/analyze", withCORS(analysis.AnalyzeAndSaveHandler(db))).Methods("POST", "OPTIONS")
+	router.Handle("/api/analyze", withCORS(analysis.AnalyzeAndSaveHandler(db).ServeHTTP)).Methods("POST", "OPTIONS")
 
 	return router
 }
