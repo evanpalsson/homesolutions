@@ -16,7 +16,8 @@
 # production
 /frontend/build
 /frontend/.env
-/backend/.env
+/backend/.env/
+/backend/.env.OPENAI_API_KEY
 
 # misc
 /frontend/.DS_Store
@@ -25,7 +26,6 @@
 /frontend/.env.test.local
 /frontend/.env.production.local
 /frontend/.env.REACT_APP_GOOGLE_API_KEY
-
 /frontend/npm-debug.log*
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
