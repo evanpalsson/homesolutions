@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	analysis "home_solutions/backend/handlers/analysis"
 	auth "home_solutions/backend/handlers/auth"
 	dashboards "home_solutions/backend/handlers/dashboards"
 	homeowner "home_solutions/backend/handlers/homeowner"
@@ -85,6 +86,10 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 
 	// Static file serving
 	router.PathPrefix("/uploads/").Handler(middleware.CORSFileServer(http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/")))))
+
+	// Analyze home inspection
+	router.Handle("/api/inspection-analysis/{inspection_id}", withCORS(analysis.GetAnalysisHandler(db))).Methods("GET", "OPTIONS")
+	router.Handle("/api/analyze", withCORS(analysis.AnalyzeAndSaveHandler(db))).Methods("POST", "OPTIONS")
 
 	return router
 }

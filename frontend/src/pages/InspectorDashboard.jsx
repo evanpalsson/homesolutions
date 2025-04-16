@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import { handleLogout } from "../utils/logout";
 import axios from "../utils/axios";
 import "../styles/InspectorDashboard.css";
@@ -59,7 +59,9 @@ const InspectorDashboard = () => {
           <ul className="inspection-list">
             {recentInspections.map((report) => (
               <li key={report.inspection_id} className="inspection-item">
-                {report.address} - {report.status} ({report.date})
+                <Link to={`/property/${report.property_id}/inspection/${report.inspection_id}`}>
+                  {report.address} - {report.status} ({report.date})
+                </Link>
               </li>
             ))}
           </ul>
@@ -67,6 +69,7 @@ const InspectorDashboard = () => {
           <p>No recent inspections.</p>
         )}
       </section>
+
       <button onClick={logout}>Logout</button>
     </div>
   );

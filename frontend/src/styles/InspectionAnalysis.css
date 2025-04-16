@@ -1,0 +1,23 @@
+.analysis-page {
+    padding: 1.5em;
+  }
+  .analysis-page h1 {
+    margin-bottom: 1em;
+  }
+  .analysis-content {
+    background: #f7f7f7;
+    padding: 1em;
+    white-space: pre-wrap;   /* preserve whitespace and wrap text */
+    line-height: 1.5;
+  }
+  .analysis-actions {
+    margin-top: 1em;
+  }
+  .analysis-actions a {
+    text-decoration: none;
+    color: #007bff;
+  }
+  .analysis-actions a:hover {
+    text-decoration: underline;
+  }
+  

@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import axios from "../utils/axios";
 import "../styles/HomeInspectionReport.css";
 
 const HomeInspectionReport = () => {
   const { propertyId, inspectionId } = useParams();
+  const history = useHistory();
   const [propertyData, setPropertyData] = useState(null);
   const [inspectionData, setInspectionData] = useState(null);
   const [photosByItem, setPhotosByItem] = useState({});
   const [sectionData, setSectionData] = useState({});
   const [propertyPhotoUrl, setPropertyPhotoUrl] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const sections = useMemo(() => [
     "roof", "exterior", "basementFoundation", "heating", "cooling",
@@ -32,7 +34,6 @@ const HomeInspectionReport = () => {
           axios.get(`/get-address/${propertyId}`),
           axios.get(`/inspection-details/${inspectionId}/${propertyId}`)
         ]);
-
         const propertyDetailsRes = await axios.get(`/property-details/${propertyId}/${inspectionId}`);
         setPropertyData({ ...addressRes.data, ...propertyDetailsRes.data });
         setInspectionData(detailsRes.data);
@@ -81,6 +82,54 @@ const HomeInspectionReport = () => {
     });
   };
 
+  const handleAnalyzeReport = async () => {
+    try {
+      const visibleSections = Object.keys(sectionData).filter(sectionKey => {
+        const items = sectionData[sectionKey];
+        const hasItems = items && items.length > 0;
+        const hasPhotos = items?.some(item => photosByItem[item.item_name || item.itemName]);
+        return hasItems || hasPhotos;
+      });
+
+      let reportText = "";
+      visibleSections.forEach((sectionKey, idx) => {
+        const sectionTitle = sectionTitles[sectionKey] || sectionKey;
+        reportText += `${idx + 1}. ${sectionTitle}\n`;
+        sectionData[sectionKey].forEach(item => {
+          if (!item.inspection_status || item.inspection_status === "Not Inspected") return;
+
+          const itemName = item.item_name || item.itemName;
+          const status = item.inspection_status;
+          const conditions = item.conditions 
+            ? Object.keys(item.conditions).filter(c => item.conditions[c]).join(", ")
+            : "";
+
+          reportText += `- ${itemName} (${status}${conditions ? " - " + conditions : ""})\n`;
+          if (item.comments?.trim()) {
+            reportText += `  Observation: ${item.comments.trim()}\n`;
+          }
+        });
+        reportText += "\n";
+      });
+
+      setAnalyzing(true);
+      await axios.post('/analyze', {
+        inspectionId: parseInt(inspectionId, 10),
+        inspectionText: reportText
+      });          
+      setAnalyzing(false);
+
+      history.push({
+        pathname: `/inspection-analysis/${inspectionId}`,
+        state: { propertyId }
+      });      
+    } catch (err) {
+      setAnalyzing(false);
+      console.error("Analysis request failed:", err);
+      alert("Failed to analyze the report.");
+    }
+  };
+
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
     const materialList = item.materials
@@ -112,7 +161,7 @@ const HomeInspectionReport = () => {
           )}
         </div>
 
-        {item.comments && item.comments.trim() !== "" && (
+        {item.comments?.trim() && (
           <div className="item-block">
             <strong>Observation:</strong> {item.comments}
           </div>
@@ -135,6 +184,26 @@ const HomeInspectionReport = () => {
 
   return (
     <div className="report-wrapper">
+      {/* Top-right Analyze button */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+        <button
+          className="analyze-report-button"
+          onClick={handleAnalyzeReport}
+          disabled={analyzing}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#C9302C",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            marginRight: "1rem"
+          }}
+        >
+          {analyzing ? "Analyzing..." : "Analyze Report"}
+        </button>
+      </div>
+
       <section className="cover-page">
         <div className="cover-title">
           <h1 className="property-type">
@@ -178,36 +247,6 @@ const HomeInspectionReport = () => {
           </div>
         )}
       </section>
-
-      {propertyData && (
-        <section className="report-summary">
-          <h2 className="section-header property-info">PROPERTY INFO</h2>
-          <div className="overview-grid">
-            <div><strong>Property Type:</strong> {propertyData.property_type || "N/A"}</div>
-            <div><strong>Year Built:</strong> {propertyData.year_built || "N/A"}</div>
-            <div><strong>Square Footage:</strong> {propertyData.square_footage ? `${propertyData.square_footage} sq ft` : "N/A"}</div>
-            <div><strong>Lot Size:</strong> {propertyData.lot_size ? `${propertyData.lot_size} acres` : "N/A"}</div>
-            <div><strong>Bedrooms:</strong> {propertyData.bedrooms || "N/A"}</div>
-            <div><strong>Bathrooms:</strong> {propertyData.bathrooms || "N/A"}</div>
-          </div>
-        </section>
-      )}
-
-      {inspectionData && (
-        <section className="report-summary">
-          <h2 className="section-header inspection-overview">INSPECTION OVERVIEW</h2>
-          <div className="overview-grid">
-            <div><strong>Inspection Date:</strong> {formatDate(inspectionData?.inspection_date)}</div>
-            <div><strong>Temperature:</strong> {inspectionData.temperature ? `${inspectionData.temperature}°F` : "N/A"}</div>
-            <div><strong>Weather:</strong> {inspectionData.weather || "N/A"}</div>
-            <div><strong>Ground Condition:</strong> {inspectionData.ground_condition || "N/A"}</div>
-            <div><strong>Mold Test Performed:</strong> {inspectionData.mold_test ? "Yes" : "No"}</div>
-            <div><strong>Radon Test Performed:</strong> {inspectionData.radon_test ? "Yes" : "No"}</div>
-            <div><strong>Rain in Last 3 Days:</strong> {inspectionData.rain_last_three_days ? "Yes" : "No"}</div>
-          </div>
-        </section>
-      )}
-
       {sections.reduce((acc, section) => {
         const data = sectionData[section];
         const hasPhotos = data?.some(item => photosByItem[item.item_name || item.itemName]);
@@ -223,10 +262,6 @@ const HomeInspectionReport = () => {
           </section>
         );
       })}
-
-      <footer className="report-footer">
-        <p>© Total Home Solutions. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

@@ -240,3 +240,13 @@ CREATE TABLE invitations (
   expires_at TIMESTAMP,
   accepted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE inspection_analysis (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  inspection_id INT NOT NULL,
+  analysis_text TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (inspection_id),
+  FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
+);
+

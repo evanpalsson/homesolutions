@@ -10,6 +10,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import InspectorDashboard from "../pages/InspectorDashboard";
 import HomeownerDashboard from "../pages/HomeownerDashboard";
 import AdminDashboard from "../pages/AdminDashboard";
+import InspectionAnalysis from "../components/InspectionAnalysis";
 
 const AppRoutes = () => {
   return (
@@ -36,6 +37,15 @@ const AppRoutes = () => {
       <Route
         path="/inspection-form/:inspectionId/:propertyId/:worksheetId"
         component={InspectionForm}
+      />
+      {/* Analysis routing */}
+      <Route
+        path="/property/:propertyId/inspection/:inspectionId"
+        component={HomeInspectionReport}
+      />
+      <Route
+        path="/property/:propertyId/inspection/:inspectionId/analysis"
+        component={InspectionAnalysis}
       />
     </Switch>
   );
