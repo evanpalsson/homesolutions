@@ -3,6 +3,7 @@ package dashboards
 import (
 	"database/sql"
 	"encoding/json"
+	"home_solutions/backend/middleware"
 	"log"
 	"net/http"
 
@@ -24,36 +25,44 @@ type Inspection struct {
 }
 
 func GetInspectorDashboard(w http.ResponseWriter, r *http.Request) {
-	db := r.Context().Value("db").(*sql.DB)
+	ctxDB := r.Context().Value(middleware.DBKey)
+	db, ok := ctxDB.(*sql.DB)
+	if !ok || db == nil {
+		log.Printf("[GetInspectorDashboard] Database connection not found in context")
+		http.Error(w, "Database not available", http.StatusInternalServerError)
+		return
+	}
+
 	vars := mux.Vars(r)
 	inspectorID := vars["id"]
+	if inspectorID == "" {
+		http.Error(w, "Inspector ID is required", http.StatusBadRequest)
+		return
+	}
 
 	var activeCount int
 	var completedCount int
 
-	// Active inspections
 	err := db.QueryRow(`
 		SELECT COUNT(*) FROM inspections
 		WHERE inspector_id = ? AND inspection_status = 'active'
 	`, inspectorID).Scan(&activeCount)
 	if err != nil {
-		log.Printf("Error fetching active inspections: %v", err)
+		log.Printf("[GetInspectorDashboard] Error fetching active inspections: %v", err)
 		http.Error(w, "Failed to fetch active inspections", http.StatusInternalServerError)
 		return
 	}
 
-	// Completed inspections
 	err = db.QueryRow(`
 		SELECT COUNT(*) FROM inspections
 		WHERE inspector_id = ? AND inspection_status = 'completed'
 	`, inspectorID).Scan(&completedCount)
 	if err != nil {
-		log.Printf("Error fetching completed inspections: %v", err)
+		log.Printf("[GetInspectorDashboard] Error fetching completed inspections: %v", err)
 		http.Error(w, "Failed to fetch completed inspections", http.StatusInternalServerError)
 		return
 	}
 
-	// Recent inspections (limit to last 5)
 	rows, err := db.Query(`
 		SELECT inspection_id, address, inspection_status, inspection_date
 		FROM inspections
@@ -62,7 +71,7 @@ func GetInspectorDashboard(w http.ResponseWriter, r *http.Request) {
 		LIMIT 5
 	`, inspectorID)
 	if err != nil {
-		log.Printf("Error fetching recent inspections: %v", err)
+		log.Printf("[GetInspectorDashboard] Error fetching recent inspections: %v", err)
 		http.Error(w, "Failed to fetch recent inspections", http.StatusInternalServerError)
 		return
 	}
@@ -73,14 +82,14 @@ func GetInspectorDashboard(w http.ResponseWriter, r *http.Request) {
 		var ins Inspection
 		err := rows.Scan(&ins.InspectionID, &ins.Address, &ins.Status, &ins.Date)
 		if err != nil {
-			log.Printf("Error scanning inspection row: %v", err)
+			log.Printf("[GetInspectorDashboard] Error scanning row: %v", err)
 			continue
 		}
 		recent = append(recent, ins)
 	}
 
 	res := DashboardResponse{
-		InspectorName:        "Inspector Evan",
+		InspectorName:        "Inspector Evan", // In the future, fetch this from users table
 		ActiveInspections:    activeCount,
 		CompletedInspections: completedCount,
 		RecentInspections:    recent,

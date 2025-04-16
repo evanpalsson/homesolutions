@@ -47,6 +47,11 @@ const AppRoutes = () => {
         path="/property/:propertyId/inspection/:inspectionId/analysis"
         component={InspectionAnalysis}
       />
+      {/* Inspection Analysis */}
+      <Route
+        path="/inspection-analysis/:inspectionId"
+        component={InspectionAnalysis}
+      />
     </Switch>
   );
 };

@@ -224,14 +224,14 @@ CREATE TABLE IF NOT EXISTS inspection_photos (
   INDEX idx_inspection_item (inspection_id, item_name)
 );
 
-CREATE TABLE property_photos (
+CREATE TABLE IF NOT EXISTS property_photos (
   photo_id VARCHAR(255) PRIMARY KEY,
   inspection_id VARCHAR(255),
   photo_url TEXT NOT NULL,
   uploaded_at DATETIME NOT NULL
 );
 
-CREATE TABLE invitations (
+CREATE TABLE IF NOT EXISTS invitations (
   invite_id CHAR(36) PRIMARY KEY,
   email VARCHAR(100) NOT NULL,
   user_type ENUM('inspector') NOT NULL,
@@ -241,12 +241,13 @@ CREATE TABLE invitations (
   accepted BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE inspection_analysis (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  inspection_id INT NOT NULL,
-  analysis_text TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (inspection_id),
-  FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
+CREATE TABLE IF NOT EXISTS inspection_analysis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    inspection_id VARCHAR(36),
+    analysis_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (inspection_id),
+    FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
 );
+
 

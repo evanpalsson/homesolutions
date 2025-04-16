@@ -1,8 +1,14 @@
 package middleware
 
 import (
+	"context"
+	"database/sql"
 	"net/http"
 )
+
+type dbContextKey string
+
+const DBKey dbContextKey = "db"
 
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,4 +67,13 @@ func CORSFileServer(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func DBContextMiddleware(db *sql.DB) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), DBKey, db)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }

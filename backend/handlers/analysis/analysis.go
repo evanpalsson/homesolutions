@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -32,8 +31,8 @@ type ChatResponse struct {
 }
 
 type analyzeRequest struct {
-	InspectionID   int    `json:"inspectionId"`
-	InspectionText string `json:"inspectionText"`
+	InspectionID string `json:"inspection_id"`
+	Text         string `json:"text"`
 }
 
 type IssueCard struct {
@@ -49,42 +48,23 @@ type IssueCard struct {
 // Call OpenAI API with the inspection report text
 func AnalyzeInspection(text string) (string, error) {
 	reqBody := ChatRequest{
-		Model: "gpt-4",
+		Model: "gpt-3.5-turbo",
 		Messages: []MessageData{
 			{Role: "system", Content: `
-				You are a certified home inspector with advanced knowledge in residential systems: roofing, plumbing, electrical, HVAC, foundation, and structural components.
+You are a certified home inspector with advanced knowledge in residential systems: roofing, plumbing, electrical, HVAC, foundation, and structural components.
 
-				You are also experienced in both professional contractor pricing and do-it-yourself (DIY) repair cost estimates.
+You are also experienced in both professional contractor pricing and do-it-yourself (DIY) repair cost estimates.
 
-				Your role is to analyze home inspection reports, identify issues, prioritize them, and for each, provide:
-				- A professional repair/replacement cost estimate
-				- A potential DIY cost estimate (if applicable)
-				- An estimate of the remaining useful life for affected components
+Your role is to analyze home inspection reports, identify issues, prioritize them, and for each, provide:
+- A professional repair/replacement cost estimate
+- A potential DIY cost estimate (if applicable)
+- An estimate of the remaining useful life for affected components
 
-				Respond in a structured, thorough, and homeowner-friendly format.
-				`},
+Respond in a structured, thorough, and homeowner-friendly format.
+			`},
+			{Role: "user", Content: fmt.Sprintf(`Analyze the following home inspection report and format by severity, issue, cost, DIY, life expectancy, and a YouTube search link if applicable:
 
-			{Role: "user", Content: fmt.Sprintf(`
-				Analyze the following home inspection report.
-				
-				For each major section (e.g., Roof, Plumbing, Electrical, HVAC, Foundation):
-				1. Identify and clearly describe each issue.
-				2. Assign a priority level: CRITICAL, MODERATE, or INFORMATIONAL.
-				3. For each issue:
-				   - Provide a brief explanation of the concern.
-				   - Estimate the cost to repair/replace:
-					 - DIY Estimate (if safe and feasible)
-					 - Professional Estimate
-				   - Estimate the remaining useful life of the affected component.
-				   - If the issue is DIY-appropriate, provide a YouTube search link that a homeowner could use to learn how to fix it.
-					 - Format: [Search YouTube](https://www.youtube.com/results?search_query=how+to+FIX_TOPIC)
-				
-				4. Organize the output by severity — from most critical to least important.
-				5. End with a summary that ranks the systems by urgency and cost impact.
-				
-				Here is the report to analyze:
-				%s
-				`, text)},
+%s`, text)},
 		},
 	}
 
@@ -100,23 +80,29 @@ func AnalyzeInspection(text string) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	// Read full body once
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("Failed to read OpenAI response: %v", err)
+	}
+
+	log.Println("🔍 Raw OpenAI response:", string(respBody))
+
+	// Try to decode into expected format
 	var result ChatResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("OpenAI decode failed: %v", err)
+	if err := json.Unmarshal(respBody, &result); err != nil {
+		return "", fmt.Errorf("Failed to parse OpenAI response: %v", err)
 	}
 
 	if len(result.Choices) == 0 {
-		// Optional: Log entire body for debugging
-		raw, _ := io.ReadAll(resp.Body)
-		log.Println("Empty OpenAI response body:", string(raw))
-		return "", fmt.Errorf("no choices returned from OpenAI")
+		return "", fmt.Errorf("No choices returned from OpenAI")
 	}
 
 	return result.Choices[0].Message.Content, nil
 }
 
 // Save analysis result to the database
-func SaveAnalysisResult(db *sql.DB, inspectionID int, analysisText string) error {
+func SaveAnalysisResult(db *sql.DB, inspectionID string, analysisText string) error {
 	const query = `
 		INSERT INTO inspection_analysis (inspection_id, analysis_text, created_at)
 		VALUES (?, ?, NOW())
@@ -132,20 +118,14 @@ func SaveAnalysisResult(db *sql.DB, inspectionID int, analysisText string) error
 func GetAnalysisHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		idStr := vars["inspection_id"]
-		if idStr == "" {
+		inspectionID := vars["inspection_id"]
+		if inspectionID == "" {
 			http.Error(w, "inspection_id required", http.StatusBadRequest)
 			return
 		}
 
-		inspectionID, err := strconv.Atoi(idStr)
-		if err != nil {
-			http.Error(w, "invalid inspection_id", http.StatusBadRequest)
-			return
-		}
-
 		var analysisText string
-		err = db.QueryRow(`SELECT analysis_text FROM inspection_analysis WHERE inspection_id = ?`, inspectionID).Scan(&analysisText)
+		err := db.QueryRow(`SELECT analysis_text FROM inspection_analysis WHERE inspection_id = ?`, inspectionID).Scan(&analysisText)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				http.Error(w, "Analysis not found", http.StatusNotFound)
@@ -163,39 +143,53 @@ func GetAnalysisHandler(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func AnalyzeAndSaveHandler(db *sql.DB) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req analyzeRequest
+func AnalyzeAndSaveHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			InspectionID string `json:"inspection_id"`
+			Text         string `json:"text"`
+		}
+
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
 
-		if req.InspectionID == 0 || req.InspectionText == "" {
-			http.Error(w, "Missing required fields", http.StatusBadRequest)
-			return
-		}
+		log.Printf("[AnalyzeAndSaveHandler] Received request for inspection_id=%s, text length=%d", req.InspectionID, len(req.Text))
 
-		// Send to OpenAI
-		analysisText, err := AnalyzeInspection(req.InspectionText)
+		// 🔍 Validate inspection ID exists
+		var exists bool
+		err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM inspections WHERE inspection_id = ?)", req.InspectionID).Scan(&exists)
 		if err != nil {
-			http.Error(w, "OpenAI error: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "DB error", http.StatusInternalServerError)
+			return
+		}
+		if !exists {
+			http.Error(w, "Inspection ID not found", http.StatusBadRequest)
 			return
 		}
 
-		// Save raw text
-		err = SaveAnalysisResult(db, req.InspectionID, analysisText)
+		// 🔍 Run OpenAI analysis
+		result, err := AnalyzeInspection(req.Text)
 		if err != nil {
+			log.Println("❌ AnalyzeInspection error:", err)
+			http.Error(w, "Failed to analyze inspection", http.StatusInternalServerError)
+			return
+		}
+
+		// 💾 Save to DB
+		if err := SaveAnalysisResult(db, req.InspectionID, result); err != nil {
+			log.Println("❌ Failed to save analysis to DB:", err)
 			http.Error(w, "Failed to save analysis", http.StatusInternalServerError)
 			return
 		}
 
-		// 🔍 Parse into structured cards
-		cards := ParseIssueCards(analysisText)
-
+		// ✅ Success
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(cards)
-	})
+		json.NewEncoder(w).Encode(map[string]string{
+			"analysis": result,
+		})
+	}
 }
 
 func ParseIssueCards(text string) []IssueCard {

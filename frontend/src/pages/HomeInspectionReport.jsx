@@ -82,53 +82,66 @@ const HomeInspectionReport = () => {
     });
   };
 
-  const handleAnalyzeReport = async () => {
+  const buildInspectionReportText = () => {
+    const visibleSections = Object.keys(sectionData).filter(sectionKey => {
+      const items = sectionData[sectionKey];
+      const hasItems = items && items.length > 0;
+      const hasPhotos = items?.some(item => photosByItem[item.item_name || item.itemName]);
+      return hasItems || hasPhotos;
+    });
+  
+    let reportText = "";
+    visibleSections.forEach((sectionKey, idx) => {
+      const sectionTitle = sectionTitles[sectionKey] || sectionKey;
+      reportText += `${idx + 1}. ${sectionTitle}\n`;
+  
+      sectionData[sectionKey].forEach(item => {
+        if (!item.inspection_status || item.inspection_status === "Not Inspected") return;
+  
+        const itemName = item.item_name || item.itemName;
+        const status = item.inspection_status;
+        const conditions = item.conditions
+          ? Object.keys(item.conditions).filter(c => item.conditions[c]).join(", ")
+          : "";
+  
+        reportText += `- ${itemName} (${status}${conditions ? " - " + conditions : ""})\n`;
+  
+        if (item.comments?.trim()) {
+          reportText += `  Observation: ${item.comments.trim()}\n`;
+        }
+      });
+  
+      reportText += "\n";
+    });
+  
+    return reportText;
+  };
+  
+  const runAnalysis = async () => {
+    const reportText = buildInspectionReportText();
+  
     try {
-      const visibleSections = Object.keys(sectionData).filter(sectionKey => {
-        const items = sectionData[sectionKey];
-        const hasItems = items && items.length > 0;
-        const hasPhotos = items?.some(item => photosByItem[item.item_name || item.itemName]);
-        return hasItems || hasPhotos;
-      });
-
-      let reportText = "";
-      visibleSections.forEach((sectionKey, idx) => {
-        const sectionTitle = sectionTitles[sectionKey] || sectionKey;
-        reportText += `${idx + 1}. ${sectionTitle}\n`;
-        sectionData[sectionKey].forEach(item => {
-          if (!item.inspection_status || item.inspection_status === "Not Inspected") return;
-
-          const itemName = item.item_name || item.itemName;
-          const status = item.inspection_status;
-          const conditions = item.conditions 
-            ? Object.keys(item.conditions).filter(c => item.conditions[c]).join(", ")
-            : "";
-
-          reportText += `- ${itemName} (${status}${conditions ? " - " + conditions : ""})\n`;
-          if (item.comments?.trim()) {
-            reportText += `  Observation: ${item.comments.trim()}\n`;
-          }
-        });
-        reportText += "\n";
-      });
-
       setAnalyzing(true);
-      await axios.post('/analyze', {
-        inspectionId: parseInt(inspectionId, 10),
-        inspectionText: reportText
-      });          
-      setAnalyzing(false);
-
+      const payload = {
+        inspection_id: inspectionId, // as string
+        text: reportText
+      };
+  
+      console.log("📤 Submitting analysis payload:", payload);
+  
+      await axios.post("/analyze", payload);
+  
       history.push({
         pathname: `/inspection-analysis/${inspectionId}`,
         state: { propertyId }
-      });      
+      });
     } catch (err) {
-      setAnalyzing(false);
-      console.error("Analysis request failed:", err);
+      console.error("❌ Analysis request failed:", err);
       alert("Failed to analyze the report.");
+    } finally {
+      setAnalyzing(false);
     }
-  };
+  };  
 
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
@@ -188,7 +201,7 @@ const HomeInspectionReport = () => {
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
         <button
           className="analyze-report-button"
-          onClick={handleAnalyzeReport}
+          onClick={runAnalysis}
           disabled={analyzing}
           style={{
             padding: "8px 16px",

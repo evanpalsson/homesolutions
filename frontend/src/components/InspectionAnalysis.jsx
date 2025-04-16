@@ -1,33 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import axios from "../utils/axios";
+import { useParams } from "react-router-dom";
 import InspectionAnalysisCard from "./InspectionAnalysisCard";
 
 const InspectionAnalysis = () => {
   const { inspectionId } = useParams();
-  const location = useLocation();
-  const propertyId = location.state?.propertyId;
-
-  const [analysis, setAnalysis] = useState([]);
+  const [cards, setCards] = useState([]);
 
   useEffect(() => {
+    console.log("🔍 Inspection ID:", inspectionId);
+
     const fetchAnalysis = async () => {
       try {
-        const res = await axios.get(`/inspection-analysis/${inspectionId}`);
-        setAnalysis(res.data); // Ensure this data is in the right format!
+        const res = await fetch(`http://localhost:8080/api/inspection-analysis/${inspectionId}`);
+        const data = await res.json();
+
+        const analysisText = data.analysisText;
+        console.log("🧠 Raw analysis:", analysisText);
+
+        const parsed = parseAnalysisText(analysisText);
+        setCards(parsed);
       } catch (err) {
-        console.error("Failed to load analysis:", err);
+        console.error("❌ Failed to load analysis:", err);
       }
     };
 
-    fetchAnalysis();
+    if (inspectionId) {
+      fetchAnalysis();
+    }
   }, [inspectionId]);
 
   return (
     <div className="analysis-page">
       <h1>Inspection Analysis Report</h1>
-      {analysis.length > 0 ? (
-        analysis.map((section, idx) => (
+      {cards.length > 0 ? (
+        cards.map((section, idx) => (
           <InspectionAnalysisCard key={idx} section={section} />
         ))
       ) : (
@@ -35,6 +41,12 @@ const InspectionAnalysis = () => {
       )}
     </div>
   );
+};
+
+// Very basic parser: separates text by double newlines
+const parseAnalysisText = (text) => {
+  const sections = text.split("\n\n").filter(Boolean);
+  return sections.map((block) => block.trim());
 };
 
 export default InspectionAnalysis;

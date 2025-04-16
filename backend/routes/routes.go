@@ -37,7 +37,7 @@ func RegisterRoutes(db *sql.DB) *mux.Router {
 
 	// Dashboard routes
 	router.Handle("/api/homeowner/{userId}/dashboard", withCORS(homeowner.GetHomeownerDashboard(db))).Methods("GET", "OPTIONS")
-	router.Handle("/api/inspector/{id}/dashboard", withCORS(http.HandlerFunc(dashboards.GetInspectorDashboard))).Methods("GET", "OPTIONS")
+	router.Handle("/api/inspector/{id}/dashboard", middleware.EnableCORS(middleware.DBContextMiddleware(db)(http.HandlerFunc(dashboards.GetInspectorDashboard)))).Methods("GET", "OPTIONS")
 
 	// Address and property routes
 	router.Handle("/api/get-address/{property_id}", withCORS(properties.GetAddressByPropertyID)).Methods("GET", "OPTIONS")
