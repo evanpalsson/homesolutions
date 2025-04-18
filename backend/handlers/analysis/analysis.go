@@ -30,11 +30,6 @@ type ChatResponse struct {
 	} `json:"choices"`
 }
 
-type analyzeRequest struct {
-	InspectionID string `json:"inspection_id"`
-	Text         string `json:"text"`
-}
-
 type IssueCard struct {
 	Title         string `json:"title"`
 	Severity      string `json:"severity"`
@@ -83,7 +78,7 @@ Respond in a structured, thorough, and homeowner-friendly format.
 	// Read full body once
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("Failed to read OpenAI response: %v", err)
+		return "", fmt.Errorf("failed to read OpenAI response: %v", err)
 	}
 
 	log.Println("🔍 Raw OpenAI response:", string(respBody))
@@ -91,11 +86,11 @@ Respond in a structured, thorough, and homeowner-friendly format.
 	// Try to decode into expected format
 	var result ChatResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("Failed to parse OpenAI response: %v", err)
+		return "", fmt.Errorf("failed to parse OpenAI response: %v", err)
 	}
 
 	if len(result.Choices) == 0 {
-		return "", fmt.Errorf("No choices returned from OpenAI")
+		return "", fmt.Errorf("no choices returned from OpenAI")
 	}
 
 	return result.Choices[0].Message.Content, nil
