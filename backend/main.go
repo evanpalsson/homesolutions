@@ -10,6 +10,7 @@ import (
 	"home_solutions/backend/database"
 	"home_solutions/backend/middleware"
 	"home_solutions/backend/routes"
+	"home_solutions/backend/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
@@ -72,14 +73,22 @@ func main() {
 	db := database.Connect()
 	defer db.Close()
 
+	// Seed users if not already in DB
 	seedUsers(db)
 
+	// 🌱 Insert dummy inspection data
+	log.Println("🌱 Inserting dummy inspection data...")
+	if err := utils.InsertDummyInspectionData(db); err != nil {
+		log.Printf("Error inserting dummy inspection data: %v", err)
+	}
+
+	// Register API routes
 	router := routes.RegisterRoutes(db)
 
-	// Serve static files separately from /uploads/ WITHOUT CORS
+	// Serve static uploads
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads/"))))
 
-	// Wrap all other routes with CORS
+	// Wrap app routes with CORS
 	corsWrapped := middleware.EnableCORS(router)
 
 	fmt.Println("Server running at http://localhost:8080")

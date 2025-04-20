@@ -392,12 +392,11 @@ func GetExteriorData() http.HandlerFunc {
 		var data []ExteriorData
 		for rows.Next() {
 			var record ExteriorData
-			var materialsJSON string
-			var itemCondition sql.NullString
+			var materialsJSON, conditionsJSON string
 			var comments sql.NullString
 			var status sql.NullString
 
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &itemCondition, &comments, &status); err != nil {
+			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
 				log.Printf("Error scanning row: %v", err)
 				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
 				return
@@ -409,29 +408,20 @@ func GetExteriorData() http.HandlerFunc {
 				return
 			}
 
-			// Handle NULL values
-			var conditionsJSON string
-			if err := rows.Scan(&record.ItemName, &materialsJSON, &conditionsJSON, &comments, &status); err != nil {
-				log.Printf("Error scanning row: %v", err)
-				http.Error(w, "Failed to parse data", http.StatusInternalServerError)
-				return
-			}
-
 			if err := json.Unmarshal([]byte(conditionsJSON), &record.Conditions); err != nil {
-				log.Printf("Error unmarshalling condition: %v", err)
-				http.Error(w, "Failed to parse condition", http.StatusInternalServerError)
+				log.Printf("Error unmarshalling conditions: %v", err)
+				http.Error(w, "Failed to parse conditions", http.StatusInternalServerError)
 				return
 			}
 
+			record.InspectionID = inspectionId
+			record.Comments = ""
+			if comments.Valid {
+				record.Comments = comments.String
+			}
 			record.InspectionStatus = ""
 			if status.Valid {
 				record.InspectionStatus = status.String
-			}
-
-			if comments.Valid {
-				record.Comments = comments.String
-			} else {
-				record.Comments = ""
 			}
 
 			data = append(data, record)
