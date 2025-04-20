@@ -426,4 +426,19 @@ body {
   box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
 }
 
+.section-description {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.section-description .question {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.section-description .desc-desc {
+  margin-bottom: 0.75rem;
+}
+
+
 

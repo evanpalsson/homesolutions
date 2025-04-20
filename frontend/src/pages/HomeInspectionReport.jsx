@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import axios from "../utils/axios";
+import sectionDescriptions from "../constants/sectionDescriptions";
 import "../styles/HomeInspectionReport.css";
 
 const HomeInspectionReport = () => {
@@ -271,6 +272,14 @@ const HomeInspectionReport = () => {
         return (
           <section key={section} className="report-section">
             <h2 className="section-header">{`${visibleIdx + 1}. ${sectionTitles[section]}`}</h2>
+
+            {sectionDescriptions[section] && (
+              <div
+                className="section-description"
+                dangerouslySetInnerHTML={{ __html: sectionDescriptions[section] }}
+              />
+            )}
+
             {data.map((item, idx) => renderItem(item, `${visibleIdx + 1}.${idx + 1}`))}
           </section>
         );
