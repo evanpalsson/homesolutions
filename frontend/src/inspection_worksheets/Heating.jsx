@@ -39,11 +39,6 @@ const Heating = () => {
       materials: ["Manual", "Programmable", "Smart", "Zoned", "Other (see comments)"],
       condition: ["Functional", "Non-functional", "Inaccurate", "Unresponsive"],
     },
-    {
-      name: "Chimney - Vent",
-      materials: ["Metal", "Masonry", "Direct Vent", "Power Vent", "Other (see comments)"],
-      condition: ["Good", "Blocked", "Improper Termination", "Rust Present"],
-    },
   ], []);
 
   return (

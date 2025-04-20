@@ -25,24 +25,9 @@ const Cooling = () => {
       condition: ["Operational", "Leaking", "No Cool Air", "Excessive Noise"],
     },
     {
-      name: "Distribution",
-      materials: ["Ductwork", "Wall Unit", "Ceiling Unit", "Portable", "Other (see comments)"],
-      condition: ["Even Airflow", "Blocked Vents", "Leaking Ducts", "Disconnected"],
-    },
-    {
-      name: "Thermostat",
-      materials: ["Manual", "Programmable", "Smart", "Zoned", "Other (see comments)"],
-      condition: ["Functional", "Non-functional", "Incorrect Calibration", "No Display"],
-    },
-    {
       name: "Cooling Source",
       materials: ["Electric", "Gas", "Solar", "Other (see comments)"],
       condition: ["Connected", "Disconnected", "Improper Installation", "Unknown"],
-    },
-    {
-      name: "Ventilation",
-      materials: ["Attic Fan", "Exhaust Fan", "Whole House Fan", "Natural", "Other (see comments)"],
-      condition: ["Adequate", "Blocked", "Noisy", "None"],
     },
   ], []);
 

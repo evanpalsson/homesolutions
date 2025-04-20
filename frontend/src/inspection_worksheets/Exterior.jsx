@@ -46,13 +46,8 @@ const Exterior = () => {
     },
     {
       name: "Porch",
-      materials: ["Cracked", "Rotting", "Chipped", "Loose"],
+      materials: ["Wood", "Concrete", "Brick", "Stone", "Composite", "Other (see comments)"],
       condition: ["Settled", "Water Damage", "Rotting Posts", "Cracked Flooring", "Loose Railings"],
-    },
-    {
-      name: "Windows",
-      materials: ["Wood", "Aluminum"],
-      condition: ["Broken Glass", "Fogged", "Leaking", "Rotting Frame", "Improper Seal"],
     },
     {
       name: "Storms & Screens",

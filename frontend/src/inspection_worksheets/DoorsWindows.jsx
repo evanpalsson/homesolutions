@@ -35,11 +35,6 @@ const DoorsWindows = () => {
       condition: ["Operational", "Broken", "Fogged", "Leaking"],
     },
     {
-      name: "Skylights",
-      materials: ["Fixed", "Ventilated", "Glass", "Plastic", "Other (see comments)"],
-      condition: ["Clear", "Leaking", "Cracked", "Cloudy"],
-    },
-    {
       name: "Storm Doors - Windows",
       materials: ["Aluminum", "Wood", "Vinyl", "Other (see comments)"],
       condition: ["Installed", "Missing", "Non-functional", "Damaged"],
