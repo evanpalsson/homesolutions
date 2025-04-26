@@ -14,101 +14,47 @@ const Exterior = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "exterior");
 
   const items = useMemo(() => [
     {
-      name: "Sidewalks",
-      materials: ["Concrete", "Asphalt", "Brick", "Stone", "None"],
-      condition: ["Cracked", "Settled", "Trip Hazard", "Uneven", "Spalling"],
+      name: "Siding, Flashing, and Trim",
+      label: "Exterior Wall Covering Type",
+      componentTypes: ["Wood", "Vinyl", "Aluminum", "Fiber Cement", "Brick Veneer", "Stone Veneer", "Stucco", "Other (see comments)"],
+      condition: ["Cracked", "Peeling", "Rot", "Loose", "Damaged", "Normal Wear"],
     },
     {
-      name: "Exterior Walls",
-      materials: ["Brick", "Stone", "Stucco", "Wood", "Fiber-Cement", "Aluminum/Vinyl", "Other (see comments)"],
-      condition: ["Cracked", "Rotting", "Peeling Paint", "Loose Siding", "Water Staining"],
+      name: "Eaves, Soffits, and Fascia",
+      label: "Soffit/Fascia Material",
+      componentTypes: ["Wood", "Aluminum", "Vinyl", "Fiber Cement", "Other (see comments)"],
+      condition: ["Peeling", "Rot", "Missing", "Damaged", "Normal"],
     },
     {
-      name: "Trim",
-      materials: ["Brick", "Stone", "Stucco", "Wood", "Fiber-Cement", "Aluminum/Vinyl", "Other (see comments)"],
-      condition: ["Loose", "Rotting", "Warped", "Missing Pieces", "Damaged Paint"],
+      name: "Porches, Balconies, Decks, and Steps",
+      label: "Porch/Deck Material",
+      componentTypes: ["Wood", "Composite", "Concrete", "Stone", "Other (see comments)"],
+      condition: ["Rot", "Loose Railings", "Settling", "Cracked", "Normal"],
     },
     {
-      name: "Paths",
-      materials: ["Concrete", "Stone", "Brick", "Asphalt", "Dirt/Soil", "Other (see comments)"],
-      condition: ["Uneven", "Cracked", "Worn", "Eroded", "Overgrown"],
+      name: "Driveways, Walkways, and Patios",
+      label: "Pavement/Surface Type",
+      componentTypes: ["Concrete", "Asphalt", "Pavers", "Stone", "Gravel", "Other (see comments)"],
+      condition: ["Cracked", "Settled", "Heaved", "Surface Wear", "Normal"],
     },
     {
-      name: "Steps",
-      materials: ["Concrete", "Stone", "Brick", "Wood", "Handrail(s)", "Other (see comments)"],
-      condition: ["Loose", "Cracked", "Rotting", "No Handrail", "Trip Hazard"],
-    },
-    {
-      name: "Porch",
-      materials: ["Wood", "Concrete", "Brick", "Stone", "Composite", "Other (see comments)"],
-      condition: ["Settled", "Water Damage", "Rotting Posts", "Cracked Flooring", "Loose Railings"],
-    },
-    {
-      name: "Storms & Screens",
-      materials: ["Partial", "Full", "None"],
-      condition: ["Damaged", "Missing", "Torn", "Non-Functional", "Poor Fit"],
-    },
-    {
-      name: "Gutters & Downspouts",
-      materials: ["Partial", "Full", "Built-in", "Aluminum", "Copper", "Galvanized", "Wood"],
-      condition: ["Leaking", "Blocked", "Disconnected", "Missing", "Improper Slope"],
-    },
-    {
-      name: "Chimney",
-      materials: ["Brick", "Masonry", "Prefabricated"],
-      condition: ["Cracked", "Leaning", "Damaged Crown", "Missing Cap", "Creosote Buildup"],
-    },
-    {
-      name: "Garage",
-      materials: ["Attached", "Detached", "Automatic opener"],
-      condition: ["Door Inoperable", "Cracked Slab", "Sagging Roof", "Water Intrusion", "Loose Tracks"],
-    },
-    {
-      name: "Driveway",
-      materials: ["Asphalt", "Concrete", "Gravel", "Pavers", "Other (see comments)"],
-      condition: ["Cracked", "Settled", "Potholes", "Heaved", "Eroded"],
-    },
-    {
-      name: "Patio",
-      materials: ["Concrete", "Stone", "Brick", "None"],
-      condition: ["Cracked", "Sinking", "Worn Surface", "Missing Mortar", "Trip Hazard"],
-    },
-    {
-      name: "Deck",
-      materials: ["Composite", "Wood", "None"],
-      condition: ["Loose Boards", "Rotting", "No Railing", "Nail Pops", "Structural Weakness"],
-    },
-    {
-      name: "Landscaping",
-      materials: ["Grass", "Tree(s) overhanging roof"],
-      condition: ["Overgrown", "Poor Drainage", "Root Intrusion", "Blocked View", "Touching Structure"],
-    },
-    {
-      name: "Retaining Walls",
-      materials: ["Concrete", "Brick", "Stone", "Cinder Block", "Wood", "Other (see comments)"],
-      condition: ["Leaning", "Cracked", "Failing Mortar", "No Drainage", "Bulging"],
-    },
-    {
-      name: "Fencing",
-      materials: ["Wood", "Metal", "Vinyl", "Chain Link", "Concrete", "Stone", "Brick", "None", "Other (see comments)"],
-      condition: ["Leaning", "Missing Panels", "Rusting", "Loose Posts", "Broken Gate"],
-    },
-    {
-      name: "Drainage & Grading",
-      materials: ["Stairwell", "Window well", "Other (see comments)"],
-      condition: ["Negative Slope", "Pooling Water", "Eroded Soil", "Blocked Drain", "Improper Swale"],
+      name: "Vegetation, Grading, Drainage",
+      label: "Site Feature Type",
+      componentTypes: ["Overhanging Trees", "Negative Grading", "Drainage Swales", "Retaining Walls", "Other (see comments)"],
+      condition: ["Proper", "Improper", "Blocked", "Damaged", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>1. EXTERIOR</h1>
+      <h1>6. EXTERIOR</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -121,6 +67,7 @@ const Exterior = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

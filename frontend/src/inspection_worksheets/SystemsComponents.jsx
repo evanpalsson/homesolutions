@@ -14,41 +14,47 @@ const SystemsComponents = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "systemsComponents");
 
   const items = useMemo(() => [
     {
-      name: "Garage Door",
-      materials: ["Chain Drive", "Belt Drive", "Screw Drive", "Direct Drive", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Reversing Issues", "No Remote"],
+      name: "Installed Appliances",
+      label: "Appliance Type",
+      componentTypes: ["Range/Oven", "Cooktop", "Dishwasher", "Microwave", "Trash Compactor", "Garbage Disposal", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Damaged", "Normal Wear"],
     },
     {
-      name: "Ceiling Fans",
-      materials: ["Wood Blades", "Metal Blades", "Remote Control", "Other (see comments)"],
-      condition: ["Balanced", "Wobbly", "Noisy", "Inoperable"],
+      name: "Smoke and Carbon Monoxide Detectors",
+      label: "Detector Type",
+      componentTypes: ["Smoke Detector", "Carbon Monoxide Detector", "Combination Unit", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Missing", "Expired", "Normal"],
     },
     {
-      name: "Central Vacuum",
-      materials: ["Installed", "Wall Inlets", "Accessories Present", "Other (see comments)"],
-      condition: ["Operational", "Clogged", "Low Suction", "Leaking"],
+      name: "Exhaust Systems",
+      label: "Exhaust System Type",
+      componentTypes: ["Bathroom Fan", "Range Hood", "Laundry Exhaust", "Attic Fan", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Noisy", "Blocked", "Normal"],
     },
     {
-      name: "Doorbell",
-      materials: ["Wired", "Wireless", "Video", "Other (see comments)"],
-      condition: ["Functional", "No Sound", "Delayed", "Disconnected"],
+      name: "Central Vacuum Systems",
+      label: "Central Vacuum Type",
+      componentTypes: ["Hard Piping", "Flexible Hose", "Power Unit", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Clogged", "Damaged", "Normal"],
     },
     {
-      name: "Intercom",
-      materials: ["Audio Only", "Video", "Room-to-Room", "Other (see comments)"],
-      condition: ["Operational", "Static", "Unclear Audio", "Non-functional"],
+      name: "Intercom and Security Systems",
+      label: "System Type",
+      componentTypes: ["Intercom", "Alarm", "Cameras", "Doorbell Camera", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Wiring Issues", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>11. SYSTEMS & COMPONENTS</h1>
+      <h1>15. SYSTEMS AND COMPONENTS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +67,7 @@ const SystemsComponents = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

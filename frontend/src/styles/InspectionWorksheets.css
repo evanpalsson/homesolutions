@@ -62,9 +62,7 @@ body {
   
   textarea,
   select {
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 20px;
+    padding: 4px;
     font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -206,15 +204,8 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px; /* Ensures vertical spacing between items */
+  margin-bottom: 8px;
   margin-left: 10px;
-}
-
-/* Ensures label is aligned next to the toggle */
-.toggle-label {
-  font-size: 16px;
-  color: #333;
-  cursor: pointer;
 }
 
 .flex-right {
@@ -292,3 +283,34 @@ input:checked + .slider:before {
   padding: 5px;
   margin-left: 5px;
 }
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkbox-square {
+  width: 18px;
+  height: 18px;
+  accent-color: #0d6efd;
+  cursor: pointer;
+}
+
+.toggle-type-label {
+  font-size: 15px; /* 🔥 Slightly smaller text */
+  color: #333;
+  cursor: pointer;
+  margin-left: 6px;
+  min-width: 160px; /* 🔥 Slightly tighter for label */
+}
+
+.condition-dropdown {
+  min-width: 160px;
+  visibility: hidden;
+}
+
+.condition-dropdown.visible {
+  visibility: visible;
+}
+

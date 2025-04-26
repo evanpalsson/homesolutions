@@ -14,41 +14,47 @@ const Roof = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "roof");
 
   const items = useMemo(() => [
     {
-      name: "Roof Covering",
-      materials: ["Asphalt Shingles", "Metal", "Tile", "Slate", "Other (see comments)"],
-      condition: ["Worn", "Missing Shingles", "Cracked", "Ponding", "Multiple Layers"],
+      name: "Roof Coverings",
+      label: "Roof Covering Material",
+      componentTypes: ["Asphalt Shingles", "Metal", "Clay Tile", "Slate", "Wood Shingles", "Membrane (EPDM/TPO)", "Other (see comments)"],
+      condition: ["Cracked", "Missing", "Curled", "Granule Loss", "Leaks", "Normal Wear"],
     },
     {
       name: "Flashing",
-      materials: ["Metal", "Rubber", "Plastic", "Other (see comments)"],
-      condition: ["Damaged", "Loose", "Improperly Installed", "Corroded", "Missing"],
+      label: "Flashing Material",
+      componentTypes: ["Metal", "Rubber Boot", "Lead", "Copper", "Other (see comments)"],
+      condition: ["Properly Installed", "Damaged", "Rusty", "Missing", "Normal"],
     },
     {
       name: "Gutters",
-      materials: ["Aluminum", "Copper", "Vinyl", "Steel", "Other (see comments)"],
-      condition: ["Clogged", "Leaking", "Detached", "Improper Slope", "Missing Sections"],
+      label: "Gutter Material",
+      componentTypes: ["Aluminum", "Vinyl", "Steel", "Copper", "Other (see comments)"],
+      condition: ["Leaking", "Detached", "Blocked", "Rust", "Normal"],
     },
     {
       name: "Downspouts",
-      materials: ["Aluminum", "Copper", "Vinyl", "Steel", "Other (see comments)"],
-      condition: ["Disconnected", "Leaking", "Improper Termination", "Crushed", "Blocked"],
+      label: "Downspout Material",
+      componentTypes: ["Aluminum", "Vinyl", "Steel", "Copper", "Other (see comments)"],
+      condition: ["Disconnected", "Damaged", "Blocked", "Normal"],
     },
     {
-      name: "Skylights",
-      materials: ["Glass", "Plastic", "Acrylic", "Other (see comments)"],
-      condition: ["Leaking", "Cracked", "Hazy", "Improper Flashing", "Broken Seal"],
+      name: "Skylights, Chimneys, and Roof Penetrations",
+      label: "Roof Penetration Type",
+      componentTypes: ["Skylight", "Chimney", "Vent Pipe", "Solar Panel Mounts", "Other (see comments)"],
+      condition: ["Leaking", "Cracked", "Improper Flashing", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>2. ROOF</h1>
+      <h1>5. ROOF SYSTEM</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +67,7 @@ const Roof = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

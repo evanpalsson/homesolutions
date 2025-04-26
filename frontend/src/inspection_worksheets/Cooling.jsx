@@ -14,26 +14,35 @@ const Cooling = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "cooling");
 
   const items = useMemo(() => [
     {
-      name: "Cooling System",
-      materials: ["Central Air", "Ductless Mini-Split", "Window Unit", "Evaporative Cooler", "Other (see comments)"],
-      condition: ["Operational", "Leaking", "No Cool Air", "Excessive Noise"],
+      name: "Cooling Equipment",
+      label: "Cooling Equipment Type",
+      componentTypes: ["Central AC", "Ductless Mini-Split", "Window Unit", "Evaporative Cooler", "Other (see comments)"],
+      condition: ["Operational", "Not Operational", "Leaking", "Noisy", "Normal Wear", "Major Defects"],
     },
     {
-      name: "Cooling Source",
-      materials: ["Electric", "Gas", "Solar", "Other (see comments)"],
-      condition: ["Connected", "Disconnected", "Improper Installation", "Unknown"],
+      name: "Distribution Systems",
+      label: "Cooling Distribution Type",
+      componentTypes: ["Ductwork", "Radiant Systems", "Other (see comments)"],
+      condition: ["Leaking", "Disconnected", "Obstructed", "Insulation Missing", "Normal"],
+    },
+    {
+      name: "Thermostats",
+      label: "Thermostat Type",
+      componentTypes: ["Programmable", "Non-Programmable", "Smart Thermostat", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Not Responsive", "Wired Incorrectly"],
     },
   ], []);
 
   return (
     <div>
-      <h1>5. COOLING</h1>
+      <h1>11. COOLING SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -46,6 +55,7 @@ const Cooling = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

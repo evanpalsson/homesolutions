@@ -14,6 +14,7 @@ const BasementFoundation = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "basementFoundation");
@@ -21,34 +22,39 @@ const BasementFoundation = () => {
   const items = useMemo(() => [
     {
       name: "Foundation Walls",
-      materials: ["Concrete", "Block", "Brick", "Stone", "Other (see comments)"],
-      condition: ["Cracked", "Efflorescence", "Leaking", "Bow/Bulge", "Settlement Signs"],
+      label: "Wall Construction Type",
+      componentTypes: ["Poured Concrete", "Concrete Block", "Stone", "Brick", "Wood", "Other (see comments)"],
+      condition: ["Cracked", "Bulging", "Leaking", "Efflorescence", "Damaged", "Normal"],
     },
     {
-      name: "Floor Structure",
-      materials: ["Concrete", "Wood Joists", "Steel Beams", "Other (see comments)"],
-      condition: ["Sagging", "Water Damage", "Termite Damage", "Rotting", "Loose Joists"],
+      name: "Floors",
+      label: "Floor Construction Type",
+      componentTypes: ["Concrete", "Wood", "Tile", "Other (see comments)"],
+      condition: ["Cracked", "Settled", "Uneven", "Moisture", "Normal"],
     },
     {
-      name: "Support Posts & Columns",
-      materials: ["Steel", "Wood", "Concrete", "Other (see comments)"],
-      condition: ["Rusting", "Shifting", "Improper Support", "Rotting", "Unstable Base"],
+      name: "Support Beams and Columns",
+      label: "Support Type",
+      componentTypes: ["Steel", "Wood", "Masonry", "Adjustable Columns", "Other (see comments)"],
+      condition: ["Rust", "Rot", "Damaged", "Modified", "Normal"],
     },
     {
-      name: "Basement Windows",
-      materials: ["Glass Block", "Single Pane", "Double Pane", "Other (see comments)"],
-      condition: ["Cracked", "Leaking", "Hazy Glass", "Broken Locks", "Water Stains"],
+      name: "Basement Insulation",
+      label: "Insulation Type",
+      componentTypes: ["None", "Fiberglass", "Foam Board", "Spray Foam", "Other (see comments)"],
+      condition: ["Intact", "Compressed", "Missing", "Wet"],
     },
     {
-      name: "Sump Pump",
-      materials: ["Present", "Operational", "Battery Backup", "None"],
-      condition: ["Operational", "Not Working", "Missing Cover", "Clogged", "Disconnected"],
+      name: "Moisture Intrusion",
+      label: "Signs Observed",
+      componentTypes: ["Stains", "Mold", "Efflorescence", "Leaks", "None", "Other (see comments)"],
+      condition: ["Active", "Past", "Dry", "Unknown"],
     },
   ], []);
 
   return (
     <div>
-      <h1>3. BASEMENT & FOUNDATION</h1>
+      <h1>9. BASEMENT / FOUNDATION</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +67,7 @@ const BasementFoundation = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

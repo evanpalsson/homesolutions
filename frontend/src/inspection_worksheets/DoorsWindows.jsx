@@ -14,6 +14,7 @@ const DoorsWindows = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "doorsWindows");
@@ -21,29 +22,39 @@ const DoorsWindows = () => {
   const items = useMemo(() => [
     {
       name: "Exterior Doors",
-      materials: ["Wood", "Steel", "Fiberglass", "Glass", "Other (see comments)"],
-      condition: ["Misaligned", "Weathered", "Broken Seal", "Drafty"],
+      label: "Exterior Door Type",
+      componentTypes: ["Wood", "Metal", "Fiberglass", "Glass", "Sliding", "Other (see comments)"],
+      condition: ["Operational", "Damaged", "Loose", "Weatherstripping Missing", "Locks Defective", "Normal Wear"],
     },
     {
       name: "Interior Doors",
-      materials: ["Hollow Core", "Solid Wood", "Glass Panel", "Other (see comments)"],
-      condition: ["Sticking", "Loose Hinges", "Damaged", "Does Not Latch"],
+      label: "Interior Door Type",
+      componentTypes: ["Wood", "Hollow Core", "Solid Core", "Glass", "Other (see comments)"],
+      condition: ["Operational", "Damaged", "Misaligned", "Normal Wear"],
     },
     {
       name: "Windows",
-      materials: ["Single Pane", "Double Pane", "Vinyl", "Wood", "Other (see comments)"],
-      condition: ["Operational", "Broken", "Fogged", "Leaking"],
+      label: "Window Type",
+      componentTypes: ["Single Hung", "Double Hung", "Casement", "Slider", "Awning", "Fixed", "Other (see comments)"],
+      condition: ["Operational", "Broken Glass", "Sticking", "Failed Seal", "Screen Damaged", "Normal"],
     },
     {
-      name: "Storm Doors - Windows",
-      materials: ["Aluminum", "Wood", "Vinyl", "Other (see comments)"],
-      condition: ["Installed", "Missing", "Non-functional", "Damaged"],
+      name: "Garage Doors",
+      label: "Garage Door Type",
+      componentTypes: ["Sectional", "Roll-Up", "One-Piece Tilt-Up", "Carriage Style", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Damaged Panels", "Springs Defective", "No Safety Reversal"],
+    },
+    {
+      name: "Garage Door Openers",
+      label: "Opener Type",
+      componentTypes: ["Chain Drive", "Belt Drive", "Screw Drive", "Direct Drive", "Jackshaft", "Other (see comments)"],
+      condition: ["Operational", "Not Operational", "Auto-Reverse Not Functional", "Remote Missing"],
     },
   ], []);
 
   return (
     <div>
-      <h1>9. DOORS & WINDOWS</h1>
+      <h1>10. DOORS & WINDOWS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -56,6 +67,7 @@ const DoorsWindows = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

@@ -14,41 +14,47 @@ const Plumbing = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "plumbing");
 
   const items = useMemo(() => [
     {
-      name: "Water Supply",
-      materials: ["Copper", "PEX", "PVC", "Galvanized Steel", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Leaking"],
+      name: "Water Supply Piping",
+      label: "Supply Piping Material",
+      componentTypes: ["Copper", "CPVC", "PEX", "Galvanized Steel", "Polybutylene", "Other (see comments)"],
+      condition: ["Properly Installed", "Corroded", "Leaking", "Disconnected", "Normal"],
     },
     {
-      name: "Drain, Waste & Vent (DWV)",
-      materials: ["ABS", "PVC", "Cast Iron", "Copper", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Non-functional", "Leaking"],
+      name: "Drain, Waste, and Vent Piping",
+      label: "Drainage Piping Material",
+      componentTypes: ["PVC", "ABS", "Cast Iron", "Galvanized", "Copper", "Other (see comments)"],
+      condition: ["Proper Slope", "Leaking", "Corroded", "Blocked", "Normal"],
     },
     {
       name: "Water Heater",
-      materials: ["Tank", "Tankless", "Electric", "Gas", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Leaking", "Corroded"],
+      label: "Water Heater Type",
+      componentTypes: ["Tank", "Tankless", "Gas", "Electric", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Leaking", "No Expansion Tank", "Normal Wear"],
     },
     {
-      name: "Fuel Source",
-      materials: ["Natural Gas", "Propane", "Electric", "Solar", "Other (see comments)"],
-      condition: ["Connected", "Disconnected", "Unknown"],
+      name: "Fixtures and Faucets",
+      label: "Fixture/Faucet Type",
+      componentTypes: ["Toilet", "Sink", "Bathtub", "Shower", "Other (see comments)"],
+      condition: ["Operational", "Leaking", "Clogged", "Loose", "Normal"],
     },
     {
-      name: "Fixtures",
-      materials: ["Sink", "Toilet", "Shower", "Bathtub", "Other (see comments)"],
-      condition: ["Good", "Fair", "Poor", "Leaking", "Clogged"],
+      name: "Sump Pump and Drainage",
+      label: "Sump Pump System",
+      componentTypes: ["Submersible Pump", "Pedestal Pump", "Battery Backup", "Water Powered Backup", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Clogged", "Switch Failure", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>6. PLUMBING</h1>
+      <h1>7. PLUMBING SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +67,7 @@ const Plumbing = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

@@ -35,15 +35,16 @@ export function InspectionCRUD(inspectionId, section) {
     const url = `http://localhost:8080/api/inspection-${section}/${inspectionId}`;
     const response = await axios.get(url);
     const resData = response.data || [];
+
     const data = resData.reduce((acc, item) => {
       acc[item.item_name] = {
-        materials: item.materials,
-        conditions: item.conditions || {},
+        componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
         comment: item.comments || "",
         inspection_status: item.inspection_status || "Not Inspected",
       };
       return acc;
     }, {});
+
     setFormData(data);
   }, [inspectionId, section]);
 
@@ -55,58 +56,63 @@ export function InspectionCRUD(inspectionId, section) {
     };
   };
 
-  const updateBackend = async (updatedData) => {
-    const payload = Object.entries(updatedData).map(([itemName, details]) => ({
+  const updateSingleBackend = async (itemName, itemDetails) => {
+    const payload = [{
       inspection_id: inspectionId,
       item_name: itemName,
-      materials: details.materials || {},
-      conditions: details.conditions || {},
-      comments: details.comment || "",
-      inspection_status: details.inspection_status || "Not Inspected",
-    }));
-    await axios.post(`http://localhost:8080/api/inspection-${section}`, payload);
-  };
+      materials: itemDetails.componentTypeConditions || {}, // ✅ properly mapped!
+      conditions: {}, // ✅ empty object for now
+      comments: itemDetails.comment || "",
+      inspection_status: itemDetails.inspection_status || "Not Inspected",
+    }];
+  
+    console.log("Posting payload to backend:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-${section}`, payload);
+    } catch (error) {
+      console.error(`Error updating item ${itemName}:`, error);
+    }
+  };  
 
-  const debouncedUpdate = debounce(updateBackend, 500);
+  const debouncedUpdateSingle = debounce(updateSingleBackend, 300);
 
   const updateItem = (itemName, field, value) => {
-    const current = formData[itemName] || {};
-    const updated = {
-      ...current,
-      [field]: value,
-    };
+    setFormData((prevData) => {
+      const current = prevData[itemName] || {};
+      const updatedItem = {
+        ...current,
+        [field]: value,
+      };
 
-    const currentStatus = current.inspection_status || "Not Inspected";
-    const isOverride = currentStatus === "Not Present" || currentStatus === "Repair or Replace";
-    const hasSelected =
-      Object.values(updated.materials || {}).some(Boolean) ||
-      Object.values(updated.conditions || {}).some(Boolean);
+      const currentStatus = current.inspection_status || "Not Inspected";
+      const hasSelected = value && Object.keys(value).length > 0;
+      const isOverride = currentStatus === "Not Present" || currentStatus === "Repair or Replace";
 
-      if (
-        !isOverride &&
-        currentStatus === "Not Inspected" &&
-        hasSelected
-      ) {
-        updated.inspection_status = "Inspected";
-      }      
+      if (!isOverride && currentStatus === "Not Inspected" && hasSelected) {
+        updatedItem.inspection_status = "Inspected";
+      }
 
-    const updatedData = {
-      ...formData,
-      [itemName]: updated,
-    };
-
-    setFormData(updatedData);
-    debouncedUpdate(updatedData);
+      debouncedUpdateSingle(itemName, updatedItem); // 🔥 Save only this item
+      return {
+        ...prevData,
+        [itemName]: updatedItem,
+      };
+    });
   };
 
-  const handleCheckboxChange = (itemName, type, value) => {
-    const existingItem = formData[itemName] || {};
-    const updatedTypeData = {
-      ...(existingItem[type] || {}),
-      [value]: !existingItem?.[type]?.[value],
-    };
-
-    updateItem(itemName, type, updatedTypeData);
+  const updateComponentTypeConditions = (itemName, newMapping) => {
+    setFormData((prevFormData) => {
+      const updatedItem = {
+        ...prevFormData[itemName],
+        componentTypeConditions: newMapping,
+      };
+      debouncedUpdateSingle(itemName, updatedItem);
+      return {
+        ...prevFormData,
+        [itemName]: updatedItem,
+      };
+    });
   };
 
   const handleCommentChange = (itemName, comment) => {
@@ -125,6 +131,7 @@ export function InspectionCRUD(inspectionId, section) {
   const handlePhotoUpload = async (itemName, e) => {
     const files = e.target.files;
     if (!files.length) return;
+
     for (let i = 0; i < files.length; i++) {
       const data = new FormData();
       data.append("inspection_id", inspectionId);
@@ -159,7 +166,7 @@ export function InspectionCRUD(inspectionId, section) {
     formData,
     setFormData,
     updateItem,
-    handleCheckboxChange,
+    updateComponentTypeConditions,
     handleCommentChange,
     handleStatusChange,
     handleResize,

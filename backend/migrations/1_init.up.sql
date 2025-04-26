@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS inspection_exterior (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name), -- Composite primary key
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
 );
 
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS inspection_roof (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS inspection_basementFoundation (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS inspection_heating (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS inspection_cooling (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS inspection_plumbing (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS inspection_electrical (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS inspection_attic (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS inspection_doorsWindows (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS inspection_fireplace (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS inspection_systemsComponents (
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (inspection_id, item_name),
+    UNIQUE KEY unique_item (inspection_id, item_name),
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id) ON DELETE CASCADE
 );
 

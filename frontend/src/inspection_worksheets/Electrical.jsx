@@ -14,41 +14,47 @@ const Electrical = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "electrical");
 
   const items = useMemo(() => [
     {
-      name: "Service Panel",
-      materials: ["Circuit Breakers", "Fuses", "Subpanel", "Main Panel", "Other (see comments)"],
-      condition: ["Properly Labeled", "Overloaded", "Double Taps", "Loose Connections"],
+      name: "Service Entrance",
+      label: "Service Entrance Type",
+      componentTypes: ["Overhead", "Underground", "Other (see comments)"],
+      condition: ["Secure", "Loose", "Damaged", "Corroded", "Normal"],
     },
     {
-      name: "Wiring",
-      materials: ["Copper", "Aluminum", "Knob & Tube", "BX", "Romex", "Other (see comments)"],
-      condition: ["Exposed", "Damaged Insulation", "Outdated", "Improper Splices"],
+      name: "Main Panel",
+      label: "Main Panel Type",
+      componentTypes: ["Breaker Panel", "Fuse Panel", "Subpanel", "Combination Panel", "Other (see comments)"],
+      condition: ["Operational", "Corrosion", "Missing Covers", "Improper Wiring", "Normal"],
     },
     {
-      name: "Outlets & Switches",
-      materials: ["GFCI", "AFCI", "Ungrounded", "Three-prong", "Other (see comments)"],
-      condition: ["Functional", "Hot to Touch", "Ungrounded", "Loose"],
+      name: "Branch Wiring",
+      label: "Branch Wiring Type",
+      componentTypes: ["Copper", "Aluminum", "Knob and Tube", "BX Cable", "Romex", "Other (see comments)"],
+      condition: ["Properly Installed", "Double Tapped", "Damaged", "Loose", "Normal"],
     },
     {
-      name: "Lighting",
-      materials: ["Ceiling", "Wall-mounted", "Recessed", "Track", "Other (see comments)"],
-      condition: ["Operational", "Non-functional", "Flickering", "Missing Bulbs"],
+      name: "Outlets and Fixtures",
+      label: "Outlet/Fixture Type",
+      componentTypes: ["Standard Outlets", "GFCI Outlets", "AFCI Protection", "Lighting Fixtures", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Reversed Polarity", "Ungrounded", "Normal"],
     },
     {
-      name: "Smoke and CO Detectors",
-      materials: ["Smoke", "CO", "Combo Unit", "Battery-powered", "Hardwired"],
-      condition: ["Present", "Expired", "Missing", "Not Functional"],
+      name: "Grounding & Bonding",
+      label: "Grounding System Type",
+      componentTypes: ["Rod Ground", "Water Pipe Ground", "Other (see comments)"],
+      condition: ["Proper", "Improper", "Missing", "Loose", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>7. ELECTRICAL</h1>
+      <h1>12. ELECTRICAL SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +67,7 @@ const Electrical = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

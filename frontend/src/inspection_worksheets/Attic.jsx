@@ -14,6 +14,7 @@ const Attic = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "attic");
@@ -21,27 +22,32 @@ const Attic = () => {
   const items = useMemo(() => [
     {
       name: "Access",
-      materials: ["Scuttle", "Stairs", "Walk-up", "Other (see comments)"],
+      label: "Access Type",
+      componentTypes: ["Scuttle", "Stairs", "Walk-up", "Other (see comments)"],
       condition: ["Safe", "Unsafe", "Obstructed", "Damaged"],
     },
     {
       name: "Structure",
-      materials: ["Rafters", "Trusses", "Joists", "Beams", "Other (see comments)"],
+      label: "Framing Type",
+      componentTypes: ["Rafters", "Trusses", "Joists", "Beams", "Other (see comments)"],
       condition: ["Intact", "Cracked", "Sagging", "Modified"],
     },
     {
       name: "Ventilation",
-      materials: ["Soffit", "Ridge", "Gable", "Fan", "Other (see comments)"],
+      label: "Ventilation Type",
+      componentTypes: ["Soffit", "Ridge", "Gable", "Fan", "Other (see comments)"],
       condition: ["Adequate", "Inadequate", "Blocked", "None"],
     },
     {
       name: "Insulation",
-      materials: ["Fiberglass Batts", "Blown-in", "Foam Board", "None", "Other (see comments)"],
+      label: "Insulation Type",
+      componentTypes: ["Fiberglass Batts", "Blown-in", "Foam Board", "None", "Other (see comments)"],
       condition: ["Evenly Distributed", "Compressed", "Missing", "Wet"],
     },
     {
       name: "Moisture Intrusion",
-      materials: ["Stains", "Mold", "Leaks", "None", "Other (see comments)"],
+      label: "Signs Observed",
+      componentTypes: ["Stains", "Mold", "Leaks", "None", "Other (see comments)"],
       condition: ["Active", "Past", "Dry", "Unknown"],
     },
   ], []);
@@ -61,6 +67,7 @@ const Attic = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

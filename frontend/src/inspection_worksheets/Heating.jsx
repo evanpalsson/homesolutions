@@ -14,36 +14,41 @@ const Heating = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "heating");
 
   const items = useMemo(() => [
     {
-      name: "Heating System",
-      materials: ["Forced Air", "Boiler/Radiator", "Electric Baseboard", "Heat Pump", "Other (see comments)"],
-      condition: ["Operational", "No Heat", "Leaking", "Noisy Operation"],
+      name: "Heating Equipment",
+      label: "Heating Equipment Type",
+      componentTypes: ["Furnace", "Boiler", "Heat Pump", "Wall Heater", "Radiant Floor", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Noisy", "Leaking", "Normal Wear", "Major Defects"],
     },
     {
-      name: "Fuel Type",
-      materials: ["Natural Gas", "Electric", "Oil", "Propane", "Wood", "Other (see comments)"],
-      condition: ["Connected", "Disconnected", "Leak Suspected", "Unknown"],
+      name: "Distribution Systems",
+      label: "Heat Distribution Type",
+      componentTypes: ["Ductwork", "Radiant Panels", "Radiators", "Baseboard Units", "Other (see comments)"],
+      condition: ["Leaking", "Disconnected", "Obstructed", "Insulation Missing", "Normal"],
     },
     {
-      name: "Distribution",
-      materials: ["Ductwork", "Radiators", "Baseboards", "Floor Heating", "Other (see comments)"],
-      condition: ["Even Heating", "Cold Spots", "Leaking Pipes", "Air Locked"],
+      name: "Venting Systems",
+      label: "Venting System Type",
+      componentTypes: ["Metal Flue", "PVC Flue", "Chimney Flue", "Direct Vent", "Other (see comments)"],
+      condition: ["Properly Vented", "Improperly Vented", "Blocked", "Corroded", "Normal"],
     },
     {
-      name: "Thermostat",
-      materials: ["Manual", "Programmable", "Smart", "Zoned", "Other (see comments)"],
-      condition: ["Functional", "Non-functional", "Inaccurate", "Unresponsive"],
+      name: "Thermostats",
+      label: "Thermostat Type",
+      componentTypes: ["Programmable", "Non-Programmable", "Smart Thermostat", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Not Responsive", "Wired Incorrectly"],
     },
   ], []);
 
   return (
     <div>
-      <h1>4. HEATING</h1>
+      <h1>13. HEATING SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -56,6 +61,7 @@ const Heating = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

@@ -14,41 +14,41 @@ const Fireplace = () => {
     handleResize,
     handlePhotoUpload,
     handlePhotoRemove,
+    updateComponentTypeConditions,
     photos,
     fetchPhotos,
   } = InspectionCRUD(inspectionId, "fireplace");
 
   const items = useMemo(() => [
     {
-      name: "Fireplace Type",
-      materials: ["Wood Burning", "Gas", "Electric", "Pellet", "Other (see comments)"],
-      condition: ["Operational", "Inoperable", "Excessive Creosote", "Draft Issues"],
+      name: "Fireplaces and Stoves",
+      label: "Fireplace/Stove Type",
+      componentTypes: ["Wood-Burning Fireplace", "Gas Fireplace", "Pellet Stove", "Wood Stove", "Electric Fireplace", "Other (see comments)"],
+      condition: ["Operational", "Non-Operational", "Damaged Firebox", "Cracked Masonry", "Creosote Buildup", "Normal"],
     },
     {
-      name: "Chimney - Vent",
-      materials: ["Masonry", "Metal", "Direct Vent", "Power Vent", "Other (see comments)"],
-      condition: ["Clear", "Blocked", "Damaged Flue", "Needs Cleaning"],
+      name: "Chimneys and Vents",
+      label: "Chimney/Vent Type",
+      componentTypes: ["Masonry Chimney", "Metal Chimney", "Direct Vent", "B-Vent", "Other (see comments)"],
+      condition: ["Blocked", "Damaged", "Leaning", "Cracked Flue", "Normal"],
     },
     {
-      name: "Damper",
-      materials: ["Present", "Missing", "Inoperable", "Other (see comments)"],
-      condition: ["Operational", "Stuck", "Missing", "Broken Handle"],
+      name: "Hearths and Mantels",
+      label: "Hearth/Mantel Material",
+      componentTypes: ["Stone", "Brick", "Tile", "Wood", "Other (see comments)"],
+      condition: ["Cracked", "Damaged", "Loose", "Normal"],
     },
     {
-      name: "Firebox",
-      materials: ["Brick", "Steel", "Cast Iron", "Other (see comments)"],
-      condition: ["Good", "Cracked", "Leaking", "Corroded"],
-    },
-    {
-      name: "Hearth",
-      materials: ["Tile", "Stone", "Concrete", "Other (see comments)"],
-      condition: ["Intact", "Cracked", "Loose", "Missing Tiles"],
+      name: "Damper Operation",
+      label: "Damper Type",
+      componentTypes: ["Manual", "Top-Sealing", "Missing", "Other (see comments)"],
+      condition: ["Operational", "Stuck", "Damaged", "Normal"],
     },
   ], []);
 
   return (
     <div>
-      <h1>10. FIREPLACE</h1>
+      <h1>14. FIREPLACE, WOOD STOVE, CHIMNEY</h1>
       <InspectionSections
         items={items}
         formData={formData}
@@ -61,6 +61,7 @@ const Fireplace = () => {
           handleResize,
           handlePhotoUpload,
           handlePhotoRemove,
+          updateComponentTypeConditions,
         }}
       />
     </div>

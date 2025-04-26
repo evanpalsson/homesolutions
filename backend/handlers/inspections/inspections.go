@@ -41,6 +41,15 @@ func (n *NullableInt) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func getDBConnection() (*sql.DB, error) {
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HARDCODE")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
+	return sql.Open("mysql", dsn)
+}
+
 // COVERPAGE WORKSHEET -------------------------------------------------------------------------------------------
 // CreateInspectionHelper creates a new inspection form and returns the form ID
 func CreateInspectionHelper(db *sql.DB, propertyID string, inspectionDate string) (string, error) {
@@ -103,15 +112,10 @@ func CreateInspection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get environment variables for database connection
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHard := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Println("Error connecting to the database:", err)
-		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -139,15 +143,10 @@ func GetInspectionForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Printf("Error connecting to the database: %v", err)
-		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -227,15 +226,10 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHard := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHard, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Println("Error connecting to the database:", err)
-		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -279,25 +273,20 @@ func UpdateInspection(w http.ResponseWriter, r *http.Request) {
 
 // EXTERIOR WORKSHEET -------------------------------------------------------------------------------------------
 type ExteriorData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveExteriorData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -323,7 +312,6 @@ func SaveExteriorData() http.HandlerFunc {
 
 		for _, record := range data {
 			if record.ItemName == "" || record.InspectionID == "" {
-				log.Printf("Validation failed: Missing required fields for record: %+v", record)
 				continue
 			}
 
@@ -335,17 +323,13 @@ func SaveExteriorData() http.HandlerFunc {
 
 			conditionsJSON, err := json.Marshal(record.Conditions)
 			if err != nil {
-				log.Printf("Error marshalling condition: %v", err)
+				log.Printf("Error marshalling conditions: %v", err)
 				conditionsJSON = []byte("{}")
 			}
 
-			// log.Printf("Executing query with inspection_id=%s, item_name=%s, materials=%s, conditions=%s, comments=%s",
-			// 	record.InspectionID, record.ItemName, string(materialsJSON), string(conditionsJSON), record.Comments)
-
 			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
-
 			if err != nil {
-				log.Printf("Error executing query: %v", err)
+				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
 				return
 			}
@@ -366,15 +350,10 @@ func GetExteriorData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -434,25 +413,20 @@ func GetExteriorData() http.HandlerFunc {
 
 // ROOF WORKSHEET -------------------------------------------------------------------------------------------
 type RoofData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveRoofData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -479,10 +453,19 @@ func SaveRoofData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -504,15 +487,10 @@ func GetRoofData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -561,25 +539,20 @@ func GetRoofData() http.HandlerFunc {
 
 // BASEMENT FOUNDATION WORKSHEET -------------------------------------------------------------------------------------------
 type BasementData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveBasementData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -606,10 +579,19 @@ func SaveBasementData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -631,15 +613,10 @@ func GetBasementData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -691,25 +668,20 @@ func GetBasementData() http.HandlerFunc {
 
 // HEATING WORKSHEET -------------------------------------------------------------------------------------------
 type HeatingData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"` // ✅ add this
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"` // ✅ add this
 }
 
 func SaveHeatingData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -736,10 +708,19 @@ func SaveHeatingData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -761,15 +742,10 @@ func GetHeatingData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -823,25 +799,20 @@ func GetHeatingData() http.HandlerFunc {
 
 // COOLING WORKSHEET -------------------------------------------------------------------------------------------
 type CoolingData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"` // ✅ Add this line
 }
 
 func SaveCoolingData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -868,10 +839,19 @@ func SaveCoolingData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -893,15 +873,10 @@ func GetCoolingData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -955,25 +930,20 @@ func GetCoolingData() http.HandlerFunc {
 
 // PLUMBING WORKSHEET -------------------------------------------------------------------------------------------
 type PlumbingData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"` // ✅ Add this line
 }
 
 func SavePlumbingData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1000,10 +970,19 @@ func SavePlumbingData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1025,15 +1004,10 @@ func GetPlumbingData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1087,25 +1061,20 @@ func GetPlumbingData() http.HandlerFunc {
 
 // ELECTRICAL WORKSHEET -------------------------------------------------------------------------------------------
 type ElectricalData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveElectricalData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1132,10 +1101,19 @@ func SaveElectricalData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1157,15 +1135,10 @@ func GetElectricalData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1219,25 +1192,20 @@ func GetElectricalData() http.HandlerFunc {
 
 // ATTIC WORKSHEET -------------------------------------------------------------------------------------------
 type AtticData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveAtticData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1264,10 +1232,19 @@ func SaveAtticData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1289,15 +1266,10 @@ func GetAtticData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1351,25 +1323,20 @@ func GetAtticData() http.HandlerFunc {
 
 // DOORS WINDOWS WORKSHEET -------------------------------------------------------------------------------------------
 type DoorsWindowsData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"` // ✅ Add this line
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"` // ✅ Add this line
 }
 
 func SaveDoorsWindowsData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1396,10 +1363,19 @@ func SaveDoorsWindowsData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1421,15 +1397,10 @@ func GetDoorsWindowsData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1483,25 +1454,20 @@ func GetDoorsWindowsData() http.HandlerFunc {
 
 // FIREPLACE WORKSHEET -------------------------------------------------------------------------------------------
 type FireplaceData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"`
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"`
 }
 
 func SaveFireplaceData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1528,10 +1494,19 @@ func SaveFireplaceData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1553,15 +1528,10 @@ func GetFireplaceData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1615,25 +1585,20 @@ func GetFireplaceData() http.HandlerFunc {
 
 // SYSTEMS COMPONENTS WORKSHEET -------------------------------------------------------------------------------------------
 type SystemsComponentsData struct {
-	InspectionID     string          `json:"inspection_id"`
-	ItemName         string          `json:"item_name"`
-	Materials        map[string]bool `json:"materials"`
-	Conditions       map[string]bool `json:"conditions"`
-	Comments         string          `json:"comments"`
-	InspectionStatus string          `json:"inspection_status"` // ✅ Add this
+	InspectionID     string            `json:"inspection_id"`
+	ItemName         string            `json:"item_name"`
+	Materials        map[string]string `json:"materials"`
+	Conditions       map[string]bool   `json:"conditions"`
+	Comments         string            `json:"comments"`
+	InspectionStatus string            `json:"inspection_status"` // ✅ Add this
 }
 
 func SaveSystemsComponentsData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to the database: %v", err)
-			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1660,10 +1625,19 @@ func SaveSystemsComponentsData() http.HandlerFunc {
 				continue
 			}
 
-			materialsJSON, _ := json.Marshal(record.Materials)
-			conditionsJSON, _ := json.Marshal(record.Conditions)
+			materialsJSON, err := json.Marshal(record.Materials)
+			if err != nil {
+				log.Printf("Error marshalling materials: %v", err)
+				materialsJSON = []byte("{}")
+			}
 
-			_, err := db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
+			conditionsJSON, err := json.Marshal(record.Conditions)
+			if err != nil {
+				log.Printf("Error marshalling conditions: %v", err)
+				conditionsJSON = []byte("{}")
+			}
+
+			_, err = db.Exec(query, record.InspectionID, record.ItemName, materialsJSON, conditionsJSON, record.Comments, record.InspectionStatus)
 			if err != nil {
 				log.Printf("Error executing insert: %v", err)
 				http.Error(w, "Database error", http.StatusInternalServerError)
@@ -1685,15 +1659,10 @@ func GetSystemsComponentsData() http.HandlerFunc {
 			return
 		}
 
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
-		dbHost := os.Getenv("DB_HARDCODE")
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-		db, err := sql.Open("mysql", dsn)
+		db, err := getDBConnection()
 		if err != nil {
-			log.Printf("Error connecting to DB: %v", err)
-			http.Error(w, "Database connection failed", http.StatusInternalServerError)
+			log.Printf("DB connection error: %v", err)
+			http.Error(w, "DB connection error", http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
@@ -1808,15 +1777,10 @@ func UploadInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	photoUrl := "/uploads/inspection_photos/" + filename
 
 	// Get a DB connection and insert the photo record
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Printf("Database connection error: %v", err)
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -1847,15 +1811,10 @@ func GetInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 
 	// log.Printf("Fetching photos for inspection_id=%s, item_name=%s", inspectionId, itemName)
 
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Printf("Error opening DB connection: %v", err)
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -1920,15 +1879,10 @@ func DeleteInspectionPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Connect to DB
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
 		log.Printf("DB connection error: %v", err)
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -1975,14 +1929,10 @@ func GetAllInspectionPhotos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", dbUser, dbPassword, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		http.Error(w, "DB connection failed", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -2066,14 +2016,10 @@ func UploadPropertyPhoto(w http.ResponseWriter, r *http.Request) {
 	photoID := uuid.New().String()
 	photoURL := "/uploads/property_photos/" + filename
 
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -2118,15 +2064,10 @@ func GetPropertyPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Connect to DB
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Printf("❌ DB connection failed: %v", err)
-		http.Error(w, "Database connection failed", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
@@ -2189,15 +2130,10 @@ func DeletePropertyPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// DB connection setup
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HARDCODE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, password, dbHost, dbName)
-	db, err := sql.Open("mysql", dsn)
+	db, err := getDBConnection()
 	if err != nil {
-		log.Println("DB connection error:", err)
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		log.Printf("DB connection error: %v", err)
+		http.Error(w, "DB connection error", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
