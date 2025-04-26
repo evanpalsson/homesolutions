@@ -22,29 +22,39 @@ const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) 
     }
   });
 
+  const maybeAutoUpdateStatus = (itemName) => {
+    const currentStatus = formData[itemName]?.inspection_status || "Not Inspected";
+  
+    if (currentStatus !== "Not Present" && currentStatus !== "Repair or Replace") {
+      handlers.handleStatusChange(itemName, "Inspected");
+    }
+  };  
+
   const handleTypeCheckboxChange = (itemName, type) => {
     const existing = formData[itemName]?.componentTypeConditions || {};
     const isSelected = existing.hasOwnProperty(type);
-
+  
     if (isSelected) {
       const updatedMapping = { ...existing };
-      delete updatedMapping[type]; // 🔥 REMOVE the type properly
+      delete updatedMapping[type];
       handlers.updateComponentTypeConditions(itemName, updatedMapping);
     } else {
       handlers.updateComponentTypeConditions(itemName, {
         ...existing,
         [type]: "",
       });
-    }    
+      maybeAutoUpdateStatus(itemName); // ✅ trigger status update
+    }
   };
-
+  
   const handleConditionDropdownChange = (itemName, type, newCondition) => {
     const existing = formData[itemName]?.componentTypeConditions || {};
     handlers.updateComponentTypeConditions(itemName, {
       ...existing,
       [type]: newCondition,
     }, type, true);
-  };
+    maybeAutoUpdateStatus(itemName); // ✅ trigger status update
+  };  
 
   return (
     <form>
@@ -105,6 +115,9 @@ const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) 
                 onChange={(e) => {
                   handlers.handleCommentChange(item.name, e.target.value);
                   handlers.handleResize(e.target);
+                  if (e.target.value.trim() !== "") {
+                    maybeAutoUpdateStatus(item.name); // ✅ trigger status update
+                  }
                 }}
                 ref={(el) => el && handlers.handleResize(el)}
               />
@@ -118,7 +131,10 @@ const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) 
               type="file"
               accept="image/*"
               multiple
-              onChange={(e) => handlers.handlePhotoUpload(item.name, e)}
+              onChange={(e) => {
+                handlers.handlePhotoUpload(item.name, e);
+                maybeAutoUpdateStatus(item.name); // ✅ trigger status update
+              }}
             />
             <div className="photo-preview">
               {photos[item.name]?.length > 0 ? (

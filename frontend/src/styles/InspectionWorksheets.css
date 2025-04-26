@@ -33,7 +33,7 @@ body {
     color: maroon;
     margin: 0px;
     font-size: 1.5rem;
-    width: 500px;
+    width: 625px;
   }
 
   h3:before {
@@ -275,6 +275,7 @@ input:checked + .slider:before {
   margin-left: 20px;
   height: 40px;
   width: 100%;
+  max-width: 200px;
   text-align: right;
 }
 

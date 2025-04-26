@@ -2,6 +2,8 @@ package utils
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -14,6 +16,52 @@ type DummyItem struct {
 	Conditions []string
 }
 
+var allDummyItems = []DummyItem{
+	// Exterior
+	{"inspection_exterior", "Siding, Flashing, and Trim", []string{"Vinyl", "Wood", "Aluminum", "Brick", "Fiber Cement"}, []string{"Rot", "Cracks", "Warping", "Loose"}},
+	{"inspection_exterior", "Exterior Doors", []string{"Wood", "Metal", "Fiberglass"}, []string{"Damaged", "Misaligned", "Broken Seal"}},
+
+	// Roof
+	{"inspection_roof", "Roof Coverings", []string{"Asphalt Shingles", "Tile", "Metal", "Slate"}, []string{"Cracked", "Missing Shingles", "Leaks"}},
+	{"inspection_roof", "Flashing", []string{"Metal", "Rubber"}, []string{"Improper Install", "Rusting", "Separated"}},
+
+	// Basement/Foundation
+	{"inspection_basementFoundation", "Foundation Walls", []string{"Concrete", "Block", "Stone"}, []string{"Cracks", "Moisture Intrusion", "Settlement"}},
+	{"inspection_basementFoundation", "Sump Pump", []string{"Plastic", "Cast Iron"}, []string{"Inoperable", "Rusting", "No Backup Power"}},
+
+	// Heating
+	{"inspection_heating", "Furnace", []string{"Gas", "Electric", "Oil"}, []string{"Short Cycling", "No Heat", "Unusual Noise"}},
+	{"inspection_heating", "Thermostat", []string{"Digital", "Analog"}, []string{"Unresponsive", "Incorrect Readings"}},
+
+	// Cooling
+	{"inspection_cooling", "AC Condenser", []string{"Split System", "Window Unit"}, []string{"Leaking Refrigerant", "Dirty Coils", "Fan Failure"}},
+	{"inspection_cooling", "Thermostat", []string{"Digital"}, []string{"Out of Calibration"}},
+
+	// Plumbing
+	{"inspection_plumbing", "Water Heater", []string{"Tank", "Tankless"}, []string{"No Hot Water", "Leaking Tank", "Rust"}},
+	{"inspection_plumbing", "Visible Pipes", []string{"Copper", "PVC", "PEX"}, []string{"Corrosion", "Loose Fittings", "Leaks"}},
+
+	// Electrical
+	{"inspection_electrical", "Main Electrical Panel", []string{"Circuit Breaker Panel", "Fuse Box"}, []string{"Double Tapping", "Missing Knockouts", "Overfusing"}},
+	{"inspection_electrical", "Outlets", []string{"Standard", "GFCI", "AFCI"}, []string{"Reverse Polarity", "No Ground"}},
+
+	// Attic
+	{"inspection_attic", "Attic Ventilation", []string{"Ridge Vent", "Soffit Vent"}, []string{"Blocked", "Inadequate Ventilation"}},
+	{"inspection_attic", "Attic Insulation", []string{"Fiberglass", "Cellulose", "Spray Foam"}, []string{"Compressed", "Insufficient Depth"}},
+
+	// Doors & Windows
+	{"inspection_doorsWindows", "Front Door", []string{"Steel", "Wood", "Fiberglass"}, []string{"Warped", "Weatherstripping Damaged"}},
+	{"inspection_doorsWindows", "Windows", []string{"Double Pane", "Single Pane"}, []string{"Fogged", "Cracked"}},
+
+	// Fireplace
+	{"inspection_fireplace", "Chimney", []string{"Brick", "Stone"}, []string{"Cracked Crown", "No Cap", "Loose Flashing"}},
+	{"inspection_fireplace", "Firebox", []string{"Masonry", "Prefab"}, []string{"Damaged Lining", "Soot Build-up"}},
+
+	// Systems & Components
+	{"inspection_systemsComponents", "Garage Door Opener", []string{"Chain Drive", "Belt Drive"}, []string{"No Auto-Reverse", "Sensor Misaligned"}},
+	{"inspection_systemsComponents", "Smoke Detectors", []string{"Present"}, []string{"Nonfunctional", "Missing"}},
+}
+
 func InsertDummyInspectionData(db *sql.DB) error {
 	const inspectionID = "9c729b07-0fff-48e1-965a-11a97bd359b3"
 	const propertyID = "TX782610001"
@@ -21,81 +69,34 @@ func InsertDummyInspectionData(db *sql.DB) error {
 
 	rand.Seed(time.Now().UnixNano())
 
-	// All dummy items across sections
-	// sectionItems := []DummyItem{
-	// 	// Exterior
-	// 	{"inspection_exterior", "Sidewalks", []string{"Concrete", "Brick", "Asphalt"}, []string{"Cracked", "Uneven", "Trip Hazard"}},
-	// 	{"inspection_exterior", "Exterior Walls", []string{"Brick", "Stucco", "Vinyl"}, []string{"Peeling Paint", "Rotting"}},
-	// 	{"inspection_exterior", "Gutters & Downspouts", []string{"Aluminum", "Copper"}, []string{"Leaking", "Detached"}},
+	for _, item := range allDummyItems {
+		materials := make(map[string]string)
+		conditions := make(map[string]bool)
 
-	// 	// Roof
-	// 	{"inspection_roof", "Roof Covering", []string{"Asphalt Shingles", "Tile"}, []string{"Leaking", "Worn"}},
-	// 	{"inspection_roof", "Flashing", []string{"Metal", "Rubber"}, []string{"Improper Install", "Damaged"}},
+		for _, mat := range item.Materials {
+			if rand.Intn(2) == 1 {
+				randomCondition := []string{"Good", "Fair", "Poor"}[rand.Intn(3)]
+				materials[mat] = randomCondition
+			}
+		}
+		for _, cond := range item.Conditions {
+			if rand.Intn(2) == 1 {
+				conditions[cond] = true
+			}
+		}
 
-	// 	// Basement/Foundation
-	// 	{"inspection_basementFoundation", "Foundation Walls", []string{"Concrete", "Block"}, []string{"Cracks", "Moisture Intrusion"}},
-	// 	{"inspection_basementFoundation", "Sump Pump", []string{"Present"}, []string{"Inoperable", "Rusting"}},
+		materialsJSON, _ := json.Marshal(materials)
+		conditionsJSON, _ := json.Marshal(conditions)
+		conditionsText, _ := json.Marshal(conditions)
+		comment := fmt.Sprintf("Dummy entry for %s. Conditions: %s", item.ItemName, conditionsText)
 
-	// 	// Heating
-	// 	{"inspection_heating", "Furnace", []string{"Gas", "Electric"}, []string{"No Heat", "Short Cycling"}},
-	// 	{"inspection_heating", "Thermostat", []string{"Digital"}, []string{"Unresponsive"}},
-
-	// 	// Cooling
-	// 	{"inspection_cooling", "AC Condenser", []string{"Split System"}, []string{"Leaking Refrigerant", "Dirty Coils"}},
-	// 	{"inspection_cooling", "Thermostat", []string{"Digital"}, []string{"Out of Calibration"}},
-
-	// 	// Plumbing
-	// 	{"inspection_plumbing", "Water Heater", []string{"Tank", "Tankless"}, []string{"No Hot Water", "Leaking Tank"}},
-	// 	{"inspection_plumbing", "Pipes", []string{"Copper", "PVC"}, []string{"Corrosion", "Loose Fittings"}},
-
-	// 	// Electrical
-	// 	{"inspection_electrical", "Main Panel", []string{"Circuit Breakers"}, []string{"Overfusing", "Missing Knockouts"}},
-	// 	{"inspection_electrical", "Outlets", []string{"GFCI", "Standard"}, []string{"Reverse Polarity", "No Ground"}},
-
-	// 	// Attic
-	// 	{"inspection_attic", "Ventilation", []string{"Ridge Vent", "Gable Vent"}, []string{"Blocked", "Inadequate"}},
-	// 	{"inspection_attic", "Insulation", []string{"Fiberglass", "Cellulose"}, []string{"Compacted", "Missing"}},
-
-	// 	// Doors & Windows
-	// 	{"inspection_doorsWindows", "Front Door", []string{"Steel", "Wood"}, []string{"Warped", "Loose Hinges"}},
-	// 	{"inspection_doorsWindows", "Windows", []string{"Double Pane"}, []string{"Fogged", "Stuck"}},
-
-	// 	// Fireplace
-	// 	{"inspection_fireplace", "Chimney", []string{"Brick", "Stone"}, []string{"Cracked Crown", "No Cap"}},
-	// 	{"inspection_fireplace", "Firebox", []string{"Masonry", "Prefab"}, []string{"Damaged Lining"}},
-
-	// 	// Systems & Components
-	// 	{"inspection_systemsComponents", "Garage Door", []string{"Automatic"}, []string{"Sensor Misaligned", "No Reverse"}},
-	// 	{"inspection_systemsComponents", "Smoke Detectors", []string{"Present"}, []string{"Nonfunctional", "Outdated"}},
-	// }
-
-	// for _, item := range sectionItems {
-	// 	materials := make(map[string]bool)
-	// 	conditions := make(map[string]bool)
-
-	// 	for _, mat := range item.Materials {
-	// 		if rand.Intn(2) == 1 {
-	// 			materials[mat] = true
-	// 		}
-	// 	}
-	// 	for _, cond := range item.Conditions {
-	// 		if rand.Intn(2) == 1 {
-	// 			conditions[cond] = true
-	// 		}
-	// 	}
-
-	// 	materialsJSON, _ := json.Marshal(materials)
-	// 	conditionsJSON, _ := json.Marshal(conditions)
-
-	// 	comment := fmt.Sprintf("Dummy entry for %s. Conditions: %v", item.ItemName, conditions)
-	// 	query := fmt.Sprintf(`INSERT INTO %s (inspection_id, item_name, inspection_status, materials, conditions, comments) VALUES (?, ?, 'Inspected', ?, ?, ?)`, item.Table)
-
-	// 	_, err := db.Exec(query, inspectionID, item.ItemName, materialsJSON, conditionsJSON, comment)
-	// 	if err != nil {
-	// 		log.Printf("Error inserting %s into %s: %v", item.ItemName, item.Table, err)
-	// 		return err
-	// 	}
-	// }
+		query := fmt.Sprintf(`INSERT INTO %s (inspection_id, item_name, inspection_status, materials, conditions, comments) VALUES (?, ?, 'Inspected', ?, ?, ?)`, item.Table)
+		_, err := db.Exec(query, inspectionID, item.ItemName, materialsJSON, conditionsJSON, comment)
+		if err != nil {
+			log.Printf("Error inserting %s into %s: %v", item.ItemName, item.Table, err)
+			return err
+		}
+	}
 
 	log.Println("Dummy data inserted successfully.")
 	return nil
