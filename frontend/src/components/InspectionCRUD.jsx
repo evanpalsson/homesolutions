@@ -38,24 +38,19 @@ export function InspectionCRUD(inspectionId, section) {
     const resData = response.data || [];
   
     const data = resData.reduce((acc, item) => {
-      if (item.item_name === "Roof System Details") {
-        // Special handling for Roof System Details
+      if (item.item_name.endsWith("System Details")) {
+        // Dynamic System Details Parser (Roof, Heating, Cooling, Plumbing, Electrical, etc.)
+        const key = item.item_name
+          .replace(/\s+/g, "")  // Remove all spaces
+          .replace("SystemDetails", "SystemDetails"); // Clean key name
         try {
-          acc.roofSystemDetails = JSON.parse(item.comments || "{}");
+          acc[key.charAt(0).toLowerCase() + key.slice(1)] = JSON.parse(item.comments || "{}");
         } catch (e) {
-          console.error("Error parsing Roof System Details comments JSON:", e);
-          acc.roofSystemDetails = {};
-        }
-      } else if (item.item_name === "Heating System Details") {
-        // 🔥 ADD THIS BLOCK for Heating System Details
-        try {
-          acc.heatingSystemDetails = JSON.parse(item.comments || "{}");
-        } catch (e) {
-          console.error("Error parsing Heating System Details comments JSON:", e);
-          acc.heatingSystemDetails = {};
+          console.error(`Error parsing ${item.item_name} JSON:`, e);
+          acc[key.charAt(0).toLowerCase() + key.slice(1)] = {};
         }
       } else {
-        // Normal item loading
+        // Normal Section Items (Roof Covering, Gutters, Fixtures, etc.)
         acc[item.item_name] = {
           componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
           comment: item.comments || "",
@@ -63,7 +58,7 @@ export function InspectionCRUD(inspectionId, section) {
         };
       }
       return acc;
-    }, {});
+    }, {});      
   
     setFormData(data);
   }, [inspectionId, section]);  
@@ -165,6 +160,90 @@ export function InspectionCRUD(inspectionId, section) {
     } catch (error) {
       console.error("Error updating Heating System Details:", error);
     }
+  };
+
+  const updateCoolingSystemDetails = async (coolingDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Cooling System Details", // 🔥 Special identifier
+      inspection_status: "Inspected", // default status
+      materials: {}, // empty because we're using comments
+      conditions: {}, // empty because we're using comments
+      comments: JSON.stringify(coolingDetails), // Save cooling fields inside comments as JSON
+    }];
+  
+    console.log("Posting Cooling System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-cooling`, payload);
+    } catch (error) {
+      console.error("Error updating Cooling System Details:", error);
+    }
+  };
+
+  const updateWaterHeatingSystemDetails = async (waterHeatingDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Water Heating System Details", // 🔥 Special identifier
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(waterHeatingDetails),
+    }];
+  
+    console.log("Posting Water Heating System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-plumbing`, payload);
+    } catch (error) {
+      console.error("Error updating Water Heating System Details:", error);
+    }
+  };
+
+  const updateWaterFiltrationSystemDetails = async (waterFiltrationDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Water Filtration System Details", // 🔥 Special identifier
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(waterFiltrationDetails),
+    }];
+  
+    console.log("Posting Water Filtration System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-plumbing`, payload);
+    } catch (error) {
+      console.error("Error updating Water Filtration System Details:", error);
+    }
+  };
+
+  const updateElectricalSystemDetails = async (electricalDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Electrical System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(electricalDetails),
+    }];
+  
+    console.log("Posting Electrical System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-electrical`, payload);
+    } catch (error) {
+      console.error("Error updating Electrical System Details:", error);
+    }
   };  
 
   const handleCommentChange = (itemName, comment) => {
@@ -221,6 +300,10 @@ export function InspectionCRUD(inspectionId, section) {
     updateComponentTypeConditions,
     updateRoofSystemDetails,
     updateHeatingSystemDetails,
+    updateCoolingSystemDetails,
+    updateWaterHeatingSystemDetails,
+    updateWaterFiltrationSystemDetails,
+    updateElectricalSystemDetails,
     handleCommentChange,
     handleStatusChange,
     handleResize,

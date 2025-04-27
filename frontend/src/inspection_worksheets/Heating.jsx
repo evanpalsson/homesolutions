@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { InspectionCRUD } from "../components/InspectionCRUD";
 import InspectionSections from "../components/InspectionSections";
+import SystemPhotoUpload from "../components/SystemPhotoUpload";
 import { debounce } from "../utils/debounce";
 import "../styles/InspectionWorksheets.css";
 
@@ -88,14 +89,6 @@ const Heating = () => {
               <input type="number" value={heatingDetails.age || ""} onChange={(e) => handleHeatingDetailChange("age", e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Number of Units:</label>
-              <input type="number" value={heatingDetails.units || ""} onChange={(e) => handleHeatingDetailChange("units", e.target.value)} />
-            </div>
-          </div>
-
-          {/* Fuel Type */}
-          <div className="roof-system-row">
-            <div className="form-group">
               <label>Fuel Type:</label>
               <select value={heatingDetails.fuelType || ""} onChange={(e) => handleHeatingDetailChange("fuelType", e.target.value)}>
                 <option value="">Select</option>
@@ -106,6 +99,30 @@ const Heating = () => {
                 <option>Solar</option>
                 <option>Other</option>
               </select>
+            </div>
+            <div className="form-group">
+              <label>Number of Units:</label>
+              <input type="number" value={heatingDetails.units || ""} onChange={(e) => handleHeatingDetailChange("units", e.target.value)} />
+            </div>
+          </div>
+
+          {/* Corrosion & Last Service Date */}
+          <div className="roof-system-row">
+            <div className="form-group">
+              <label>Visible Corrosion/Rust?</label>
+              <select value={heatingDetails.visibleCorrosion || "No"} onChange={(e) => handleHeatingDetailChange("visibleCorrosion", e.target.value)}>
+                <option>Yes</option>
+                <option>No</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Last Service Date:</label>
+              <input
+                type="date"
+                value={heatingDetails.lastServiceDate || ""}
+                onChange={(e) => handleHeatingDetailChange("lastServiceDate", e.target.value)}
+              />
             </div>
           </div>
 
@@ -150,17 +167,6 @@ const Heating = () => {
             )}
           </div>
 
-          {/* Visible Corrosion/Rust? */}
-          <div className="roof-system-row">
-            <div className="form-group">
-              <label>Visible Corrosion/Rust?</label>
-              <select value={heatingDetails.visibleCorrosion || "No"} onChange={(e) => handleHeatingDetailChange("visibleCorrosion", e.target.value)}>
-                <option>Yes</option>
-                <option>No</option>
-              </select>
-            </div>
-          </div>
-
           {/* Warranty Active? */}
           <div className="roof-system-row">
             <div className="form-group">
@@ -190,44 +196,13 @@ const Heating = () => {
           </div>
 
           {/* Heating System Label Upload */}
-          <div className="photo-upload-container">
-            <strong>Heating Source Label:</strong>
-            <div className="custom-file-upload">
-              <button
-                type="button"
-                onClick={() => document.getElementById("file-upload-heating-label").click()}
-                className="upload-button"
-              >
-                Upload Photo
-              </button>
-              <input
-                id="file-upload-heating-label"
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: "none" }}
-                onChange={(e) => handlePhotoUpload("Heating System Details", e)}
-              />
-            </div>
-
-            <div className="photo-preview">
-              {photos["Heating System Details"]?.length > 0 ? (
-                photos["Heating System Details"].map((photo) => (
-                  <div key={photo.photo_id} className="photo-item">
-                    <img src={`http://localhost:8080${photo.photo_url}`} alt="Heating Label" />
-                    <button
-                      type="button"
-                      onClick={() => handlePhotoRemove("Heating System Details", photo.photo_id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p>No heating label photo uploaded.</p>
-              )}
-            </div>
-          </div>
+          <SystemPhotoUpload
+            label="Heating System Nameplate Photo"
+            itemName="Heating System Details"
+            photos={photos}
+            handlePhotoUpload={handlePhotoUpload}
+            handlePhotoRemove={handlePhotoRemove}
+          />
 
         </div>
       </div>
