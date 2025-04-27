@@ -1,6 +1,7 @@
 // InspectionCRUD.jsx
 import { useState, useCallback, useEffect } from "react";
 import axios from "../utils/axios";
+import { debounce } from "../utils/debounce";
 import React from "react";
 
 export const InspectionStatusDropdown = ({ value, onChange }) => {
@@ -35,26 +36,29 @@ export function InspectionCRUD(inspectionId, section) {
     const url = `http://localhost:8080/api/inspection-${section}/${inspectionId}`;
     const response = await axios.get(url);
     const resData = response.data || [];
-
+  
     const data = resData.reduce((acc, item) => {
-      acc[item.item_name] = {
-        componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
-        comment: item.comments || "",
-        inspection_status: item.inspection_status || "Not Inspected",
-      };
+      if (item.item_name === "Roof System Details") {
+        // Special handling for Roof System Details
+        try {
+          acc.roofSystemDetails = JSON.parse(item.comments || "{}");
+        } catch (e) {
+          console.error("Error parsing Roof System Details comments JSON:", e);
+          acc.roofSystemDetails = {};
+        }
+      } else {
+        // Normal item loading
+        acc[item.item_name] = {
+          componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
+          comment: item.comments || "",
+          inspection_status: item.inspection_status || "Not Inspected",
+        };
+      }
       return acc;
     }, {});
-
+  
     setFormData(data);
-  }, [inspectionId, section]);
-
-  const debounce = (func, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => func(...args), delay);
-    };
-  };
+  }, [inspectionId, section]);  
 
   const updateSingleBackend = async (itemName, itemDetails) => {
     const payload = [{
@@ -115,6 +119,25 @@ export function InspectionCRUD(inspectionId, section) {
     });
   };
 
+  const updateRoofSystemDetails = async (roofDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Roof System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(roofDetails),
+    }];
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-roof`, payload);
+    } catch (error) {
+      console.error("Error updating Roof System Details:", error);
+    }
+  };  
+
   const handleCommentChange = (itemName, comment) => {
     updateItem(itemName, "comment", comment);
   };
@@ -167,6 +190,7 @@ export function InspectionCRUD(inspectionId, section) {
     setFormData,
     updateItem,
     updateComponentTypeConditions,
+    updateRoofSystemDetails,
     handleCommentChange,
     handleStatusChange,
     handleResize,

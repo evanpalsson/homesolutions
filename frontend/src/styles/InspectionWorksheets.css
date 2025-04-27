@@ -370,3 +370,99 @@ input:checked + .slider:before {
 .photo-preview p {
   margin: 5px 0px;
 }
+
+.roof-system-details {
+  background-color: #f9f9f9;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.roof-system-details h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.roof-system-details .form-group {
+  margin-bottom: 15px;
+}
+
+.roof-system-details label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.roof-system-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.roof-system-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.roof-system-row .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.roof-system-details .form-group {
+  margin-bottom: 0;
+  max-width: 200px;
+  margin-right: 1em;
+}
+
+.roof-system-details input[type="number"],
+.roof-system-details input[type="date"],
+.roof-system-details select,
+.roof-system-details textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.roof-system-details h2 {
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  color: maroon;
+  font-size: 1.5rem;
+}
+
+.roof-system-details h2:before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 26px;
+  margin-right: 7px;
+  background-image: url("/images/toc.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+}
+
+.form-group label {
+  color: #2c3e50;
+  font-size: 1.15rem;
+}
+
+.roof-system-details {
+  max-width: 900px;
+  margin-left: 1rem;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
