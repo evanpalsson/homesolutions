@@ -381,16 +381,20 @@ func GetExteriorData() http.HandlerFunc {
 				return
 			}
 
+			if materialsJSON == "" {
+				materialsJSON = "{}"
+			}
 			if err := json.Unmarshal([]byte(materialsJSON), &record.Materials); err != nil {
 				log.Printf("Error unmarshalling materials: %v", err)
-				http.Error(w, "Failed to parse materials", http.StatusInternalServerError)
-				return
+				record.Materials = make(map[string]string) // fallback
 			}
 
+			if conditionsJSON == "" {
+				conditionsJSON = "{}"
+			}
 			if err := json.Unmarshal([]byte(conditionsJSON), &record.Conditions); err != nil {
 				log.Printf("Error unmarshalling conditions: %v", err)
-				http.Error(w, "Failed to parse conditions", http.StatusInternalServerError)
-				return
+				record.Conditions = make(map[string]bool) // fallback
 			}
 
 			record.InspectionID = inspectionId

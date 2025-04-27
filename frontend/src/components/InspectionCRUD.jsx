@@ -46,23 +46,29 @@ export function InspectionCRUD(inspectionId, section) {
     };
   
     const data = resData.reduce((acc, item) => {
+      if (!item || !item.item_name) return acc; // guard against bad rows
+    
+      const key = toCamelCase(item.item_name);
+    
       if (item.item_name.endsWith("System Details") || item.item_name.endsWith("Management Details")) {
         try {
-          const key = toCamelCase(item.item_name);
-          acc[key] = JSON.parse(item.comments || "{}");
+          acc[key] = typeof item.comments === "string" && item.comments.trim().startsWith("{")
+            ? JSON.parse(item.comments)
+            : {};
         } catch (e) {
-          console.error(`Error parsing ${item.item_name} JSON:`, e);
-          acc[toCamelCase(item.item_name)] = {};
-        }
+          console.error(`Error parsing JSON for ${item.item_name}:`, e);
+          acc[key] = {};
+        }        
       } else {
         acc[item.item_name] = {
-          componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
+          componentTypeConditions: typeof item.materials === "object" ? item.materials : {},
           comment: item.comments || "",
           inspection_status: item.inspection_status || "Not Inspected",
         };
       }
       return acc;
     }, {});
+    
   
     setFormData(data);
   }, [inspectionId, section]);       

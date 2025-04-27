@@ -124,9 +124,11 @@ const HomeInspectionReport = () => {
     try {
       setAnalyzing(true);
       const payload = {
-        inspection_id: inspectionId, // as string
-        text: reportText
-      };
+        inspection_id: inspectionId,
+        property_id: propertyId,
+        text: reportText,
+        photoDescriptions: ""
+      };      
   
       console.log("📤 Submitting analysis payload:", payload);
   
@@ -258,7 +260,7 @@ const HomeInspectionReport = () => {
       </section>
       {sections.reduce((acc, section) => {
         const data = sectionData[section];
-        const hasPhotos = data?.some(item => photosByItem[item.item_name || item.itemName]);
+        const hasPhotos = data?.some(item => item && photosByItem[item.item_name || item.itemName]);
         if ((!data || data.length === 0) && !hasPhotos) return acc;
         acc.push({ section, data });
         return acc;
@@ -275,7 +277,7 @@ const HomeInspectionReport = () => {
               />
             )}
 
-            {data.map((item, idx) => renderItem(item, `${visibleIdx + 1}.${idx + 1}`))}
+            {data.filter(Boolean).map((item, idx) => renderItem(item, `${visibleIdx + 1}.${idx + 1}`))}
           </section>
         );
       })}

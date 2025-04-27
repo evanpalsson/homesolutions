@@ -238,6 +238,19 @@ CREATE TABLE IF NOT EXISTS inspection_analysis (
     FOREIGN KEY (inspection_id) REFERENCES inspections(inspection_id)
 );
 
+CREATE TABLE IF NOT EXISTS home_health_score (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    property_id VARCHAR(36) NOT NULL,
+    inspection_id VARCHAR(36), -- nullable, in case tied to a specific inspection
+    score DECIMAL(5,2) NOT NULL, -- example: 87.45
+    breakdown JSON, -- full JSON map like {"Roof": 90.0, "Plumbing": 78.5, ...}
+    source ENUM('professional', 'diy') DEFAULT 'professional', -- type of inspection
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (property_id) REFERENCES properties(property_id)
+);
+
+
 -- Clean up previous entries
 DELETE FROM inspection_roof WHERE inspection_id = '9c729b07-0fff-48e1-965a-11a97bd359b3';
 DELETE FROM inspection_exterior WHERE inspection_id = '9c729b07-0fff-48e1-965a-11a97bd359b3';

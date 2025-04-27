@@ -1,42 +1,77 @@
+.analysis-page {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.analysis-page h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
 .analysis-card {
   background: #fff;
   border: 1px solid #ddd;
-  border-left: 6px solid #bbb;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  transition: box-shadow 0.3s ease;
-  cursor: pointer;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analysis-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
-.card-body {
-  padding-top: 0.5rem;
-}
-
-.analysis-card:hover {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.severity-critical {
-  border-left-color: #c9302c;
-}
-
-.severity-moderate {
-  border-left-color: #f0ad4e;
-}
-
-.severity-informational {
-  border-left-color: #5bc0de;
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .severity {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
   font-weight: bold;
   text-transform: uppercase;
+}
+
+.severity.critical {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.severity.major {
+  background: #fa8c16;
+  color: #fff;
+}
+
+.severity.moderate {
+  background: #fadb14;
   color: #333;
+}
+
+.severity.minor {
+  background: #52c41a;
+  color: #fff;
+}
+
+.card-body {
+  margin-top: 1rem;
+}
+
+.card-detail {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.4;
 }
