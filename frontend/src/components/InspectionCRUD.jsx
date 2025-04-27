@@ -46,6 +46,14 @@ export function InspectionCRUD(inspectionId, section) {
           console.error("Error parsing Roof System Details comments JSON:", e);
           acc.roofSystemDetails = {};
         }
+      } else if (item.item_name === "Heating System Details") {
+        // 🔥 ADD THIS BLOCK for Heating System Details
+        try {
+          acc.heatingSystemDetails = JSON.parse(item.comments || "{}");
+        } catch (e) {
+          console.error("Error parsing Heating System Details comments JSON:", e);
+          acc.heatingSystemDetails = {};
+        }
       } else {
         // Normal item loading
         acc[item.item_name] = {
@@ -136,6 +144,27 @@ export function InspectionCRUD(inspectionId, section) {
     } catch (error) {
       console.error("Error updating Roof System Details:", error);
     }
+  };
+
+  const updateHeatingSystemDetails = async (heatingDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Heating System Details", // 🔥 Special identifier
+      inspection_status: "Inspected", // default status
+      materials: {}, // empty because we're using comments
+      conditions: {}, // empty because we're using comments
+      comments: JSON.stringify(heatingDetails), // Save heating fields inside comments as JSON
+    }];
+  
+    console.log("Posting Heating System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-heating`, payload);
+    } catch (error) {
+      console.error("Error updating Heating System Details:", error);
+    }
   };  
 
   const handleCommentChange = (itemName, comment) => {
@@ -191,6 +220,7 @@ export function InspectionCRUD(inspectionId, section) {
     updateItem,
     updateComponentTypeConditions,
     updateRoofSystemDetails,
+    updateHeatingSystemDetails,
     handleCommentChange,
     handleStatusChange,
     handleResize,
