@@ -24,6 +24,8 @@ const Plumbing = () => {
   const [waterHeatingDetails, setWaterHeatingDetails] = useState(formData.waterHeatingSystemDetails || {});
   const [waterFiltrationExists, setWaterFiltrationExists] = useState(formData.waterFiltrationSystemDetails?.exists || "No");
   const [waterFiltrationDetails, setWaterFiltrationDetails] = useState(formData.waterFiltrationSystemDetails || {});
+  const [septicExists, setSepticExists] = useState(formData.septicSystemDetails?.exists || "No");
+  const [septicDetails, setSepticDetails] = useState(formData.septicSystemDetails || {});
 
   const debouncedUpdateWaterHeatingDetails = useMemo(() => debounce(async (details) => {
     if (!inspectionId) return;
@@ -67,6 +69,27 @@ const Plumbing = () => {
     }
   }, 300), [inspectionId]);
 
+  const debouncedUpdateSepticDetails = useMemo(() => debounce(async (details) => {
+    if (!inspectionId) return;
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Septic System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(details),
+    }];
+    try {
+      await fetch("http://localhost:8080/api/inspection-plumbing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      console.error("Error updating Septic System Details:", error);
+    }
+  }, 300), [inspectionId]);
+
   useEffect(() => {
     if (formData.waterHeatingSystemDetails) {
       setWaterHeatingDetails(formData.waterHeatingSystemDetails);
@@ -74,13 +97,18 @@ const Plumbing = () => {
     if (formData.waterFiltrationSystemDetails) {
       setWaterFiltrationDetails(formData.waterFiltrationSystemDetails);
       setWaterFiltrationExists(formData.waterFiltrationSystemDetails.exists || "No");
-    }    
+    }
+    if (formData.septicSystemDetails) {
+      setSepticDetails(formData.septicSystemDetails);
+      setSepticExists(formData.septicSystemDetails.exists || "No");
+    } 
   }, [formData]);
 
   useEffect(() => {
     if (inspectionId) {
       fetchPhotos("Water Heating System Details");
       fetchPhotos("Water Filtration System Details");
+      fetchPhotos("Septic System Details");
     }
   }, [inspectionId, fetchPhotos]);
 
@@ -94,6 +122,12 @@ const Plumbing = () => {
     const updatedDetails = { ...waterFiltrationDetails, [field]: value };
     setWaterFiltrationDetails(updatedDetails);
     debouncedUpdateWaterFiltrationDetails(updatedDetails);
+  };
+
+  const handleSepticDetailChange = (field, value) => {
+    const updatedDetails = { ...septicDetails, [field]: value };
+    setSepticDetails(updatedDetails);
+    debouncedUpdateSepticDetails(updatedDetails);
   };
 
   const items = useMemo(() => [
@@ -288,6 +322,73 @@ const Plumbing = () => {
             </>
           )}
 
+        </div>
+      </div>
+
+      {/* ====== Septic System Details Section (Conditional) ====== */}
+      <div className="roof-system-details">
+        <h2>Septic System Details</h2>
+
+        {/* Does a Septic System exist? */}
+        <div className="roof-system-grid">
+          <div className="roof-system-row">
+            <div className="form-group">
+              <label>Septic System Present?</label>
+              <select value={septicExists} onChange={(e) => {
+                setSepticExists(e.target.value);
+                handleSepticDetailChange("exists", e.target.value);
+              }}>
+                <option>No</option>
+                <option>Yes</option>
+              </select>
+            </div>
+          </div>
+
+          {septicExists === "Yes" && (
+            <>
+              {/* Tank Type + Age */}
+              <div className="roof-system-row">
+                <div className="form-group">
+                  <label>Tank Type:</label>
+                  <select value={septicDetails.tankType || ""} onChange={(e) => handleSepticDetailChange("tankType", e.target.value)}>
+                    <option value="">Select</option>
+                    <option>Concrete</option>
+                    <option>Plastic</option>
+                    <option>Fiberglass</option>
+                    <option>Steel</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Equipment Age (Years):</label>
+                  <input type="number" value={septicDetails.age || ""} onChange={(e) => handleSepticDetailChange("age", e.target.value)} />
+                </div>
+              </div>
+
+              {/* Last Pumping Date + Backup Observed */}
+              <div className="roof-system-row">
+                <div className="form-group">
+                  <label>Last Pumping Date:</label>
+                  <input type="date" value={septicDetails.lastPumped || ""} onChange={(e) => handleSepticDetailChange("lastPumped", e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Evidence of Backup?</label>
+                  <select value={septicDetails.backupObserved || "No"} onChange={(e) => handleSepticDetailChange("backupObserved", e.target.value)}>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* System Photo Upload */}
+              <SystemPhotoUpload
+                label="Septic System Tank Photo"
+                itemName="Septic System Details"
+                photos={photos}
+                handlePhotoUpload={handlePhotoUpload}
+                handlePhotoRemove={handlePhotoRemove}
+              />
+            </>
+          )}
         </div>
       </div>
 

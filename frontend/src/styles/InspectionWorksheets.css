@@ -447,18 +447,21 @@ input:checked + .slider:before {
   margin-right: 1em;
 }
 
+.roof-system-details input[type="text"],
 .roof-system-details input[type="number"],
 .roof-system-details input[type="date"],
 .roof-system-details select,
 .roof-system-details textarea {
   width: 100%;
-  max-width: 100%;
+  max-width: 235px;
+  min-width: 200px;
   box-sizing: border-box;
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
 }
+
 
 .roof-system-details h2 {
   border-bottom: 2px solid #ddd;

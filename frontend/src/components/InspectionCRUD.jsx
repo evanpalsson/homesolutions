@@ -37,20 +37,24 @@ export function InspectionCRUD(inspectionId, section) {
     const response = await axios.get(url);
     const resData = response.data || [];
   
+    const toCamelCase = (str) => {
+      return str
+        .replace(/\s(.)/g, (match, group1) => group1.toUpperCase())
+        .replace(/\s/g, '')
+        .replace(/^(.)/, (match, group1) => group1.toLowerCase())
+        .replace(/Details$/, 'Details'); // Keep 'Details' properly capitalized
+    };
+  
     const data = resData.reduce((acc, item) => {
-      if (item.item_name.endsWith("System Details")) {
-        // Dynamic System Details Parser (Roof, Heating, Cooling, Plumbing, Electrical, etc.)
-        const key = item.item_name
-          .replace(/\s+/g, "")  // Remove all spaces
-          .replace("SystemDetails", "SystemDetails"); // Clean key name
+      if (item.item_name.endsWith("System Details") || item.item_name.endsWith("Management Details")) {
         try {
-          acc[key.charAt(0).toLowerCase() + key.slice(1)] = JSON.parse(item.comments || "{}");
+          const key = toCamelCase(item.item_name);
+          acc[key] = JSON.parse(item.comments || "{}");
         } catch (e) {
           console.error(`Error parsing ${item.item_name} JSON:`, e);
-          acc[key.charAt(0).toLowerCase() + key.slice(1)] = {};
+          acc[toCamelCase(item.item_name)] = {};
         }
       } else {
-        // Normal Section Items (Roof Covering, Gutters, Fixtures, etc.)
         acc[item.item_name] = {
           componentTypeConditions: item.materials && typeof item.materials === 'object' ? item.materials : {},
           comment: item.comments || "",
@@ -58,10 +62,10 @@ export function InspectionCRUD(inspectionId, section) {
         };
       }
       return acc;
-    }, {});      
+    }, {});
   
     setFormData(data);
-  }, [inspectionId, section]);  
+  }, [inspectionId, section]);       
 
   const updateSingleBackend = async (itemName, itemDetails) => {
     const payload = [{
@@ -244,6 +248,90 @@ export function InspectionCRUD(inspectionId, section) {
     } catch (error) {
       console.error("Error updating Electrical System Details:", error);
     }
+  };
+
+  const updateWaterIntrusionManagementDetails = async (waterIntrusionDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Water Intrusion Management Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(waterIntrusionDetails),
+    }];
+  
+    console.log("Posting Water Intrusion Management Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-exterior`, payload);
+    } catch (error) {
+      console.error("Error updating Water Intrusion Management Details:", error);
+    }
+  };
+
+  const updateIrrigationSystemDetails = async (irrigationDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Irrigation System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(irrigationDetails),
+    }];
+  
+    console.log("Posting Irrigation System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-exterior`, payload);
+    } catch (error) {
+      console.error("Error updating Irrigation System Details:", error);
+    }
+  };
+
+  const updateSwimmingPoolSpaSystemDetails = async (poolDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Swimming Pool Spa System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(poolDetails),
+    }];
+  
+    console.log("Posting Swimming Pool Spa System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-systemsComponents`, payload);
+    } catch (error) {
+      console.error("Error updating Swimming Pool Spa System Details:", error);
+    }
+  };
+
+  const updateSolarEnergySystemDetails = async (solarDetails) => {
+    if (!inspectionId) return;
+  
+    const payload = [{
+      inspection_id: inspectionId,
+      item_name: "Solar Energy System Details",
+      inspection_status: "Inspected",
+      materials: {},
+      conditions: {},
+      comments: JSON.stringify(solarDetails),
+    }];
+  
+    console.log("Posting Solar Energy System Details payload:", payload);
+  
+    try {
+      await axios.post(`http://localhost:8080/api/inspection-systemsComponents`, payload);
+    } catch (error) {
+      console.error("Error updating Solar Energy System Details:", error);
+    }
   };  
 
   const handleCommentChange = (itemName, comment) => {
@@ -304,6 +392,10 @@ export function InspectionCRUD(inspectionId, section) {
     updateWaterHeatingSystemDetails,
     updateWaterFiltrationSystemDetails,
     updateElectricalSystemDetails,
+    updateWaterIntrusionManagementDetails,
+    updateIrrigationSystemDetails,
+    updateSwimmingPoolSpaSystemDetails,
+    updateSolarEnergySystemDetails,
     handleCommentChange,
     handleStatusChange,
     handleResize,
