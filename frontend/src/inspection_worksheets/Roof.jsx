@@ -54,7 +54,7 @@ const Roof = () => {
 
   return (
     <div>
-      <h1>5. ROOF SYSTEM</h1>
+      <h1 className="component-title">5. ROOF SYSTEM</h1>
       <InspectionSections
         items={items}
         formData={formData}

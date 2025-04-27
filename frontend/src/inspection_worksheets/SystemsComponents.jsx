@@ -54,7 +54,7 @@ const SystemsComponents = () => {
 
   return (
     <div>
-      <h1>15. SYSTEMS AND COMPONENTS</h1>
+      <h1 className="component-title">15. SYSTEMS AND COMPONENTS</h1>
       <InspectionSections
         items={items}
         formData={formData}

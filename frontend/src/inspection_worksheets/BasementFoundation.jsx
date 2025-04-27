@@ -54,7 +54,7 @@ const BasementFoundation = () => {
 
   return (
     <div>
-      <h1>9. BASEMENT / FOUNDATION</h1>
+      <h1 className="component-title">9. BASEMENT / FOUNDATION</h1>
       <InspectionSections
         items={items}
         formData={formData}

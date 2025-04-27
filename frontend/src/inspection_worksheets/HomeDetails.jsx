@@ -6,7 +6,7 @@ import '../styles/HomeDetails.css';
 function HomeDetails() {
   return (
     <section className="home-details-section">
-      <h1 className="section-title">HOME DETAILS</h1>
+      <h1 className="component-title xyz">HOME DETAILS</h1>
       <div className="details-box">
         <div className="column">
           <PropertyDetails />

@@ -106,8 +106,12 @@ useEffect(() => {
 
 const renderItem = (item, indexPrefix) => {
   const itemName = item.item_name || item.itemName;
-  const materialList = item.materials ? Object.keys(item.materials).filter(key => item.materials[key]).join(", ") : "";
-  const conditionList = item.conditions ? Object.keys(item.conditions).filter(key => item.conditions[key]).join(", ") : "";
+  const materialList = item.materials
+    ? Object.entries(item.materials)
+        .filter(([key, value]) => value)
+        .map(([key, value]) => `${key} (${value})`)
+        .join(", ")
+    : "";
 
   return (
     <div className="inspection-item" key={itemName}>
@@ -119,8 +123,7 @@ const renderItem = (item, indexPrefix) => {
       </div>
 
       <div className="item-details">
-        {materialList && <div className="item-block"><strong>Styles & Materials:</strong> {materialList}</div>}
-        {conditionList && <div className="item-block"><strong>Condition:</strong> {conditionList}</div>}
+        {materialList && <div className="item-block"><strong>Type or Material (Condition): </strong> {materialList}</div>}
       </div>
 
       {item.comments && item.comments.trim() !== "" && (
@@ -147,9 +150,10 @@ const renderItem = (item, indexPrefix) => {
   );
 };
 
+
 return (
   <div className="report-wrapper">
-    <h1 className="section-title">SUMMARY</h1>
+    <h1 className="component-title xyz">SUMMARY</h1>
     {propertyData && (
       <section className="report-summary">
         <h2 className="section-header property-info">PROPERTY INFO</h2>

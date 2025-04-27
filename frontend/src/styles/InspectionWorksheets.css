@@ -224,6 +224,7 @@ input:checked + .slider:before {
 
 .comment-boxes {
   width: 100%;
+  margin-top: .25rem;
   min-width: unset;
   box-sizing: border-box;
   overflow: hidden; /* Prevents scrollbar from appearing */
@@ -246,7 +247,7 @@ input:checked + .slider:before {
 }
 
 .photo-item button {
-  border-radius: 0px !important;
+  border-radius: 0px 0px 5px 5px !important;
 }
 
 .photo-preview {
@@ -315,3 +316,57 @@ input:checked + .slider:before {
   visibility: visible;
 }
 
+.component-title {
+  border-left: 4px solid #ec6e5a;
+  padding-left: 1rem;
+  margin-left: 1rem;
+}
+
+.component-title.xyz {
+  margin-left: 0rem;
+}
+
+.item-list strong {
+  color: #2c3e50;
+  font-size: 1.15rem;
+}
+
+.comment-box-container strong {
+  color: #2c3e50;
+  font-size: 1.15rem;
+}
+
+.photo-upload-container strong {
+  color: #2c3e50;
+  font-size: 1.15rem;
+}
+
+.comment-box-container {
+  margin-top: .5rem;
+}
+.photo-upload-container {
+  margin-top: .5rem;
+}
+
+.upload-button {
+  padding: 10px 0px;
+  font-size: 14px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.upload-button:hover {
+  background-color: #0056b3;
+}
+
+.custom-file-upload {
+  max-width: 150px;
+  margin-top: .25rem;
+}
+
+.photo-preview p {
+  margin: 5px 0px;
+}

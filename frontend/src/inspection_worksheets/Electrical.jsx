@@ -54,7 +54,7 @@ const Electrical = () => {
 
   return (
     <div>
-      <h1>12. ELECTRICAL SYSTEMS</h1>
+      <h1 className="component-title">12. ELECTRICAL SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}

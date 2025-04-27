@@ -147,12 +147,12 @@ const HomeInspectionReport = () => {
   const renderItem = (item, indexPrefix) => {
     const itemName = item.item_name || item.itemName;
     const materialList = item.materials
-      ? Object.keys(item.materials).filter(key => item.materials[key]).join(", ")
+      ? Object.entries(item.materials)
+          .filter(([key, value]) => value)
+          .map(([key, value]) => `${key} (${value})`)
+          .join(", ")
       : "";
-    const conditionList = item.conditions
-      ? Object.keys(item.conditions).filter(key => item.conditions[key]).join(", ")
-      : "";
-
+  
     return (
       <div className={`inspection-item ${item.inspection_status?.replace(/\s/g, '-') || "Not-Inspected"}`} key={itemName}>
         <div className="item-header-line">
@@ -161,26 +161,21 @@ const HomeInspectionReport = () => {
             {item.inspection_status || "Not Inspected"}
           </span>
         </div>
-
+  
         <div className="item-details">
           {materialList && (
             <div className="item-block">
-              <strong>Styles & Materials:</strong> {materialList}
-            </div>
-          )}
-          {conditionList && (
-            <div className="item-block">
-              <strong>Condition:</strong> {conditionList}
+              <strong>Type or Material (Condition): </strong> {materialList}
             </div>
           )}
         </div>
-
+  
         {item.comments?.trim() && (
           <div className="item-block">
             <strong>Observation:</strong> {item.comments}
           </div>
         )}
-
+  
         {(photosByItem[itemName] || []).map(photo => (
           <img
             key={photo.photo_id}
@@ -194,7 +189,7 @@ const HomeInspectionReport = () => {
         ))}
       </div>
     );
-  };
+  };  
 
   return (
     <div className="report-wrapper">

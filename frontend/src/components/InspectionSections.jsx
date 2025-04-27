@@ -126,16 +126,27 @@ const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) 
 
           {/* Photos Upload Section */}
           <div className="photo-upload-container">
-            <strong>Photos:</strong>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => {
-                handlers.handlePhotoUpload(item.name, e);
-                maybeAutoUpdateStatus(item.name); // ✅ trigger status update
-              }}
-            />
+            <strong>Photos: </strong>
+            <div className="custom-file-upload">
+              <button
+                type="button"
+                onClick={() => document.getElementById(`file-upload-${item.name}`).click()}
+                className="upload-button"
+              >
+                Upload Photo(s)
+              </button>
+              <input
+                id={`file-upload-${item.name}`}
+                type="file"
+                accept="image/*"
+                multiple
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  handlers.handlePhotoUpload(item.name, e);
+                  maybeAutoUpdateStatus(item.name);
+                }}
+              />
+            </div>
             <div className="photo-preview">
               {photos[item.name]?.length > 0 ? (
                 photos[item.name].map((photo) => (
@@ -150,7 +161,7 @@ const InspectionSections = ({ items, formData, handlers, photos, fetchPhotos }) 
                   </div>
                 ))
               ) : (
-                <p>No photos uploaded.</p>
+                <p></p>
               )}
             </div>
           </div>

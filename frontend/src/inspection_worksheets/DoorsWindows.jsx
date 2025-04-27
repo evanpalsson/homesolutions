@@ -54,7 +54,7 @@ const DoorsWindows = () => {
 
   return (
     <div>
-      <h1>10. DOORS & WINDOWS</h1>
+      <h1 className="component-title">10. DOORS & WINDOWS</h1>
       <InspectionSections
         items={items}
         formData={formData}

@@ -48,7 +48,7 @@ const Fireplace = () => {
 
   return (
     <div>
-      <h1>14. FIREPLACE, WOOD STOVE, CHIMNEY</h1>
+      <h1 className="component-title">14. FIREPLACE, WOOD STOVE, CHIMNEY</h1>
       <InspectionSections
         items={items}
         formData={formData}

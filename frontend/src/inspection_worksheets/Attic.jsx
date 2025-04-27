@@ -54,7 +54,7 @@ const Attic = () => {
 
   return (
     <div>
-      <h1>8. ATTIC</h1>
+      <h1 className="component-title">8. ATTIC</h1>
       <InspectionSections
         items={items}
         formData={formData}

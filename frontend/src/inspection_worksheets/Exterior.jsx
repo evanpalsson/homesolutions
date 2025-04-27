@@ -54,7 +54,7 @@ const Exterior = () => {
 
   return (
     <div>
-      <h1>6. EXTERIOR</h1>
+      <h1 className="component-title">6. EXTERIOR</h1>
       <InspectionSections
         items={items}
         formData={formData}

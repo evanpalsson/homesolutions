@@ -42,7 +42,7 @@ const Cooling = () => {
 
   return (
     <div>
-      <h1>11. COOLING SYSTEMS</h1>
+      <h1 className="component-title">11. COOLING SYSTEMS</h1>
       <InspectionSections
         items={items}
         formData={formData}
